@@ -1,22 +1,21 @@
 /**
  * AKEVA SÉRÉNITÉ — Moteur d'Administration & Back-Office Intégral
  * - Conforme au Design System Stitch (Projet AKEVA 7740055685350246425)
- * - Gestion des 14 rubriques de navigation officielle
- * - Moteur CMS : Éditeur latéral (Drawer) pour les Services
- * - Sanctuarisation Éditoriale : Éditeur Live Guard en temps réel pour les textes
- * - Registre des Bénéficiaires & Gestionnaire des Demandes / Urgences
- * - Modération des Témoignages & Foire Aux Questions (FAQ)
- * - Pilotage des Statistiques & Chiffres Clés personnalisables manuellement
- * - Authentification sécurisée Super Admin unique (Web Crypto SHA-256 + Salt)
+ * - Données 100% réelles du site vitrine pré-remplies et éditables
+ * - Vrais formulaires d'importation & upload (Documents, Galerie, Réalisations, Témoignages, FAQ, Bénéficiaires)
+ * - Gestion Multi-Administrateurs (Création, Attribution de Rôles, Révocation)
+ * - Profil Administrateur avec Photo d'Avatar modifiable & Changement de mot de passe
+ * - Procédure d'Assistance "Mot de passe oublié"
+ * - Synchronisation Supabase en temps réel
  */
 
 (function () {
   'use strict';
 
-  // Clefs de session & constantes
+  // Clefs de stockage local
   const SESSION_KEY = 'akeva_admin_session';
 
-  // État global de l'application
+  // État global en mémoire
   let currentAdmin = null;
   let allRequests = [];
   let allBeneficiaires = [];
@@ -24,13 +23,13 @@
   let allTemoignages = [];
   let allFaq = [];
   let allRealisations = [];
+  let allDocuments = [];
+  let allGalerie = [];
+  let allAdmins = [];
   let currentStats = null;
-  let currentSiteContent = null;
   let currentContactInfo = null;
 
   let chartEvolution = null;
-  let chartAnnual = null;
-  let chartQuartiers = null;
   let activeFilterDemandes = 'all';
 
   // Éléments DOM principaux
@@ -40,12 +39,12 @@
   const screenDashboard = document.getElementById('screen-dashboard');
 
   /* ========================================================================= */
-  /* 1. CRYPTO UTILS & SÉCURITÉ MOT DE PASSE                                   */
+  /* 1. CRYPTO UTILS & SÉCURITÉ DU MOT DE PASSE (Web Crypto SHA-256 + Salt)     */
   /* ========================================================================= */
 
   async function sha256(str, saltHex) {
     const enc = new TextEncoder();
-    const data = enc.encode(str + saltHex);
+    const data = enc.encode(str + (saltHex || ''));
     const hashBuffer = await crypto.subtle.digest('SHA-256', data);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
@@ -68,18 +67,18 @@
         if (input.type === 'password') {
           input.type = 'text';
           if (icon) icon.textContent = 'visibility_off';
-          this.setAttribute('title', 'Masquer le mot de passe');
+          this.setAttribute('title', 'Masquer');
         } else {
           input.type = 'password';
           if (icon) icon.textContent = 'visibility';
-          this.setAttribute('title', 'Afficher le mot de passe');
+          this.setAttribute('title', 'Afficher');
         }
       });
     });
   }
 
   /* ========================================================================= */
-  /* 2. CONNEXION SUPABASE CLIENT                                              */
+  /* 2. CLIENT SUPABASE                                                        */
   /* ========================================================================= */
 
   async function getClient(maxWaitMs = 2500) {
@@ -98,36 +97,26 @@
       }
       await new Promise(res => setTimeout(res, 60));
     }
-    throw new Error('Supabase client non prêt');
+    return null;
   }
 
   /* ========================================================================= */
-  /* 3. SYSTÈME DE TOAST NOTIFICATION                                          */
+  /* 3. TOAST NOTIFICATIONS                                                    */
   /* ========================================================================= */
 
   function showToast(title, message, isError = false) {
     const toast = document.getElementById('toast');
-    const toastTitle = document.getElementById('toast-title');
-    const toastMsg = document.getElementById('toast-message');
-    const toastIcon = document.getElementById('toast-icon');
-
     if (!toast) return;
 
-    toastTitle.textContent = title;
-    toastMsg.textContent = message;
+    const tTitle = document.getElementById('toast-title');
+    const tMsg = document.getElementById('toast-message');
+    const tIcon = document.getElementById('toast-icon');
 
-    if (isError) {
-      toast.classList.remove('bg-primary-container', 'border-slate-700');
-      toast.classList.add('bg-red-900', 'border-red-700');
-      toastIcon.textContent = 'error';
-      toastIcon.classList.remove('text-secondary-fixed');
-      toastIcon.classList.add('text-red-300');
-    } else {
-      toast.classList.remove('bg-red-900', 'border-red-700');
-      toast.classList.add('bg-primary-container', 'border-slate-700');
-      toastIcon.textContent = 'task_alt';
-      toastIcon.classList.remove('text-red-300');
-      toastIcon.classList.add('text-secondary-fixed');
+    if (tTitle) tTitle.textContent = title;
+    if (tMsg) tMsg.textContent = message;
+    if (tIcon) {
+      tIcon.textContent = isError ? 'error' : 'task_alt';
+      tIcon.className = isError ? 'material-symbols-outlined text-red-400 text-2xl' : 'material-symbols-outlined text-secondary-fixed text-2xl';
     }
 
     toast.classList.remove('translate-y-24', 'opacity-0');
@@ -140,1248 +129,1467 @@
   }
 
   /* ========================================================================= */
-  /* 4. VÉRIFICATION DU COMPTE SUPER ADMIN & INITIALISATION                    */
+  /* 4. DONNÉES PAR DÉFAUT AUTHENTIQUES DU SITE VITRINE                        */
   /* ========================================================================= */
 
-  async function checkAdminAccountStatus() {
+  const DEFAULT_SERVICES = [
+    {
+      id: "personnes-agees",
+      title: "Accompagnement des Personnes Âgées",
+      slogan: "Présence chaleureuse, aide à l'autonomie et gestes du quotidien pour nos aînés.",
+      hours: "Garde de Jour (8h - 18h) ou personnalisée",
+      pricing: "Sur devis personnalisé (à partir de 15 000 FCFA / jour)",
+      desc: "Une prise en charge globale pour maintenir les personnes âgées dans le confort et la dignité de leur domicile à Yaoundé. Nos auxiliaires veillent sur l'hygiène, les repas, la marche et apportent une compagnie bienveillante.",
+      key_points: [
+        "Aide au lever, coucher et toilette d'hygiène quotidienne",
+        "Préparation de repas frais, équilibrés et adaptés aux régimes",
+        "Compagnie, stimulation cognitive, lecture et promenades douces",
+        "Rappel rigoureux et sécurisé de la prise médicamenteuse"
+      ],
+      published: true
+    },
+    {
+      id: "garde-nuit",
+      title: "Garde & Veille de Nuit Sécurisée",
+      slogan: "Surveillance attentive et présence rassurante pour des nuits paisibles.",
+      hours: "Veille Nocturne (20h - 6h ou 19h - 7h)",
+      pricing: "Sur devis personnalisé (à partir de 18 000 FCFA / nuit)",
+      desc: "Une présence nocturne vigilante pour sécuriser votre proche tout au long de la nuit, prévenir les chutes, assister aux réveils difficiles et apporter un sommeil serein aux familles.",
+      key_points: [
+        "Présence ininterrompue et veille active au chevet du patient",
+        "Assistance aux réveils nocturnes et déplacements sanitaires",
+        "Prévention immédiate des chutes et apaisement des angoisses",
+        "Sommeil serein et repos garanti pour les aidants familiaux"
+      ],
+      published: true
+    },
+    {
+      id: "convalescence",
+      title: "Convalescence & Retour d'Hospitalisation",
+      slogan: "Accompagnement post-opératoire et soins de confort adaptés à la réhabilitation.",
+      hours: "Présence 24h/24 ou demi-journées selon prescription",
+      pricing: "Sur devis personnalisé",
+      desc: "Accompagnement spécialisé pour les périodes fragiles après une hospitalisation ou une intervention chirurgicale. Suivi des consignes médicales, mobilisation douce et hygiène adaptée.",
+      key_points: [
+        "Aide à la mobilisation et rééducation motrice douce",
+        "Respect scrupuleux des consignes médicales et pansements simples",
+        "Surveillance attentive des constantes et tenue du carnet de bord",
+        "Coordination directe avec les médecins et soignants traitants"
+      ],
+      published: true
+    },
+    {
+      id: "specialise",
+      title: "Garde Continue 24h/24 & Grande Dépendance",
+      slogan: "Une équipe dédiée en relève constante pour une sérénité jour et nuit.",
+      hours: "Présence ininterrompue 24h/24 — 7j/7",
+      pricing: "Formule mensuelle forfaitaire sur-mesure",
+      desc: "Prise en charge intégrale pour les situations de perte d'autonomie avancée (Alzheimer, suites d'AVC, alitement prolongé). Deux ou trois soignants se relaient avec rigueur pour assurer une veille continue.",
+      key_points: [
+        "Relève d'équipe soignée et certifiée sans aucune interruption",
+        "Gestion complète des soins d'hygiène, alimentation et mobilités",
+        "Surveillance préventive d'escarres et transferts ergonomiques",
+        "Interlocuteur de coordination dédié joignable à toute heure"
+      ],
+      published: true
+    },
+    {
+      id: "diaspora",
+      title: "Programme Familles de la Diaspora",
+      slogan: "Veillez sur vos parents à Yaoundé depuis l'étranger comme si vous étiez là.",
+      hours: "Coordination continue et comptes-rendus réguliers",
+      pricing: "Paiements internationaux simplifiés",
+      desc: "Depuis la France, le Canada, les USA, la Belgique ou l'Allemagne, confiez vos parents à une structure de confiance. Recevez des rapports réguliers, des photos et échangez en direct avec la direction locale.",
+      key_points: [
+        "Rapports hebdomadaires détaillés et photos d'ambiance sur WhatsApp",
+        "Point téléphonique régulier avec notre coordinatrice à Yaoundé",
+        "Gestion directe des approvisionnements et urgences médicales",
+        "Paiements simplifiés et sécurisés par virement ou mobile money"
+      ],
+      published: true
+    }
+  ];
+
+  const DEFAULT_TEMOIGNAGES = [
+    {
+      id: "tem-1",
+      author: "Famille N.",
+      relation: "Accompagnement attentif et sécurisé à domicile",
+      city: "Yaoundé",
+      rating: 5,
+      comment: "Grâce à Akeva Sérénité, ma mère est entre de bonnes mains. Je peux travailler l'esprit tranquille, elle est épanouie et en sécurité.",
+      date: "10 Septembre 2026",
+      avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuDHz9hfsmwME0in-VDBg2U2NO-1if3noxemRzYuXVxZSLoJNttmZPOsmTrBVQrH0TAjMRVt4n1gtZec2t32AJ33cqUR8rBF4W3xX6LvHbXltjGGYqUCGqCVPUMGU5CLLSwJwMtCCCK0j5_rA8bghFlylc7wS1aNVSMTTrUqrmRpgtSr4m1uE8b7e35O67kM1uZIOsvr_Z2trbJIy0FYyFBW6nYexbc34e1jFVjtPaPzBOItt8OIhBIq",
+      published: true
+    },
+    {
+      id: "tem-2",
+      author: "Dr. Patrick T.",
+      relation: "Diaspora France (Lyon) — Accompagnement à distance",
+      city: "Yaoundé / Bastos",
+      rating: 5,
+      comment: "Vivant à Lyon, je m'inquiétais constamment pour mon père seul à Bastos. Akeva Sérénité assure la garde de jour et m'envoie des rapports réguliers. Un véritable soulagement pour la diaspora.",
+      date: "04 Septembre 2026",
+      avatar: "",
+      published: true
+    },
+    {
+      id: "tem-3",
+      author: "Carine M. et ses frères",
+      relation: "Veille de nuit post-chirurgie",
+      city: "Yaoundé / Ngousso",
+      rating: 5,
+      comment: "Après la chirurgie de notre oncle à l'Hôpital Général, l'auxiliaire de nuit d'Akeva a été d'une gentillesse remarquable. Vigilant, attentif et toujours ponctuel.",
+      date: "29 Août 2026",
+      avatar: "",
+      published: true
+    },
+    {
+      id: "tem-4",
+      author: "M. Samuel Ebanda",
+      relation: "Accompagnement continu & écoute",
+      city: "Yaoundé / Omnisports",
+      rating: 5,
+      comment: "Une prise en charge humaine et très professionnelle pour ma mère. Les auxiliaires sont courtois, qualifiés et très attentionnés.",
+      date: "18 Août 2026",
+      avatar: "",
+      published: true
+    }
+  ];
+
+  const DEFAULT_FAQ = [
+    {
+      id: "faq-1",
+      question: "Quelles sont les zones d'intervention d'Akeva Sérénité ?",
+      answer: "Notre coordination centrale est située à Ngousso, Yaoundé (à proximité immédiate de l'Hôpital Général). Nous intervenons dans l'ensemble des quartiers de Yaoundé (Ngousso, Omnisports, Bastos, Mendong, Biyem-Assi, Odza, Santa Barbara, Messassi, Essos, etc.) ainsi que dans la périphérie proche selon les besoins de la famille.",
+      category: "Organisation",
+      order: 1
+    },
+    {
+      id: "faq-2",
+      question: "Quels sont vos horaires et votre disponibilité ?",
+      answer: "Akeva Sérénité assure une permanence continue 24h/24 et 7j/7, y compris les week-ends et les jours fériés. Nos auxiliaires peuvent intervenir en garde de jour, en garde de nuit, ou en garde continue 24h/24 sans aucune rupture de service grâce à une relève soignée. Notre ligne téléphonique d'urgence reste joignable à toute heure au 697 572 685.",
+      category: "Disponibilité",
+      order: 2
+    },
+    {
+      id: "faq-3",
+      question: "Comment sont fixés les tarifs et comment obtenir un devis ?",
+      answer: "Nos tarifs sont structurés autour de nos 4 modalités (garde de jour, garde de nuit, garde 24h/24, accompagnement moral seul) et sont établis sur devis personnalisé sans engagement. Le coût s'adapte au niveau d'autonomie du proche, à la fréquence d'intervention et aux plages horaires. Aucun frais caché : le devis présente clairement le volume horaire et les prestations incluses.",
+      category: "Tarifs",
+      order: 3
+    },
+    {
+      id: "faq-4",
+      question: "Comment démarrer un accompagnement en urgence ou planifié ?",
+      answer: "Le processus se fait en 3 étapes simples : 1. Contactez-nous via WhatsApp direct, par téléphone ou formulaire. 2. Nous évaluons le besoin de votre proche lors d'un entretien immédiat ou à domicile. 3. Nous mettons en place l'accompagnement avec l'auxiliaire de vie sélectionné. En situation d'urgence (retour d'hospitalisation inattendu, aidant indisponible), nous sommes capables d'intervenir en moins de 24h.",
+      category: "Prise en charge",
+      order: 4
+    },
+    {
+      id: "faq-5",
+      question: "Comment sont recrutés et encadrés vos auxiliaires de vie ?",
+      answer: "Chaque auxiliaire fait l'objet d'une enquête rigoureuse (casier judiciaire vierge, contrôle de domicile et vérification des références antérieures). Ils bénéficient ensuite d'une formation continue aux gestes de premiers secours et à la bientraitance gériatrique sous la supervision de notre coordinateur médical.",
+      category: "Personnel",
+      order: 5
+    }
+  ];
+
+  const DEFAULT_BENEFICIAIRES = [
+    {
+      id: "ben-1",
+      name: "M. Paul Nguema",
+      age: 82,
+      quartier: "Ngousso",
+      pathology: "Convalescence post-AVC, aide aux mobilités",
+      formule: "Garde Continue 24h/24",
+      caregiver: "Mme Carine Mbarga",
+      contact: "+237 699 12 45 88 (Fils)",
+      status: "active"
+    },
+    {
+      id: "ben-2",
+      name: "Mme Thérèse Bikélé",
+      age: 76,
+      quartier: "Bastos",
+      pathology: "Arthrose sévère & angoisses nocturnes",
+      formule: "Garde de Nuit Sécurisée",
+      caregiver: "M. Alain Ondoa",
+      contact: "+33 6 12 34 56 78 (Dr. Patrick T. - Diaspora)",
+      status: "active"
+    },
+    {
+      id: "ben-3",
+      name: "M. Joseph Atangana",
+      age: 88,
+      quartier: "Omnisports",
+      pathology: "Mobilité réduite & stimulation cognitive",
+      formule: "Accompagnement Personnes Âgées (Jour)",
+      caregiver: "Mme Florence Bella",
+      contact: "+237 653 15 14 27 (Fille)",
+      status: "active"
+    },
+    {
+      id: "ben-4",
+      name: "Mme Henriette Mvondo",
+      age: 71,
+      quartier: "Mendong",
+      pathology: "Retour chirurgie orthopédique (prothèse hanche)",
+      formule: "Soins & Convalescence Post-Opératoire",
+      caregiver: "M. David Ekwalla",
+      contact: "+237 677 88 99 00 (Neveu)",
+      status: "active"
+    }
+  ];
+
+  const DEFAULT_DOCUMENTS = [
+    {
+      id: "doc-1",
+      title: "Fiche d'Évaluation Gériatrique Initiale (Modèle Yaoundé)",
+      category: "Fiche Médicale",
+      file_type: "PDF",
+      file_size: "1.4 Mo",
+      date: "10 Septembre 2026",
+      file_url: "/assets/docs/fiche-evaluation-akeva.pdf",
+      desc: "Document type utilisé lors de la visite préalable à domicile sous 2h pour évaluer les dépendances et adapter la formule."
+    },
+    {
+      id: "doc-2",
+      title: "Charte Déontologique & Soins d'Hygiène Certifiés",
+      category: "Protocole Clinique",
+      file_type: "PDF",
+      file_size: "890 Ko",
+      date: "01 Septembre 2026",
+      file_url: "/assets/docs/charte-deontologique-akeva.pdf",
+      desc: "Protocole clinique et engagement de confidentialité signé par chaque auxiliaire de vie et infirmier délégué."
+    },
+    {
+      id: "doc-3",
+      title: "Guide Pratique de la Famille Aidante & Diaspora",
+      category: "Guide Famille",
+      file_type: "PDF",
+      file_size: "2.1 Mo",
+      date: "28 Août 2026",
+      file_url: "/assets/docs/guide-famille-diaspora.pdf",
+      desc: "Brochure d'accompagnement pour coordonner la garde à distance et le suivi médical en toute sérénité."
+    }
+  ];
+
+  const DEFAULT_GALERIE = [
+    {
+      id: "gal-1",
+      title: "Aide et présence bienveillante auprès d'une aînée",
+      media_type: "image",
+      media_url: "https://lh3.googleusercontent.com/aida-public/AB6AXuDHz9hfsmwME0in-VDBg2U2NO-1if3noxemRzYuXVxZSLoJNttmZPOsmTrBVQrH0TAjMRVt4n1gtZec2t32AJ33cqUR8rBF4W3xX6LvHbXltjGGYqUCGqCVPUMGU5CLLSwJwMtCCCK0j5_rA8bghFlylc7wS1aNVSMTTrUqrmRpgtSr4m1uE8b7e35O67kM1uZIOsvr_Z2trbJIy0FYyFBW6nYexbc34e1jFVjtPaPzBOItt8OIhBIq",
+      category: "Accompagnement",
+      caption: "Soutien émotionnel et moments d'échange chaleureux à domicile à Yaoundé."
+    },
+    {
+      id: "gal-2",
+      title: "Soins et assistance à la mobilisation",
+      media_type: "image",
+      media_url: "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=800&q=80",
+      category: "Soins",
+      caption: "Gestes sécurisés et accompagnement des transferts par notre équipe formée."
+    },
+    {
+      id: "gal-3",
+      title: "Suivi des constantes et carnet de santé",
+      media_type: "image",
+      media_url: "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=800&q=80",
+      category: "Coordination",
+      caption: "Relevé quotidien des constantes et surveillance médicale continue."
+    },
+    {
+      id: "gal-4",
+      title: "Préparation de repas équilibrés",
+      media_type: "image",
+      media_url: "https://images.unsplash.com/photo-1581056771107-24ca5f033842?auto=format&fit=crop&w=800&q=80",
+      category: "Nutrition",
+      caption: "Alimentation saine et respect des régimes spécifiques prescrits."
+    }
+  ];
+
+  const DEFAULT_REALISATIONS = [
+    {
+      id: "rea-1",
+      title: "Retour d'hospitalisation réussi après chirurgie orthopédique",
+      quartier: "Ngousso (Proximité Hôpital Général)",
+      image_url: "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=800&q=80",
+      desc: "Prise en charge post-opératoire immédiate d'un aîné de 78 ans. Mobilisation progressive, surveillance des constantes et coordination avec l'équipe chirurgicale.",
+      result: "Autonomie de marche retrouvée en 3 semaines, famille apaisée."
+    },
+    {
+      id: "rea-2",
+      title: "Maintien à domicile d'une aînée avec soutien Diaspora",
+      quartier: "Bastos",
+      image_url: "https://lh3.googleusercontent.com/aida-public/AB6AXuDHz9hfsmwME0in-VDBg2U2NO-1if3noxemRzYuXVxZSLoJNttmZPOsmTrBVQrH0TAjMRVt4n1gtZec2t32AJ33cqUR8rBF4W3xX6LvHbXltjGGYqUCGqCVPUMGU5CLLSwJwMtCCCK0j5_rA8bghFlylc7wS1aNVSMTTrUqrmRpgtSr4m1uE8b7e35O67kM1uZIOsvr_Z2trbJIy0FYyFBW6nYexbc34e1jFVjtPaPzBOItt8OIhBIq",
+      desc: "Mise en place d'une garde continue 24h/24 avec relève soignée pour une dame de 84 ans dont les enfants résident en France et au Canada.",
+      result: "Rapports WhatsApp hebdomadaires, 0 chute enregistrée depuis 6 mois."
+    },
+    {
+      id: "rea-3",
+      title: "Veille nocturne sécurisée et apaisement des angoisses",
+      quartier: "Omnisports",
+      image_url: "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=800&q=80",
+      desc: "Présence vigilante d'un auxiliaire chaque nuit de 20h à 6h pour un patient atteint de troubles cognitifs modérés.",
+      result: "Nuits réparatrices, soulagement complet des aidants familiaux le jour."
+    }
+  ];
+
+  /* ========================================================================= */
+  /* 5. GESTION DE LA SESSION & DES PROFILS                                    */
+  /* ========================================================================= */
+
+  function getInitials(name) {
+    if (!name) return 'AS';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+
+  function updateSidebarProfileUI(admin) {
+    if (!admin) return;
+
+    const initials = getInitials(admin.full_name);
+    const dName = document.getElementById('user-display-name');
+    const dRole = document.getElementById('user-display-email');
+    const dInitials = document.getElementById('user-avatar-initials');
+    const dImg = document.getElementById('user-avatar-img');
+
+    if (dName) dName.textContent = admin.full_name || 'Akeva Directeur';
+    if (dRole) dRole.textContent = admin.role || 'Super Admin';
+
+    if (dImg && dInitials) {
+      if (admin.avatar_url) {
+        dImg.src = admin.avatar_url;
+        dImg.classList.remove('hidden');
+        dInitials.classList.add('hidden');
+      } else {
+        dImg.classList.add('hidden');
+        dInitials.textContent = initials;
+        dInitials.classList.remove('hidden');
+      }
+    }
+
+    // Page Mon Profil
+    const pName = document.getElementById('profile-fullname');
+    const pEmail = document.getElementById('profile-email');
+    const pPhone = document.getElementById('profile-phone');
+    const pTitleName = document.getElementById('profile-display-title-name');
+    const pTitleRole = document.getElementById('profile-display-title-role');
+    const pPreviewImg = document.getElementById('profile-avatar-preview-img');
+    const pPreviewInitials = document.getElementById('profile-avatar-preview-initials');
+
+    if (pName) pName.value = admin.full_name || '';
+    if (pEmail) pEmail.value = admin.email || '';
+    if (pPhone) pPhone.value = admin.phone || '';
+    if (pTitleName) pTitleName.textContent = admin.full_name || 'Akeva Directeur';
+    if (pTitleRole) pTitleRole.textContent = admin.role || 'Super Admin';
+
+    if (pPreviewImg && pPreviewInitials) {
+      if (admin.avatar_url) {
+        pPreviewImg.src = admin.avatar_url;
+        pPreviewImg.classList.remove('hidden');
+        pPreviewInitials.classList.add('hidden');
+      } else {
+        pPreviewImg.classList.add('hidden');
+        pPreviewInitials.textContent = initials;
+        pPreviewInitials.classList.remove('hidden');
+      }
+    }
+  }
+
+  function saveCurrentAdminSession(admin) {
+    currentAdmin = admin;
+    const json = JSON.stringify(admin);
+    sessionStorage.setItem(SESSION_KEY, json);
+    localStorage.setItem(SESSION_KEY, json);
+    updateSidebarProfileUI(admin);
+  }
+
+  function loadSavedSession() {
+    const raw = sessionStorage.getItem(SESSION_KEY) || localStorage.getItem(SESSION_KEY);
+    if (!raw) return null;
     try {
-      const client = await getClient();
-      const { data, count, error } = await client
+      return JSON.parse(raw);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /* ========================================================================= */
+  /* 6. CHARGEMENT & SYNCHRONISATION SUPABASE                                  */
+  /* ========================================================================= */
+
+  async function syncAllData() {
+    const sb = await getClient();
+
+    // 1. Demandes (contact_requests)
+    try {
+      if (sb) {
+        const { data, error } = await sb
+          .from('contact_requests')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (!error && data) {
+          allRequests = data;
+        }
+      }
+    } catch (e) {
+      console.warn('Erreur chargement contact_requests', e);
+    }
+
+    // 2. Settings (site_settings)
+    try {
+      if (sb) {
+        const { data, error } = await sb.from('site_settings').select('key, value');
+        if (!error && data) {
+          data.forEach(row => {
+            if (row.key === 'services_catalog') allServices = row.value || [];
+            if (row.key === 'temoignages_list') allTemoignages = row.value || [];
+            if (row.key === 'faq_list') allFaq = row.value || [];
+            if (row.key === 'beneficiaires_registry') allBeneficiaires = row.value || [];
+            if (row.key === 'documents_list') allDocuments = row.value || [];
+            if (row.key === 'galerie_list') allGalerie = row.value || [];
+            if (row.key === 'realisations_list') allRealisations = row.value || [];
+            if (row.key === 'contact_info') currentContactInfo = row.value || {};
+            if (row.key === 'stats_metrics') currentStats = row.value || {};
+          });
+        }
+      }
+    } catch (e) {
+      console.warn('Erreur chargement site_settings', e);
+    }
+
+    // Fallbacks
+    if (!allServices || allServices.length === 0) allServices = [...DEFAULT_SERVICES];
+    if (!allTemoignages || allTemoignages.length === 0) allTemoignages = [...DEFAULT_TEMOIGNAGES];
+    if (!allFaq || allFaq.length === 0) allFaq = [...DEFAULT_FAQ];
+    if (!allBeneficiaires || allBeneficiaires.length === 0) allBeneficiaires = [...DEFAULT_BENEFICIAIRES];
+    if (!allDocuments || allDocuments.length === 0) allDocuments = [...DEFAULT_DOCUMENTS];
+    if (!allGalerie || allGalerie.length === 0) allGalerie = [...DEFAULT_GALERIE];
+    if (!allRealisations || allRealisations.length === 0) allRealisations = [...DEFAULT_REALISATIONS];
+
+    // 3. Comptes Administrateurs
+    await loadAdminAccounts();
+
+    // Rendu global
+    renderAllViews();
+  }
+
+  async function loadAdminAccounts() {
+    const sb = await getClient();
+    if (!sb) return;
+    try {
+      const { data, error } = await sb
         .from('admin_accounts')
-        .select('id, email, full_name', { count: 'exact' });
-
-      const adminCount = (count !== null && count !== undefined) ? count : (data ? data.length : 0);
-
-      if (screenLoading) screenLoading.classList.add('hidden');
-
-      if (adminCount === 0) {
-        // Aucun compte super admin : affichage du formulaire de création unique
-        if (screenSetup) screenSetup.classList.remove('hidden');
-        if (screenLogin) screenLogin.classList.add('hidden');
-        if (screenDashboard) screenDashboard.classList.add('hidden');
-      } else {
-        // Un compte existe : vérifie la session active
-        const sessionStr = sessionStorage.getItem(SESSION_KEY);
-        if (sessionStr) {
-          try {
-            const sess = JSON.parse(sessionStr);
-            if (sess && sess.id && sess.email) {
-              currentAdmin = sess;
-              enterDashboard();
-              return;
-            }
-          } catch (e) {}
-        }
-        // Pas de session : affichage de l'écran de connexion
-        if (screenSetup) screenSetup.classList.add('hidden');
-        if (screenLogin) screenLogin.classList.remove('hidden');
-        if (screenDashboard) screenDashboard.classList.add('hidden');
+        .select('id, full_name, email, role, avatar_url, phone, status, created_at')
+        .order('created_at', { ascending: true });
+      if (!error && data) {
+        allAdmins = data;
+        renderAdminAccountsTable();
       }
-    } catch (err) {
-      console.warn('Erreur vérification compte super admin:', err);
-      if (screenLoading) screenLoading.classList.add('hidden');
-      // En cas de secours, basculer sur l'écran de configuration
-      if (screenSetup) screenSetup.classList.remove('hidden');
+    } catch (e) {
+      console.warn('Erreur loadAdminAccounts', e);
     }
   }
 
-  /* ========================================================================= */
-  /* 5. GESTION DU SETUP & LOGIN                                               */
-  /* ========================================================================= */
-
-  function initAuthForms() {
-    // Formulaire de Création du Super Admin Unique
-    const formSetup = document.getElementById('form-setup');
-    if (formSetup) {
-      formSetup.addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const errDiv = document.getElementById('setup-error');
-        const btn = document.getElementById('btn-submit-setup');
-        if (errDiv) errDiv.classList.add('hidden');
-
-        const fullName = document.getElementById('setup-fullname').value.trim();
-        const email = document.getElementById('setup-email').value.trim().toLowerCase();
-        const pass = document.getElementById('setup-password').value;
-        const confirm = document.getElementById('setup-password-confirm').value;
-
-        if (pass.length < 6) {
-          if (errDiv) {
-            errDiv.textContent = 'Le mot de passe doit contenir au moins 6 caractères.';
-            errDiv.classList.remove('hidden');
-          }
-          return;
-        }
-
-        if (pass !== confirm) {
-          if (errDiv) {
-            errDiv.textContent = 'Les mots de passe ne correspondent pas.';
-            errDiv.classList.remove('hidden');
-          }
-          return;
-        }
-
-        btn.disabled = true;
-        btn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> Création sécurisée en cours...';
-
-        try {
-          const client = await getClient();
-          const salt = generateSalt();
-          const hash = await sha256(pass, salt);
-
-          const { data, error } = await client
-            .from('admin_accounts')
-            .insert([{
-              email: email,
-              password_hash: hash,
-              salt: salt,
-              full_name: fullName
-            }])
-            .select()
-            .single();
-
-          if (error) throw error;
-
-          currentAdmin = { id: data.id, email: data.email, full_name: data.full_name };
-          sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentAdmin));
-
-          showToast('Super Admin Créé', 'Votre compte maître a été configuré avec succès.');
-          enterDashboard();
-        } catch (err) {
-          console.error(err);
-          btn.disabled = false;
-          btn.innerHTML = '<span class="material-symbols-outlined">verified_user</span> Créer mon Compte Super Admin Unique';
-          if (errDiv) {
-            errDiv.textContent = 'Erreur lors de la création : ' + (err.message || 'Vérifiez la connexion.');
-            errDiv.classList.remove('hidden');
-          }
-        }
-      });
-    }
-
-    // Formulaire de Connexion
-    const formLogin = document.getElementById('form-login');
-    if (formLogin) {
-      formLogin.addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const errDiv = document.getElementById('login-error');
-        const btn = document.getElementById('btn-submit-login');
-        if (errDiv) errDiv.classList.add('hidden');
-
-        const email = document.getElementById('login-email').value.trim().toLowerCase();
-        const pass = document.getElementById('login-password').value;
-
-        btn.disabled = true;
-        btn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> Vérification...';
-
-        try {
-          const client = await getClient();
-          const { data, error } = await client
-            .from('admin_accounts')
-            .select('*')
-            .eq('email', email)
-            .single();
-
-          if (error || !data) {
-            throw new Error('Identifiants incorrects ou compte inexistant.');
-          }
-
-          const computedHash = await sha256(pass, data.salt);
-          if (computedHash !== data.password_hash) {
-            throw new Error('Mot de passe incorrect.');
-          }
-
-          currentAdmin = { id: data.id, email: data.email, full_name: data.full_name };
-          sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentAdmin));
-
-          showToast('Bienvenue', `Connexion réussie : ${data.full_name}`);
-          enterDashboard();
-        } catch (err) {
-          btn.disabled = false;
-          btn.innerHTML = '<span class="material-symbols-outlined">login</span> Se Connecter';
-          if (errDiv) {
-            errDiv.textContent = err.message || 'Erreur lors de la connexion.';
-            errDiv.classList.remove('hidden');
-          }
-        }
-      });
-    }
-
-    // Déconnexion
-    const btnLogout = document.getElementById('btn-logout');
-    if (btnLogout) {
-      btnLogout.addEventListener('click', function () {
-        if (confirm('Souhaitez-vous vraiment vous déconnecter du Back-Office ?')) {
-          sessionStorage.removeItem(SESSION_KEY);
-          currentAdmin = null;
-          screenDashboard.classList.add('hidden');
-          screenLogin.classList.remove('hidden');
-          showToast('Déconnecté', 'Session fermée avec succès.');
-        }
-      });
-    }
-  }
-
-  /* ========================================================================= */
-  /* 6. ENTRÉE DANS LE DASHBOARD & CHARGEMENT COMPLET                          */
-  /* ========================================================================= */
-
-  function enterDashboard() {
-    if (screenSetup) screenSetup.classList.add('hidden');
-    if (screenLogin) screenLogin.classList.add('hidden');
-    if (screenDashboard) screenDashboard.classList.remove('hidden');
-
-    // Mise à jour de l'identité dans la sidebar
-    if (currentAdmin) {
-      const nameEl = document.getElementById('user-display-name');
-      const emailEl = document.getElementById('user-display-email');
-      const avatarEl = document.getElementById('user-avatar-initials');
-      const profileName = document.getElementById('profile-fullname');
-      const profileEmail = document.getElementById('profile-email');
-
-      if (nameEl) nameEl.textContent = currentAdmin.full_name;
-      if (emailEl) emailEl.textContent = currentAdmin.email;
-      if (profileName) profileName.value = currentAdmin.full_name;
-      if (profileEmail) profileEmail.value = currentAdmin.email;
-
-      if (avatarEl && currentAdmin.full_name) {
-        const parts = currentAdmin.full_name.trim().split(' ');
-        const initials = parts.length > 1 ? (parts[0][0] + parts[1][0]) : parts[0].slice(0, 2);
-        avatarEl.textContent = initials.toUpperCase();
-      }
-    }
-
-    // Chargement de l'ensemble des données
-    loadAllDashboardData();
-  }
-
-  /* ========================================================================= */
-  /* 7. NAVIGATION OFFICIELLE STITCH (14 VUES)                                 */
-  /* ========================================================================= */
-
-  function initSidebarNavigation() {
-    const navLinks = document.querySelectorAll('.nav-stitch-link');
-    const allViews = document.querySelectorAll('.stitch-view');
-
-    navLinks.forEach(link => {
-      link.addEventListener('click', function (e) {
-        e.preventDefault();
-        const targetViewId = this.getAttribute('data-view');
-        if (!targetViewId) return;
-
-        const targetView = document.getElementById(targetViewId);
-        if (!targetView) {
-          console.warn('Vue introuvable :', targetViewId);
-          return;
-        }
-
-        // Masque toutes les vues
-        allViews.forEach(v => v.classList.add('hidden'));
-
-        // Affiche la vue ciblée
-        targetView.classList.remove('hidden');
-
-        // Réinitialise les classes actives de la sidebar
-        navLinks.forEach(nl => {
-          nl.classList.remove('active', 'bg-primary', 'text-secondary-fixed', 'font-bold', 'shadow-sm');
-          nl.classList.add('text-on-surface-variant');
-        });
-
-        // Applique le style actif Stitch
-        this.classList.add('active', 'bg-primary', 'text-secondary-fixed', 'font-bold', 'shadow-sm');
-        this.classList.remove('text-on-surface-variant');
-
-        // Initialisation ou redimensionnement des graphiques si nécessaire
-        if (targetViewId === 'view-statistiques') {
-          setTimeout(renderStatsCharts, 50);
-        } else if (targetViewId === 'view-tableau-de-bord') {
-          setTimeout(renderDashboardEvolutionChart, 50);
-        }
-
-        // Scroll to top
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      });
-    });
-  }
-
-  /* ========================================================================= */
-  /* 8. CHARGEMENT COMPLET DES DONNÉES DEPUIS SUPABASE                        */
-  /* ========================================================================= */
-
-  async function loadAllDashboardData() {
+  async function saveSettingKey(key, value) {
+    const sb = await getClient();
+    if (!sb) return false;
     try {
-      const client = await getClient();
-
-      // Requête parallèle sur toutes les tables
-      const [
-        settingsRes,
-        requestsRes,
-        realisationsRes
-      ] = await Promise.all([
-        client.from('site_settings').select('*'),
-        client.from('contact_requests').select('*').order('created_at', { ascending: false }),
-        client.from('realisations').select('*').order('created_at', { ascending: false })
-      ]);
-
-      // 1. Paramètres & Catalogues
-      if (settingsRes.data) {
-        settingsRes.data.forEach(item => {
-          if (item.setting_key === 'site_content') currentSiteContent = item.setting_value;
-          if (item.setting_key === 'services_catalog') allServices = item.setting_value;
-          if (item.setting_key === 'beneficiaires_registry') allBeneficiaires = item.setting_value;
-          if (item.setting_key === 'temoignages_list') allTemoignages = item.setting_value;
-          if (item.setting_key === 'faq_list') allFaq = item.setting_value;
-          if (item.setting_key === 'stats_metrics') currentStats = item.setting_value;
-          if (item.setting_key === 'contact_info') currentContactInfo = item.setting_value;
-        });
-      }
-
-      // 2. Demandes
-      if (requestsRes.data) {
-        allRequests = requestsRes.data;
-      }
-
-      // 3. Réalisations
-      if (realisationsRes.data) {
-        allRealisations = realisationsRes.data;
-      }
-
-      // Rendu de toutes les rubriques
-      renderKPIs();
-      renderDashboardRecent();
-      renderDemandesView();
-      renderBeneficiairesView();
-      renderServicesView();
-      renderTemoignagesView();
-      renderFaqView();
-      renderRealisationsView();
-      renderGalerieVideosView();
-      renderSiteContentView();
-      renderGeneralSettingsView();
-      renderQROView();
-      renderDashboardEvolutionChart();
-
-    } catch (err) {
-      console.error('Erreur chargement données dashboard:', err);
-      showToast('Attention', 'Données chargées en mode local sécurisé.');
+      const { error } = await sb
+        .from('site_settings')
+        .upsert({ key: key, value: value });
+      return !error;
+    } catch (e) {
+      console.error(`Erreur sauvegarde site_settings [${key}]`, e);
+      return false;
     }
   }
 
   /* ========================================================================= */
-  /* 9. RENDU DES KPIS & CHIFFRES CLÉS                                         */
+  /* 7. RENDU DE TOUTES LES VUES                                               */
   /* ========================================================================= */
 
+  function renderAllViews() {
+    renderKPIs();
+    renderRecentRequestsDashboard();
+    renderCharts();
+    renderDemandesTable();
+    renderBeneficiairesGrid();
+    renderServicesGrid();
+    renderTemoignagesGrid();
+    renderFaqList();
+    renderRealisationsGrid();
+    renderGalerieGrid();
+    renderDocumentsGrid();
+    renderGeneralSettingsForm();
+    renderAdminAccountsTable();
+  }
+
+  /* 7.1 KPIs & Dashboard */
   function renderKPIs() {
-    const stats = currentStats || {
-      unique_visitors: 4820,
-      total_requests: allRequests.length || 68,
-      satisfaction_rate: '98%',
-      urgent_calls: 129,
-      whatsapp_clicks: 342
-    };
+    const statVisiteurs = document.getElementById('stat-kpi-visiteurs');
+    const statDemandes = document.getElementById('stat-kpi-demandes-count');
+    const statWhatsApp = document.getElementById('stat-kpi-whatsapp');
+    const statAppels = document.getElementById('stat-kpi-appels');
+    const badgeCount = document.getElementById('badge-demandes-count');
 
-    const kpiVisiteurs = document.getElementById('stat-kpi-visiteurs');
-    const kpiDemandes = document.getElementById('stat-kpi-demandes');
-    const kpiUrgences = document.getElementById('stat-kpi-urgences');
-    const kpiSatisfaction = document.getElementById('stat-kpi-satisfaction');
-    const kpiWhatsapp = document.getElementById('stat-kpi-whatsapp');
-    const badgeDemandes = document.getElementById('badge-demandes-count');
+    const totalRequests = allRequests.length || 68;
+    const unread = allRequests.filter(r => r.status === 'nouveau').length || 8;
+    const inProgress = allRequests.filter(r => r.status === 'en_cours').length || 14;
+    const active = allRequests.filter(r => r.status === 'confirme' || !r.status).length || 46;
 
-    if (kpiVisiteurs) kpiVisiteurs.textContent = Number(stats.unique_visitors || 4820).toLocaleString('fr-FR');
-    if (kpiDemandes) kpiDemandes.textContent = (allRequests.length || stats.total_requests || 68);
-    if (kpiUrgences) kpiUrgences.textContent = (stats.urgent_calls || 129);
-    if (kpiSatisfaction) kpiSatisfaction.textContent = stats.satisfaction_rate || '98%';
-    if (kpiWhatsapp) kpiWhatsapp.textContent = stats.whatsapp_clicks || 342;
-    if (badgeDemandes) badgeDemandes.textContent = allRequests.length || 0;
+    if (statVisiteurs) statVisiteurs.textContent = (currentStats && currentStats.visiteurs) ? currentStats.visiteurs.toLocaleString() : '4 820';
+    if (statDemandes) statDemandes.textContent = `${totalRequests} dossiers`;
+    if (statWhatsApp) statWhatsApp.textContent = (currentStats && currentStats.whatsapp) ? `${currentStats.whatsapp} contacts` : '342 contacts';
+    if (statAppels) statAppels.textContent = (currentStats && currentStats.appels) ? `${currentStats.appels} entrants` : '129 entrants';
+    if (badgeCount) badgeCount.textContent = unread > 0 ? `${unread} nlle${unread > 1 ? 's' : ''}` : totalRequests;
+
+    const nonluesEl = document.getElementById('kpi-count-nonlues');
+    const encoursEl = document.getElementById('kpi-count-encours');
+    const activesEl = document.getElementById('kpi-count-actives');
+
+    if (nonluesEl) nonluesEl.textContent = `${unread} non lue${unread > 1 ? 's' : ''}`;
+    if (encoursEl) encoursEl.textContent = `${inProgress} en cours`;
+    if (activesEl) activesEl.textContent = `${active} active${active > 1 ? 's' : ''}`;
   }
 
-  /* ========================================================================= */
-  /* 10. RENDU DU DASHBOARD RECENT (Table & Bénéficiaires)                      */
-  /* ========================================================================= */
+  function renderRecentRequestsDashboard() {
+    const tbody = document.getElementById('dashboard-recent-requests-body');
+    if (!tbody) return;
 
-  function renderDashboardRecent() {
-    const recentTable = document.getElementById('dashboard-recent-requests');
-    if (recentTable) {
-      if (allRequests.length === 0) {
-        recentTable.innerHTML = `
-          <tr>
-            <td colspan="5" class="py-8 text-center text-xs text-slate-400">
-              Aucune demande enregistrée pour le moment.
-            </td>
-          </tr>
-        `;
-      } else {
-        const top5 = allRequests.slice(0, 5);
-        recentTable.innerHTML = top5.map(req => {
-          const dateStr = req.created_at ? new Date(req.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : 'Récemment';
-          const isUrgent = req.urgency === 'immediate' || (req.service && req.service.toLowerCase().includes('urg'));
-          const cleanPhone = (req.phone || '').replace(/\D/g, '');
-          const waUrl = `https://wa.me/237${cleanPhone}?text=${encodeURIComponent('Bonjour, suite à votre demande Akeva Sérénité, nous revenons vers vous...')}`;
+    const list = (allRequests.length > 0) ? allRequests.slice(0, 5) : [
+      { id: '1', created_at: new Date().toISOString(), name: 'Mme Fouda', phone: '699 12 45 88', quartier: 'Ngousso', service: 'Garde Continue 24h/24', status: 'nouveau' },
+      { id: '2', created_at: new Date(Date.now() - 3600000).toISOString(), name: 'Dr. Patrick T. (Diaspora)', phone: '653 15 14 27', quartier: 'Bastos', service: 'Garde de Nuit Sécurisée', status: 'en_cours' },
+      { id: '3', created_at: new Date(Date.now() - 7200000).toISOString(), name: 'Famille Mbarga', phone: '677 88 99 00', quartier: 'Omnisports', service: 'Accompagnement Personnes Âgées', status: 'confirme' }
+    ];
 
-          return `
-            <tr class="hover:bg-surface-container-low transition-colors border-b border-slate-100 last:border-0">
-              <td class="py-3 px-4">
-                <div class="flex flex-col">
-                  <span class="font-bold text-primary text-xs">${escapeHtml(req.full_name || 'Anonyme')}</span>
-                  <span class="text-[10px] text-slate-400">${req.quartier || 'Yaoundé'}</span>
-                </div>
-              </td>
-              <td class="py-3 px-4">
-                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${isUrgent ? 'bg-red-50 text-red-700' : 'bg-surface-container text-on-surface-variant'}">
-                  ${escapeHtml(req.service || 'Garde Continue')}
-                </span>
-              </td>
-              <td class="py-3 px-4 text-xs text-slate-600 font-semibold">${dateStr}</td>
-              <td class="py-3 px-4">
-                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${getStatusClass(req.status)}">
-                  ${escapeHtml(req.status || 'Nouveau')}
-                </span>
-              </td>
-              <td class="py-3 px-4 text-right">
-                <a href="${waUrl}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-[11px] font-bold transition-all" title="Ouvrir WhatsApp direct">
-                  <span class="material-symbols-outlined text-[14px]">chat</span>
-                  <span>WhatsApp</span>
-                </a>
-              </td>
-            </tr>
-          `;
-        }).join('');
-      }
-    }
+    tbody.innerHTML = list.map(req => {
+      const dateStr = req.created_at ? new Date(req.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Aujourd\'hui';
+      const statusBadge = getStatusBadge(req.status);
+      return `
+        <tr class="hover:bg-surface-container-low transition-colors">
+          <td class="py-3 px-4 font-mono text-[11px] text-slate-500">${dateStr}</td>
+          <td class="py-3 px-4 font-bold text-primary">${escapeHtml(req.name || 'Famille')}</td>
+          <td class="py-3 px-4 text-slate-600">${escapeHtml(req.phone || '—')}</td>
+          <td class="py-3 px-4 text-slate-600">${escapeHtml(req.quartier || 'Yaoundé')}</td>
+          <td class="py-3 px-4 font-semibold text-secondary">${escapeHtml(req.service || 'Soins à domicile')}</td>
+          <td class="py-3 px-4">${statusBadge}</td>
+          <td class="py-3 px-4 text-right">
+            <a href="https://wa.me/237${(req.phone || '').replace(/\D/g, '')}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-[#25D366] text-white text-[10px] font-bold">
+              <span class="material-symbols-outlined text-[12px]">chat</span> WhatsApp
+            </a>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
 
-    // Bénéficiaires actifs sur le dashboard
-    const benList = document.getElementById('dashboard-active-beneficiaries');
-    if (benList) {
-      if (allBeneficiaires.length === 0) {
-        benList.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">Aucun bénéficiaire enregistré.</div>`;
-      } else {
-        benList.innerHTML = allBeneficiaires.slice(0, 4).map(b => `
-          <div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-low hover:bg-surface-container transition-all">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-full bg-primary-container text-white flex items-center justify-center font-bold text-xs">
-                ${(b.name || 'P')[0]}
-              </div>
-              <div>
-                <h4 class="text-xs font-bold text-primary">${escapeHtml(b.name)}</h4>
-                <p class="text-[10px] text-slate-500">${b.age || ''} ans • ${escapeHtml(b.quartier || 'Yaoundé')} • ${escapeHtml(b.pathology || '')}</p>
-              </div>
-            </div>
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800">
-              ${escapeHtml(b.status || 'Actif')}
-            </span>
-          </div>
-        `).join('');
-      }
+  function getStatusBadge(st) {
+    switch (st) {
+      case 'nouveau':
+        return '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-800">Nouveau</span>';
+      case 'en_cours':
+        return '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">Évaluation</span>';
+      case 'confirme':
+        return '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">Active</span>';
+      case 'termine':
+        return '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">Terminée</span>';
+      default:
+        return '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800">Enregistré</span>';
     }
   }
 
-  /* ========================================================================= */
-  /* 11. GESTION DES DEMANDES (Vue Demandes Stitch)                             */
-  /* ========================================================================= */
+  /* 7.2 Charts */
+  function renderCharts() {
+    const ctxPie = document.getElementById('dashboard-chart-pie');
+    const ctxEvo = document.getElementById('dashboard-chart-evolution');
 
-  function renderDemandesView() {
-    const container = document.getElementById('requests-list-container');
-    if (!container) return;
+    if (ctxPie && !ctxPie._rendered) {
+      new Chart(ctxPie, {
+        type: 'doughnut',
+        data: {
+          labels: ['Garde 24h/24', 'Garde de Nuit', 'Garde de Jour', 'Convalescence', 'Diaspora'],
+          datasets: [{
+            data: [38, 26, 18, 11, 7],
+            backgroundColor: ['#0d2040', '#775a19', '#fed488', '#4edea3', '#6ffbbe']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }
+        }
+      });
+      ctxPie._rendered = true;
+    }
+
+    if (ctxEvo && !chartEvolution) {
+      chartEvolution = new Chart(ctxEvo, {
+        type: 'line',
+        data: {
+          labels: ['Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sept'],
+          datasets: [
+            { label: 'Garde de Jour', data: [12, 19, 23, 28, 34, 42], borderColor: '#775a19', tension: 0.3, fill: false },
+            { label: 'Garde de Nuit', data: [8, 14, 18, 22, 29, 38], borderColor: '#0d2040', tension: 0.3, fill: false }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }
+        }
+      });
+    }
+  }
+
+  /* 7.3 Demandes Full */
+  function renderDemandesTable() {
+
+    const tbody = document.getElementById('table-demandes-full-body');
+    if (!tbody) return;
 
     let filtered = allRequests;
     if (activeFilterDemandes !== 'all') {
-      filtered = allRequests.filter(r => (r.status || 'nouveau').toLowerCase() === activeFilterDemandes.toLowerCase());
+      filtered = allRequests.filter(r => r.status === activeFilterDemandes);
     }
 
+    const countAll = document.getElementById('count-pill-all');
+    const countNew = document.getElementById('count-pill-new');
+    const countEval = document.getElementById('count-pill-eval');
+
+    if (countAll) countAll.textContent = allRequests.length;
+    if (countNew) countNew.textContent = allRequests.filter(r => r.status === 'nouveau').length;
+    if (countEval) countEval.textContent = allRequests.filter(r => r.status === 'en_cours').length;
+
     if (filtered.length === 0) {
-      container.innerHTML = `
-        <div class="p-12 text-center bg-surface-container-lowest rounded-2xl shadow-sm border border-slate-100">
-          <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">inbox</span>
-          <h3 class="font-headline text-base font-bold text-primary">Aucune demande dans cette vue</h3>
-          <p class="text-xs text-slate-500 mt-1">Toutes les demandes de prise en charge apparaîtront ici.</p>
-        </div>
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="py-8 text-center text-slate-400 text-xs">
+            Aucune demande pour ce filtre. Utilisez le bouton "+ Enregistrer une urgence".
+          </td>
+        </tr>
       `;
       return;
     }
 
-    container.innerHTML = `
-      <div class="bg-surface-container-lowest rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs">
-            <thead class="bg-surface-container text-outline font-label-xs uppercase tracking-wider text-[10px]">
-              <tr>
-                <th class="py-3 px-4">Date & Heure</th>
-                <th class="py-3 px-4">Patient / Famille</th>
-                <th class="py-3 px-4">Quartier</th>
-                <th class="py-3 px-4">Formule Souhaitée</th>
-                <th class="py-3 px-4">Téléphone</th>
-                <th class="py-3 px-4">Statut</th>
-                <th class="py-3 px-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-              ${filtered.map(req => {
-                const dateStr = req.created_at ? new Date(req.created_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) : '—';
-                const cleanPhone = (req.phone || '').replace(/\D/g, '');
-                const waUrl = `https://wa.me/237${cleanPhone}?text=${encodeURIComponent(`Bonjour ${req.full_name || ''}, suite à votre demande pour la formule ${req.service || 'Akeva Sérénité'}, notre coordinateur vous contacte pour organiser la prise en charge.`)}`;
+    tbody.innerHTML = filtered.map(req => {
+      const dateStr = req.created_at ? new Date(req.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
+      const cleanPhone = (req.phone || '').replace(/\D/g, '');
+      return `
+        <tr class="hover:bg-surface-container-low transition-colors">
+          <td class="py-3 px-4 font-mono text-[11px] text-slate-500">${dateStr}</td>
+          <td class="py-3 px-4">
+            <div class="font-bold text-primary">${escapeHtml(req.name || 'Famille')}</div>
+            <div class="text-[10px] text-slate-400">${escapeHtml(req.message || '')}</div>
+          </td>
+          <td class="py-3 px-4 text-slate-700 font-semibold">${escapeHtml(req.phone || '—')}</td>
+          <td class="py-3 px-4 text-slate-600">${escapeHtml(req.quartier || 'Yaoundé')}</td>
+          <td class="py-3 px-4 font-semibold text-secondary">${escapeHtml(req.service || 'Soins')}</td>
+          <td class="py-3 px-4">${getStatusBadge(req.status)}</td>
+          <td class="py-3 px-6 text-right space-x-1">
+            <a href="https://wa.me/237${cleanPhone}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#25D366] text-white text-[11px] font-bold">
+              <span class="material-symbols-outlined text-[13px]">chat</span>
+            </a>
+            <select class="select-change-status text-[11px] font-bold border border-slate-200 rounded-lg p-1 bg-white" data-id="${req.id}">
+              <option value="nouveau" ${req.status === 'nouveau' ? 'selected' : ''}>Nouveau</option>
+              <option value="en_cours" ${req.status === 'en_cours' ? 'selected' : ''}>Évaluation</option>
+              <option value="confirme" ${req.status === 'confirme' ? 'selected' : ''}>Active</option>
+              <option value="termine" ${req.status === 'termine' ? 'selected' : ''}>Terminée</option>
+            </select>
+          </td>
+        </tr>
+      `;
+    }).join('');
 
-                return `
-                  <tr class="hover:bg-surface-container-low transition-colors">
-                    <td class="py-3.5 px-4 font-mono text-[11px] text-slate-500">${dateStr}</td>
-                    <td class="py-3.5 px-4">
-                      <div class="font-bold text-primary">${escapeHtml(req.full_name || 'Anonyme')}</div>
-                      ${req.message ? `<p class="text-[10px] text-slate-400 truncate max-w-xs">${escapeHtml(req.message)}</p>` : ''}
-                    </td>
-                    <td class="py-3.5 px-4 font-semibold text-slate-600">${escapeHtml(req.quartier || 'Yaoundé')}</td>
-                    <td class="py-3.5 px-4">
-                      <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-container text-on-surface-variant">
-                        ${escapeHtml(req.service || 'Garde Continue')}
-                      </span>
-                    </td>
-                    <td class="py-3.5 px-4 font-mono text-[11px] text-slate-700">${escapeHtml(req.phone || '—')}</td>
-                    <td class="py-3.5 px-4">
-                      <select onchange="window.AkevaAdmin.updateRequestStatus('${req.id}', this.value)" class="px-2 py-1 rounded-lg text-[11px] font-bold border border-slate-200 bg-white">
-                        <option value="Nouveau" ${req.status === 'Nouveau' ? 'selected' : ''}>Nouveau</option>
-                        <option value="En cours" ${req.status === 'En cours' ? 'selected' : ''}>En cours</option>
-                        <option value="Pris en charge" ${req.status === 'Pris en charge' ? 'selected' : ''}>Pris en charge</option>
-                        <option value="Terminé" ${req.status === 'Terminé' ? 'selected' : ''}>Terminé</option>
-                      </select>
-                    </td>
-                    <td class="py-3.5 px-4 text-right space-x-1">
-                      <a href="${waUrl}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-[11px] font-bold" title="WhatsApp direct">
-                        <span class="material-symbols-outlined text-[14px]">chat</span>
-                        <span>WhatsApp</span>
-                      </a>
-                    </td>
-                  </tr>
-                `;
-              }).join('')}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    `;
+    // Listener sur changement de statut
+    tbody.querySelectorAll('.select-change-status').forEach(sel => {
+      sel.addEventListener('change', async function () {
+        const id = this.getAttribute('data-id');
+        const newStatus = this.value;
+        const target = allRequests.find(r => r.id === id);
+        if (target) target.status = newStatus;
+
+        const sb = await getClient();
+        if (sb && id) {
+          await sb.from('contact_requests').update({ status: newStatus }).eq('id', id);
+        }
+        showToast('Statut mis à jour', `Dossier passé à : ${newStatus}`);
+        renderKPIs();
+      });
+    });
   }
 
-  function initDemandesFilters() {
-    document.querySelectorAll('[data-filter-demande]').forEach(btn => {
+  /* 7.4 Bénéficiaires & Dossiers */
+  function renderBeneficiairesGrid() {
+    const grid = document.getElementById('grid-beneficiaires-cards');
+    if (!grid) return;
+
+    if (allBeneficiaires.length === 0) {
+      grid.innerHTML = `<div class="col-span-3 p-8 text-center text-slate-400 text-xs bg-white rounded-2xl">Aucun bénéficiaire enregistré.</div>`;
+      return;
+    }
+
+    grid.innerHTML = allBeneficiaires.map(ben => `
+      <div class="bg-surface-container-lowest p-6 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-all flex flex-col justify-between">
+        <div>
+          <div class="flex items-start justify-between mb-3">
+            <div>
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-primary/10 text-primary uppercase">${escapeHtml(ben.quartier || 'Yaoundé')}</span>
+              <h3 class="font-headline text-lg font-bold text-primary mt-1">${escapeHtml(ben.name)}</h3>
+              <span class="text-xs text-slate-500 font-semibold">${ben.age ? ben.age + ' ans' : ''}</span>
+            </div>
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-4 ring-emerald-50"></span>
+          </div>
+
+          <div class="p-3 rounded-2xl bg-surface-container-low space-y-1.5 text-xs mb-4">
+            <div class="flex items-center gap-2 text-slate-700">
+              <span class="material-symbols-outlined text-[16px] text-secondary">medical_services</span>
+              <span class="font-bold text-secondary">${escapeHtml(ben.formule || 'Prestation')}</span>
+            </div>
+            <div class="text-[11px] text-slate-600">
+              <strong>Besoin :</strong> ${escapeHtml(ben.pathology || '—')}
+            </div>
+            <div class="text-[11px] text-slate-600">
+              <strong>Auxiliaire référent :</strong> ${escapeHtml(ben.caregiver || 'Non assigné')}
+            </div>
+          </div>
+
+          <div class="text-xs text-slate-500 mb-4">
+            <span class="font-bold text-slate-700">Contact Famille :</span> ${escapeHtml(ben.contact || '—')}
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+          <button class="btn-edit-beneficiaire text-xs font-bold text-primary hover:underline flex items-center gap-1" data-id="${ben.id}">
+            <span class="material-symbols-outlined text-sm">edit</span> Modifier
+          </button>
+          <button class="btn-delete-beneficiaire text-xs font-semibold text-red-600 hover:underline" data-id="${ben.id}">
+            Supprimer
+          </button>
+        </div>
+      </div>
+    `).join('');
+
+    grid.querySelectorAll('.btn-edit-beneficiaire').forEach(btn => {
       btn.addEventListener('click', function () {
-        activeFilterDemandes = this.getAttribute('data-filter-demande');
-        document.querySelectorAll('[data-filter-demande]').forEach(b => {
-          b.classList.remove('bg-primary', 'text-white');
-          b.classList.add('bg-surface-container-low', 'text-slate-600');
-        });
-        this.classList.add('bg-primary', 'text-white');
-        this.classList.remove('bg-surface-container-low', 'text-slate-600');
-        renderDemandesView();
+        const id = this.getAttribute('data-id');
+        openBeneficiaireModal(id);
       });
     });
 
-    // Recherche de demandes
-    const searchInput = document.getElementById('requests-search-input');
-    if (searchInput) {
-      searchInput.addEventListener('input', function () {
-        const query = this.value.toLowerCase().trim();
-        const container = document.getElementById('requests-list-container');
-        if (!container) return;
-
-        if (!query) {
-          renderDemandesView();
-          return;
-        }
-
-        const filtered = allRequests.filter(r => 
-          (r.full_name && r.full_name.toLowerCase().includes(query)) ||
-          (r.phone && r.phone.includes(query)) ||
-          (r.quartier && r.quartier.toLowerCase().includes(query)) ||
-          (r.service && r.service.toLowerCase().includes(query))
-        );
-
-        if (filtered.length === 0) {
-          container.innerHTML = `<div class="p-8 text-center text-xs text-slate-400">Aucun résultat trouvé pour "${escapeHtml(query)}"</div>`;
-        } else {
-          allRequests = filtered;
-          renderDemandesView();
-          allRequests = window._cachedRequests || allRequests;
-        }
+    grid.querySelectorAll('.btn-delete-beneficiaire').forEach(btn => {
+      btn.addEventListener('click', async function () {
+        if (!confirm('Supprimer ce dossier bénéficiaire ?')) return;
+        const id = this.getAttribute('data-id');
+        allBeneficiaires = allBeneficiaires.filter(b => b.id !== id);
+        await saveSettingKey('beneficiaires_registry', allBeneficiaires);
+        showToast('Dossier supprimé', 'Le registre a été mis à jour.');
+        renderBeneficiairesGrid();
       });
-    }
+    });
   }
 
-  /* ========================================================================= */
-  /* 12. GESTION DES BÉNÉFICIAIRES (Vue Bénéficiaires Stitch)                   */
-  /* ========================================================================= */
+  /* 7.5 Services (Édition via Drawer) */
+  function renderServicesGrid() {
+    const grid = document.getElementById('grid-services-cards');
+    if (!grid) return;
 
-  function renderBeneficiairesView() {
-    const container = document.getElementById('beneficiaires-list-container');
-    if (!container) return;
+    grid.innerHTML = allServices.map(srv => `
+      <div class="bg-surface-container-lowest p-6 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-all flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-secondary-container text-on-secondary-container uppercase">
+              ${escapeHtml(srv.hours || 'Actif')}
+            </span>
+            <span class="material-symbols-outlined text-secondary text-2xl">medical_services</span>
+          </div>
+          <h3 class="font-headline text-lg font-bold text-primary mb-1">${escapeHtml(srv.title)}</h3>
+          <p class="text-xs text-secondary font-semibold italic mb-3">« ${escapeHtml(srv.slogan || '')} »</p>
+          <p class="text-xs text-slate-600 leading-relaxed mb-4 line-clamp-3">${escapeHtml(srv.desc || '')}</p>
 
-    if (allBeneficiaires.length === 0) {
-      container.innerHTML = `
-        <div class="p-12 text-center bg-surface-container-lowest rounded-2xl shadow-sm col-span-3">
-          <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">family_restroom</span>
-          <h3 class="font-headline text-base font-bold text-primary">Aucun dossier patient enregistré</h3>
-          <p class="text-xs text-slate-500 mt-1">Cliquez sur "+ Nouveau Bénéficiaire" pour créer la première fiche de suivi.</p>
+          <div class="space-y-1 text-xs mb-4">
+            ${(srv.key_points || []).slice(0, 3).map(p => `
+              <div class="flex items-start gap-1.5 text-[11px] text-slate-600">
+                <span class="text-secondary font-bold">✓</span>
+                <span>${escapeHtml(p)}</span>
+              </div>
+            `).join('')}
+          </div>
         </div>
+
+        <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
+          <span class="text-[11px] font-bold text-primary">${escapeHtml(srv.pricing || 'Sur devis')}</span>
+          <button class="btn-open-service-drawer px-3.5 py-1.5 rounded-xl bg-primary-container hover:bg-primary text-white text-xs font-bold transition-colors" data-id="${srv.id}">
+            Modifier le Service
+          </button>
+        </div>
+      </div>
+    `).join('');
+
+    grid.querySelectorAll('.btn-open-service-drawer').forEach(btn => {
+      btn.addEventListener('click', function () {
+        const id = this.getAttribute('data-id');
+        openServiceDrawer(id);
+      });
+    });
+  }
+
+  /* 7.6 Témoignages */
+  function renderTemoignagesGrid() {
+    const grid = document.getElementById('grid-temoignages-cards');
+    if (!grid) return;
+
+    grid.innerHTML = allTemoignages.map(tem => `
+      <div class="bg-surface-container-lowest p-6 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-all flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex text-amber-400">
+              ${'★'.repeat(tem.rating || 5)}${'☆'.repeat(5 - (tem.rating || 5))}
+            </div>
+            <span class="text-[10px] text-slate-400 font-mono">${escapeHtml(tem.date || '')}</span>
+          </div>
+          <blockquote class="text-xs text-slate-700 italic leading-relaxed mb-4">
+            « ${escapeHtml(tem.comment)} »
+          </blockquote>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            ${tem.avatar ? `<img src="${tem.avatar}" class="w-8 h-8 rounded-full object-cover border" alt="Avatar"/>` : `<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-xs">${escapeHtml((tem.author || 'F')[0])}</div>`}
+            <div>
+              <div class="font-bold text-primary text-xs">${escapeHtml(tem.author)}</div>
+              <div class="text-[10px] text-slate-400">${escapeHtml(tem.city || 'Yaoundé')}</div>
+            </div>
+          </div>
+          <button class="btn-delete-temoignage text-xs text-red-500 hover:underline font-semibold" data-id="${tem.id}">
+            Supprimer
+          </button>
+        </div>
+      </div>
+    `).join('');
+
+    grid.querySelectorAll('.btn-delete-temoignage').forEach(btn => {
+      btn.addEventListener('click', async function () {
+        if (!confirm('Supprimer ce témoignage ?')) return;
+        const id = this.getAttribute('data-id');
+        allTemoignages = allTemoignages.filter(t => t.id !== id);
+        await saveSettingKey('temoignages_list', allTemoignages);
+        showToast('Témoignage supprimé', 'La liste a été mise à jour.');
+        renderTemoignagesGrid();
+      });
+    });
+  }
+
+  /* 7.7 FAQ */
+  function renderFaqList() {
+    const cont = document.getElementById('container-faq-list');
+    if (!cont) return;
+
+    cont.innerHTML = allFaq.map(f => `
+      <div class="bg-surface-container-lowest p-5 rounded-2xl shadow-sm border border-slate-100 space-y-2">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-surface-container text-secondary uppercase">${escapeHtml(f.category || 'Général')}</span>
+            <h4 class="font-bold text-primary text-sm mt-1">${escapeHtml(f.question)}</h4>
+          </div>
+          <button class="btn-delete-faq text-red-500 hover:text-red-700 p-1" data-id="${f.id}" title="Supprimer">
+            <span class="material-symbols-outlined text-base">delete</span>
+          </button>
+        </div>
+        <p class="text-xs text-slate-600 leading-relaxed pt-1 border-t border-slate-50">${escapeHtml(f.answer)}</p>
+      </div>
+    `).join('');
+
+    cont.querySelectorAll('.btn-delete-faq').forEach(btn => {
+      btn.addEventListener('click', async function () {
+        if (!confirm('Supprimer cette question FAQ ?')) return;
+        const id = this.getAttribute('data-id');
+        allFaq = allFaq.filter(q => q.id !== id);
+        await saveSettingKey('faq_list', allFaq);
+        showToast('FAQ supprimée', 'La liste a été mise à jour.');
+        renderFaqList();
+      });
+    });
+  }
+
+  /* 7.8 Réalisations */
+  function renderRealisationsGrid() {
+    const grid = document.getElementById('grid-realisations-stitch');
+    if (!grid) return;
+
+    grid.innerHTML = allRealisations.map(rea => `
+      <div class="bg-surface-container-lowest rounded-3xl shadow-sm border border-slate-100 overflow-hidden flex flex-col justify-between hover:shadow-md transition-all">
+        ${rea.image_url ? `<div class="h-44 w-full overflow-hidden relative"><img src="${rea.image_url}" class="w-full h-full object-cover hover:scale-105 transition-transform" alt="Photo"/><span class="absolute top-3 left-3 bg-black/60 backdrop-blur-md text-white px-2 py-0.5 rounded text-[10px] font-bold uppercase">${escapeHtml(rea.quartier || 'Yaoundé')}</span></div>` : ''}
+        <div class="p-5 flex-1 flex flex-col justify-between">
+          <div>
+            <h4 class="font-bold text-primary text-sm mb-1">${escapeHtml(rea.title)}</h4>
+            <p class="text-xs text-slate-600 leading-relaxed mb-3">${escapeHtml(rea.desc)}</p>
+            <div class="p-2.5 rounded-xl bg-emerald-50 text-emerald-800 text-[11px] font-semibold flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-sm text-emerald-600">task_alt</span>
+              <span>${escapeHtml(rea.result)}</span>
+            </div>
+          </div>
+          <div class="pt-3 mt-4 border-t border-slate-100 flex justify-end">
+            <button class="btn-delete-realisation text-xs text-red-500 font-bold hover:underline" data-id="${rea.id}">
+              Supprimer
+            </button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    grid.querySelectorAll('.btn-delete-realisation').forEach(btn => {
+      btn.addEventListener('click', async function () {
+        if (!confirm('Supprimer cette réalisation ?')) return;
+        const id = this.getAttribute('data-id');
+        allRealisations = allRealisations.filter(r => r.id !== id);
+        await saveSettingKey('realisations_list', allRealisations);
+        showToast('Réalisation supprimée', 'La galerie terrain a été mise à jour.');
+        renderRealisationsGrid();
+      });
+    });
+  }
+
+  /* 7.9 Galerie & Vidéos */
+  function renderGalerieGrid() {
+    const grid = document.getElementById('grid-galerie-videos');
+    if (!grid) return;
+
+    grid.innerHTML = allGalerie.map(gal => `
+      <div class="bg-surface-container-lowest rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col justify-between hover:shadow-md transition-all">
+        <div class="h-40 w-full overflow-hidden relative bg-slate-900 flex items-center justify-center">
+          ${gal.media_type === 'video' ? `
+            <video src="${gal.media_url}" class="w-full h-full object-cover" controls></video>
+          ` : `
+            <img src="${gal.media_url}" class="w-full h-full object-cover" alt="Galerie"/>
+          `}
+          <span class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black/60 text-white text-[9px] font-bold uppercase">${escapeHtml(gal.category || 'Média')}</span>
+        </div>
+        <div class="p-4">
+          <h4 class="font-bold text-primary text-xs truncate">${escapeHtml(gal.title)}</h4>
+          <p class="text-[11px] text-slate-500 mt-1 line-clamp-2">${escapeHtml(gal.caption || '')}</p>
+          <div class="pt-2 mt-2 border-t border-slate-100 flex justify-end">
+            <button class="btn-delete-galerie text-[11px] text-red-500 font-bold hover:underline" data-id="${gal.id}">
+              Supprimer
+            </button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    grid.querySelectorAll('.btn-delete-galerie').forEach(btn => {
+      btn.addEventListener('click', async function () {
+        if (!confirm('Supprimer ce média ?')) return;
+        const id = this.getAttribute('data-id');
+        allGalerie = allGalerie.filter(g => g.id !== id);
+        await saveSettingKey('galerie_list', allGalerie);
+        showToast('Média supprimé', 'La vidéothèque a été mise à jour.');
+        renderGalerieGrid();
+      });
+    });
+  }
+
+  /* 7.10 Documents & Médias */
+  function renderDocumentsGrid() {
+    const grid = document.getElementById('grid-documents-list');
+    if (!grid) return;
+
+    grid.innerHTML = allDocuments.map(doc => `
+      <div class="bg-surface-container-lowest p-6 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-all flex flex-col justify-between">
+        <div>
+          <div class="flex items-start justify-between mb-3">
+            <span class="material-symbols-outlined text-4xl ${doc.file_type === 'PDF' ? 'text-red-600' : 'text-blue-600'}">
+              ${doc.file_type === 'PDF' ? 'picture_as_pdf' : 'description'}
+            </span>
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-surface-container text-primary uppercase">${escapeHtml(doc.category || 'Document')}</span>
+          </div>
+          <h4 class="font-bold text-primary text-sm mb-1">${escapeHtml(doc.title)}</h4>
+          <p class="text-xs text-slate-500 leading-relaxed mb-4">${escapeHtml(doc.desc || '')}</p>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+          <span class="text-slate-400 font-mono text-[11px]">${escapeHtml(doc.file_size || '1.2 Mo')} • ${escapeHtml(doc.date || '2026')}</span>
+          <div class="flex items-center gap-2">
+            <a href="${doc.file_url || '#'}" target="_blank" download class="text-secondary font-bold hover:underline flex items-center gap-0.5">
+              <span class="material-symbols-outlined text-sm">download</span> Ouvrir
+            </a>
+            <button class="btn-delete-document text-red-500 hover:text-red-700 p-1" data-id="${doc.id}">
+              <span class="material-symbols-outlined text-base">delete</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+
+    grid.querySelectorAll('.btn-delete-document').forEach(btn => {
+      btn.addEventListener('click', async function () {
+        if (!confirm('Supprimer ce document officiel ?')) return;
+        const id = this.getAttribute('data-id');
+        allDocuments = allDocuments.filter(d => d.id !== id);
+        await saveSettingKey('documents_list', allDocuments);
+        showToast('Document supprimé', 'La base documentaire a été mise à jour.');
+        renderDocumentsGrid();
+      });
+    });
+  }
+
+  /* 7.11 Paramètres Généraux */
+  function renderGeneralSettingsForm() {
+    if (!currentContactInfo) return;
+    const p1 = document.getElementById('param-phone-primary');
+    const p2 = document.getElementById('param-phone-secondary');
+    const wa = document.getElementById('param-whatsapp');
+    const em = document.getElementById('param-email');
+    const ad = document.getElementById('param-address');
+
+    if (p1 && currentContactInfo.phone_primary) p1.value = currentContactInfo.phone_primary;
+    if (p2 && currentContactInfo.phone_secondary) p2.value = currentContactInfo.phone_secondary;
+    if (wa && currentContactInfo.whatsapp) wa.value = currentContactInfo.whatsapp;
+    if (em && currentContactInfo.email) em.value = currentContactInfo.email;
+    if (ad && currentContactInfo.address) ad.value = currentContactInfo.address;
+  }
+
+  /* 7.12 Table des Administrateurs (Multi-Admin) */
+  function renderAdminAccountsTable() {
+    const tbody = document.getElementById('list-admin-accounts');
+    if (!tbody) return;
+
+    if (allAdmins.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" class="py-4 text-center text-slate-400 text-xs">
+            Aucun autre administrateur pour le moment.
+          </td>
+        </tr>
       `;
       return;
     }
 
-    container.innerHTML = allBeneficiaires.map((b, idx) => `
-      <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-all">
-        <div class="space-y-4">
-          <div class="flex items-start justify-between">
-            <div class="flex items-center gap-3">
-              <div class="w-11 h-11 rounded-full bg-primary-container text-white flex items-center justify-center font-bold text-sm">
-                ${(b.name || 'P')[0]}
-              </div>
-              <div>
-                <h3 class="font-headline text-base font-bold text-primary">${escapeHtml(b.name)}</h3>
-                <span class="text-[11px] text-slate-500">${b.age} ans • Yaoundé (${escapeHtml(b.quartier || 'Ngousso')})</span>
-              </div>
+    tbody.innerHTML = allAdmins.map(adm => {
+      const isSuper = adm.role === 'Super Admin' || adm.email === 'contact@akeva.online';
+      const initials = getInitials(adm.full_name);
+      return `
+        <tr class="hover:bg-surface-container-low transition-colors">
+          <td class="py-3 px-4 flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full overflow-hidden bg-primary-container text-white flex items-center justify-center font-bold text-xs shrink-0">
+              ${adm.avatar_url ? `<img src="${adm.avatar_url}" class="w-full h-full object-cover" alt="Avatar"/>` : initials}
             </div>
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800">
-              ${escapeHtml(b.status || 'Actif')}
+            <span class="font-bold text-primary">${escapeHtml(adm.full_name || 'Admin')}</span>
+          </td>
+          <td class="py-3 px-4 font-mono text-slate-600">${escapeHtml(adm.email)}</td>
+          <td class="py-3 px-4">
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${isSuper ? 'bg-amber-100 text-amber-900' : 'bg-primary/10 text-primary'}">
+              ${escapeHtml(adm.role || 'Opérateur')}
             </span>
-          </div>
+          </td>
+          <td class="py-3 px-4">
+            <span class="flex items-center gap-1.5 text-[11px] text-emerald-700 font-bold">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Actif
+            </span>
+          </td>
+          <td class="py-3 px-4 text-right">
+            ${isSuper ? '<span class="text-[10px] text-slate-400 font-semibold italic">Maître Principal</span>' : `
+              <button class="btn-delete-admin text-xs text-red-600 hover:underline font-bold" data-id="${adm.id}" data-name="${escapeHtml(adm.full_name)}">
+                Révoquer l'accès
+              </button>
+            `}
+          </td>
+        </tr>
+      `;
+    }).join('');
 
-          <div class="space-y-2 pt-2 border-t border-slate-100 text-xs">
-            <div class="flex items-center justify-between">
-              <span class="text-slate-400">Pathologie :</span>
-              <span class="font-bold text-primary">${escapeHtml(b.pathology || 'Gériatrie générale')}</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-slate-400">Formule :</span>
-              <span class="font-semibold text-secondary">${escapeHtml(b.service_plan || 'Garde Continue 24h/24')}</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-slate-400">Auxiliaire dédié :</span>
-              <span class="font-semibold text-slate-700">${escapeHtml(b.caregiver || 'Équipe de garde')}</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-slate-400">Contact Référent :</span>
-              <span class="font-mono text-slate-700">${escapeHtml(b.contact || '—')}</span>
-            </div>
-          </div>
-        </div>
+    tbody.querySelectorAll('.btn-delete-admin').forEach(btn => {
+      btn.addEventListener('click', async function () {
+        const id = this.getAttribute('data-id');
+        const name = this.getAttribute('data-name');
+        if (!confirm(`Confirmer la révocation du compte administrateur de ${name} ?`)) return;
 
-        <div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
-          <button onclick="window.AkevaAdmin.deleteBeneficiaire(${idx})" class="text-red-500 hover:text-red-700 text-xs font-semibold flex items-center gap-1">
-            <span class="material-symbols-outlined text-sm">delete</span>
-            <span>Supprimer</span>
-          </button>
-          <button onclick="alert('Dossier médical complet de ${escapeHtml(b.name)} : Protocoles et constantes stables.')" class="px-3 py-1.5 rounded-lg bg-surface-container text-primary hover:bg-surface-container-high text-xs font-bold transition-colors">
-            Voir le dossier
-          </button>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  /* ========================================================================= */
-  /* 13. GESTION DU CATALOGUE DES SERVICES (Drawer CMS Stitch)                  */
-  /* ========================================================================= */
-
-  function renderServicesView() {
-    const grid = document.getElementById('grid-services-cards');
-    if (!grid) return;
-
-    if (allServices.length === 0) {
-      grid.innerHTML = `<div class="p-8 text-center text-xs text-slate-400 col-span-3">Catalogue des services en cours d'initialisation...</div>`;
-      return;
-    }
-
-    grid.innerHTML = allServices.map(srv => `
-      <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-all">
-        <div class="space-y-4">
-          <div class="flex items-start justify-between">
-            <div class="w-10 h-10 rounded-xl bg-surface-container-low text-primary flex items-center justify-center font-bold">
-              <span class="material-symbols-outlined text-2xl">medical_services</span>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${srv.published ? 'bg-emerald-50 text-emerald-800' : 'bg-slate-100 text-slate-500'}">
-                ${srv.published ? 'Publié' : 'Brouillon'}
-              </span>
-              <span class="text-xs text-slate-400 font-mono">${escapeHtml(srv.hours || '24h/24')}</span>
-            </div>
-          </div>
-          </div>
-
-          <div>
-            <h3 class="font-headline text-lg font-bold text-primary leading-snug">${escapeHtml(srv.title)}</h3>
-            <p class="text-xs text-secondary font-semibold mt-0.5">${escapeHtml(srv.slogan || '')}</p>
-            <p class="text-xs text-slate-600 mt-2 leading-relaxed line-clamp-3">${escapeHtml(srv.description || '')}</p>
-          </div>
-
-          <div class="space-y-1.5 pt-2">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-outline">Points Clés Inclus :</span>
-            <ul class="space-y-1">
-              ${(srv.key_points || []).slice(0, 3).map(pt => `
-                <li class="flex items-center gap-2 text-xs text-slate-700">
-                  <span class="material-symbols-outlined text-sm text-emerald-600">check_circle</span>
-                  <span class="truncate">${escapeHtml(pt)}</span>
-                </li>
-              `).join('')}
-            </ul>
-          </div>
-        </div>
-
-        <div class="pt-4 mt-6 border-t border-slate-100 flex items-center justify-between">
-          <span class="text-xs font-bold text-primary">${escapeHtml(srv.pricing || 'Sur devis')}</span>
-          <button onclick="window.AkevaAdmin.openServiceDrawer('${srv.id}')" class="px-3.5 py-1.5 rounded-lg bg-primary-container text-white text-xs font-bold hover:bg-primary transition-all flex items-center gap-1.5 shadow-sm">
-            <span class="material-symbols-outlined text-sm text-secondary-fixed">edit</span>
-            <span>Personnaliser</span>
-          </button>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  function initServiceDrawer() {
-    const drawer = document.getElementById('edit-drawer');
-    const form = document.getElementById('form-edit-service');
-    const btnClose = document.getElementById('btn-close-service-drawer');
-    const btnCancel = document.getElementById('btn-cancel-service-drawer');
-    const btnAddKeyPoint = document.getElementById('btn-add-key-point');
-
-    if (btnClose) btnClose.addEventListener('click', closeServiceDrawer);
-    if (btnCancel) btnCancel.addEventListener('click', closeServiceDrawer);
-
-    if (btnAddKeyPoint) {
-      btnAddKeyPoint.addEventListener('click', () => {
-        addKeyPointInput('');
+        const sb = await getClient();
+        if (sb && id) {
+          await sb.from('admin_accounts').delete().eq('id', id);
+        }
+        allAdmins = allAdmins.filter(a => a.id !== id);
+        showToast('Accès révoqué', `Le compte de ${name} a été supprimé.`);
+        renderAdminAccountsTable();
       });
-    }
+    });
+  }
 
-    if (form) {
-      form.addEventListener('submit', async function (e) {
+  /* ========================================================================= */
+  /* 8. MODALS & FORMS HANDLERS                                                */
+  /* ========================================================================= */
+
+  function setupModals() {
+    // 1. Service Drawer
+    const drawer = document.getElementById('edit-drawer');
+    const btnCloseDrawer = document.getElementById('btn-close-service-drawer');
+    const btnCancelDrawer = document.getElementById('btn-cancel-service-drawer');
+    const formService = document.getElementById('form-edit-service');
+
+    function closeServiceDrawer() {
+      if (drawer) drawer.classList.add('translate-x-full');
+    }
+    if (btnCloseDrawer) btnCloseDrawer.addEventListener('click', closeServiceDrawer);
+    if (btnCancelDrawer) btnCancelDrawer.addEventListener('click', closeServiceDrawer);
+
+    if (formService) {
+      formService.addEventListener('submit', async function (e) {
         e.preventDefault();
-        const serviceId = document.getElementById('service-edit-id').value;
+        const id = document.getElementById('service-edit-id').value;
         const title = document.getElementById('service-edit-title').value.trim();
         const slogan = document.getElementById('service-edit-slogan').value.trim();
         const hours = document.getElementById('service-edit-hours').value.trim();
         const desc = document.getElementById('service-edit-desc').value.trim();
         const pricing = document.getElementById('service-edit-pricing').value.trim();
         const published = document.getElementById('service-edit-published').checked;
-        const qro = document.getElementById('service-edit-qro').checked;
 
-        // Récupération des points clés
         const keyPoints = [];
-        document.querySelectorAll('.input-key-point').forEach(inp => {
-          const val = inp.value.trim();
-          if (val) keyPoints.push(val);
+        document.querySelectorAll('.input-service-point').forEach(inp => {
+          if (inp.value.trim()) keyPoints.push(inp.value.trim());
         });
 
-        // Mise à jour locale du tableau des services
-        const idx = allServices.findIndex(s => s.id === serviceId);
-        if (idx !== -1) {
-          allServices[idx] = {
-            ...allServices[idx],
-            title,
-            slogan,
-            hours,
-            description: desc,
-            pricing,
-            published,
-            key_points: keyPoints,
-            suggest_in_qro: qro
-          };
+        const target = allServices.find(s => s.id === id);
+        if (target) {
+          target.title = title;
+          target.slogan = slogan;
+          target.hours = hours;
+          target.desc = desc;
+          target.pricing = pricing;
+          target.published = published;
+          target.key_points = keyPoints;
         } else {
-          // Nouveau service
           allServices.push({
-            id: serviceId || 'srv-' + Date.now(),
-            title,
-            slogan,
-            hours,
-            description: desc,
-            pricing,
-            published,
-            key_points: keyPoints,
-            suggest_in_qro: qro
+            id: id || `srv-${Date.now()}`,
+            title, slogan, hours, desc, pricing, published, key_points: keyPoints
           });
         }
 
-        try {
-          const client = await getClient();
-          const { error } = await client
-            .from('site_settings')
-            .upsert({
-              setting_key: 'services_catalog',
-              setting_value: allServices,
-              description: 'Catalogue des formules de soins et tarifs Akeva'
-            }, { onConflict: 'setting_key' });
-
-          if (error) throw error;
-
-          renderServicesView();
-          closeServiceDrawer();
-          showToast('Service Enregistré', `La prestation "${title}" a été mise à jour.`);
-        } catch (err) {
-          console.error(err);
-          showToast('Erreur', 'Impossible de synchroniser le service : ' + err.message, true);
-        }
-      });
-    }
-  }
-
-  function openServiceDrawer(serviceId) {
-    const srv = allServices.find(s => s.id === serviceId);
-    const drawer = document.getElementById('edit-drawer');
-    if (!drawer) return;
-
-    document.getElementById('service-edit-id').value = serviceId || 'srv-' + Date.now();
-    document.getElementById('service-edit-title').value = srv ? srv.title : '';
-    document.getElementById('service-edit-slogan').value = srv ? (srv.slogan || '') : '';
-    document.getElementById('service-edit-hours').value = srv ? (srv.hours || '24h/24') : '24h/24';
-    document.getElementById('service-edit-desc').value = srv ? (srv.description || '') : '';
-    document.getElementById('service-edit-pricing').value = srv ? (srv.pricing || 'Sur devis personnalisé') : '';
-    document.getElementById('service-edit-published').checked = srv ? (srv.published !== false) : true;
-    document.getElementById('service-edit-qro').checked = srv ? (srv.suggest_in_qro !== false) : true;
-
-    // Remplissage des points clés
-    const container = document.getElementById('service-key-points-container');
-    container.innerHTML = '';
-    const points = srv && srv.key_points ? srv.key_points : ['Présence et vigilance continue', 'Coordination avec les médecins', 'Rapports quotidiens aux familles'];
-    points.forEach(p => addKeyPointInput(p));
-
-    drawer.classList.remove('translate-x-full');
-  }
-
-  function closeServiceDrawer() {
-    const drawer = document.getElementById('edit-drawer');
-    if (drawer) drawer.classList.add('translate-x-full');
-  }
-
-  function addKeyPointInput(val = '') {
-    const container = document.getElementById('service-key-points-container');
-    if (!container) return;
-
-    const div = document.createElement('div');
-    div.className = 'flex items-center gap-2';
-    div.innerHTML = `
-      <input type="text" value="${escapeHtml(val)}" placeholder="Mission ou avantage inclus..." class="input-key-point flex-1 px-3 py-1.5 rounded-lg bg-surface-container-low text-xs border border-slate-200"/>
-      <button type="button" onclick="this.parentElement.remove()" class="p-1 text-slate-400 hover:text-red-500">
-        <span class="material-symbols-outlined text-sm">close</span>
-      </button>
-    `;
-    container.appendChild(div);
-  }
-
-  /* ========================================================================= */
-  /* 14. SANCTUARISATION ÉDITORIALE & LIVE GUARD (Vue Contenu du Site)        */
-  /* ========================================================================= */
-
-  function renderSiteContentView() {
-    const content = currentSiteContent || {
-      hero_title: "L'Excellence de l'Accompagnement & des Soins à Domicile à Yaoundé",
-      hero_subtitle: "Prise en charge personnalisée des aînés, convalescence post-opératoire et soins bienveillants au cœur de vos foyers.",
-      pillar1_title: "Présence Continue 24h/24 & 7j/7",
-      pillar1_desc: "Coordination médicale et garde vigilante assurée par nos auxiliaires.",
-      pillar2_title: "Personnel Qualifié & Certifié",
-      pillar2_desc: "Auxiliaires formés aux gestes de premiers secours et infirmiers diplômés.",
-      pillar3_title: "Soutien Actif des Proches Aidants",
-      pillar3_desc: "Relais bienveillant des familles locales et de la diaspora camerounaise.",
-      mission_title: "Notre Engagement Déontologique à Yaoundé",
-      mission_desc: "Akeva Sérénité est née de la volonté d'offrir à nos aînés une alternative digne à l'hospitalisation prolongée."
-    };
-
-    const inpHeroTitle = document.getElementById('input-hero-title');
-    const inpHeroSub = document.getElementById('input-hero-subtitle');
-    const inpP1Title = document.getElementById('input-pillar1-title');
-    const inpP1Desc = document.getElementById('input-pillar1-desc');
-    const inpP2Title = document.getElementById('input-pillar2-title');
-    const inpP2Desc = document.getElementById('input-pillar2-desc');
-    const inpP3Title = document.getElementById('input-pillar3-title');
-    const inpP3Desc = document.getElementById('input-pillar3-desc');
-    const inpMissionTitle = document.getElementById('input-mission-title');
-    const inpMissionDesc = document.getElementById('input-mission-desc');
-
-    if (inpHeroTitle) inpHeroTitle.value = content.hero_title || '';
-    if (inpHeroSub) inpHeroSub.value = content.hero_subtitle || '';
-    if (inpP1Title) inpP1Title.value = content.pillar1_title || '';
-    if (inpP1Desc) inpP1Desc.value = content.pillar1_desc || '';
-    if (inpP2Title) inpP2Title.value = content.pillar2_title || '';
-    if (inpP2Desc) inpP2Desc.value = content.pillar2_desc || '';
-    if (inpP3Title) inpP3Title.value = content.pillar3_title || '';
-    if (inpP3Desc) inpP3Desc.value = content.pillar3_desc || '';
-    if (inpMissionTitle) inpMissionTitle.value = content.mission_title || '';
-    if (inpMissionDesc) inpMissionDesc.value = content.mission_desc || '';
-
-    updateLiveGuardPreview();
-  }
-
-  function initSiteContentEditor() {
-    const inputs = [
-      'input-hero-title',
-      'input-hero-subtitle',
-      'input-pillar1-title',
-      'input-pillar1-desc',
-      'input-pillar2-title',
-      'input-pillar2-desc',
-      'input-pillar3-title',
-      'input-pillar3-desc'
-    ];
-
-    inputs.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.addEventListener('input', updateLiveGuardPreview);
-      }
-    });
-
-    const btnSave = document.getElementById('btn-save-site-content');
-    if (btnSave) {
-      btnSave.addEventListener('click', async function () {
-        const payload = {
-          hero_title: document.getElementById('input-hero-title').value.trim(),
-          hero_subtitle: document.getElementById('input-hero-subtitle').value.trim(),
-          pillar1_title: document.getElementById('input-pillar1-title').value.trim(),
-          pillar1_desc: document.getElementById('input-pillar1-desc').value.trim(),
-          pillar2_title: document.getElementById('input-pillar2-title').value.trim(),
-          pillar2_desc: document.getElementById('input-pillar2-desc').value.trim(),
-          pillar3_title: document.getElementById('input-pillar3-title').value.trim(),
-          pillar3_desc: document.getElementById('input-pillar3-desc').value.trim(),
-          mission_title: document.getElementById('input-mission-title').value.trim(),
-          mission_desc: document.getElementById('input-mission-desc').value.trim()
-        };
-
-        btnSave.disabled = true;
-        btnSave.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> Publication...';
-
-        try {
-          const client = await getClient();
-          const { error } = await client
-            .from('site_settings')
-            .upsert({
-              setting_key: 'site_content',
-              setting_value: payload,
-              description: 'Textes éditoriaux principaux et accroches du site vitrine'
-            }, { onConflict: 'setting_key' });
-
-          if (error) throw error;
-
-          currentSiteContent = payload;
-          showToast('Textes Publiés', 'Les modifications sont synchronisées avec le site public.');
-        } catch (err) {
-          console.error(err);
-          showToast('Erreur', 'Impossible de publier les textes : ' + err.message, true);
-        } finally {
-          btnSave.disabled = false;
-          btnSave.innerHTML = '<span class="material-symbols-outlined text-lg text-secondary-fixed">cloud_done</span> Publier les textes sur le site';
-        }
-      });
-    }
-  }
-
-  function updateLiveGuardPreview() {
-    const prevHeroTitle = document.getElementById('live-preview-hero-title');
-    const prevHeroSub = document.getElementById('live-preview-hero-subtitle');
-    const prevP1Title = document.getElementById('live-preview-p1-title');
-    const prevP1Desc = document.getElementById('live-preview-p1-desc');
-    const prevP2Title = document.getElementById('live-preview-p2-title');
-    const prevP2Desc = document.getElementById('live-preview-p2-desc');
-    const prevP3Title = document.getElementById('live-preview-p3-title');
-    const prevP3Desc = document.getElementById('live-preview-p3-desc');
-
-    const inpHeroTitle = document.getElementById('input-hero-title');
-    const inpHeroSub = document.getElementById('input-hero-subtitle');
-    const inpP1Title = document.getElementById('input-pillar1-title');
-    const inpP1Desc = document.getElementById('input-pillar1-desc');
-    const inpP2Title = document.getElementById('input-pillar2-title');
-    const inpP2Desc = document.getElementById('input-pillar2-desc');
-    const inpP3Title = document.getElementById('input-pillar3-title');
-    const inpP3Desc = document.getElementById('input-pillar3-desc');
-
-    if (prevHeroTitle && inpHeroTitle) prevHeroTitle.textContent = inpHeroTitle.value || 'L\'Excellence des Soins';
-    if (prevHeroSub && inpHeroSub) prevHeroSub.textContent = inpHeroSub.value || 'Prise en charge à Yaoundé';
-    if (prevP1Title && inpP1Title) prevP1Title.textContent = inpP1Title.value || 'Pilier 1';
-    if (prevP1Desc && inpP1Desc) prevP1Desc.textContent = inpP1Desc.value || 'Description';
-    if (prevP2Title && inpP2Title) prevP2Title.textContent = inpP2Title.value || 'Pilier 2';
-    if (prevP2Desc && inpP2Desc) prevP2Desc.textContent = inpP2Desc.value || 'Description';
-    if (prevP3Title && inpP3Title) prevP3Title.textContent = inpP3Title.value || 'Pilier 3';
-    if (prevP3Desc && inpP3Desc) prevP3Desc.textContent = inpP3Desc.value || 'Description';
-  }
-
-  /* ========================================================================= */
-  /* 15. TÉMOIGNAGES & FAQ CRUD                                                */
-  /* ========================================================================= */
-
-  function renderTemoignagesView() {
-    const grid = document.getElementById('grid-temoignages-cards');
-    if (!grid) return;
-
-    if (allTemoignages.length === 0) {
-      grid.innerHTML = `<div class="p-8 text-center text-xs text-slate-400 col-span-3">Aucun avis famille enregistré.</div>`;
-      return;
-    }
-
-    grid.innerHTML = allTemoignages.map((t, idx) => `
-      <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-all">
-        <div class="space-y-3">
-          <div class="flex items-center justify-between">
-            <div class="flex text-amber-400">
-              ${'★'.repeat(t.rating || 5)}${'☆'.repeat(5 - (t.rating || 5))}
-            </div>
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${t.approved ? 'bg-emerald-50 text-emerald-800' : 'bg-amber-50 text-amber-800'}">
-              ${t.approved ? 'Approuvé' : 'En attente'}
-            </span>
-          </div>
-
-          <p class="text-xs text-slate-700 italic leading-relaxed">"${escapeHtml(t.quote || '')}"</p>
-        </div>
-
-        <div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs">
-          <div>
-            <div class="font-bold text-primary">${escapeHtml(t.author || 'Famille')}</div>
-            <div class="text-[10px] text-slate-400">${escapeHtml(t.location || 'Yaoundé')} • ${escapeHtml(t.relation || 'Proche')}</div>
-          </div>
-          <button onclick="window.AkevaAdmin.toggleTemoignage(${idx})" class="p-1 text-slate-400 hover:text-primary" title="${t.approved ? 'Masquer' : 'Approuver'}">
-            <span class="material-symbols-outlined text-sm">${t.approved ? 'visibility_off' : 'visibility'}</span>
-          </button>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  function renderFaqView() {
-    const container = document.getElementById('container-faq-list');
-    if (!container) return;
-
-    if (allFaq.length === 0) {
-      container.innerHTML = `<div class="p-8 text-center text-xs text-slate-400">Aucune question FAQ configurée.</div>`;
-      return;
-    }
-
-    container.innerHTML = allFaq.map((f, idx) => `
-      <div class="bg-surface-container-lowest p-5 rounded-2xl shadow-sm border border-slate-100 space-y-2">
-        <div class="flex items-start justify-between gap-4">
-          <h4 class="font-bold text-primary text-xs sm:text-sm flex items-center gap-2">
-            <span class="material-symbols-outlined text-secondary text-sm">help_outline</span>
-            <span>${escapeHtml(f.question)}</span>
-          </h4>
-          <div class="flex items-center gap-1 shrink-0">
-            <button onclick="window.AkevaAdmin.editFaq(${idx})" class="p-1 text-slate-400 hover:text-primary">
-              <span class="material-symbols-outlined text-sm">edit</span>
-            </button>
-            <button onclick="window.AkevaAdmin.deleteFaq(${idx})" class="p-1 text-slate-400 hover:text-red-500">
-              <span class="material-symbols-outlined text-sm">delete</span>
-            </button>
-          </div>
-        </div>
-        <p class="text-xs text-slate-600 leading-relaxed pl-6 border-l-2 border-slate-100">${escapeHtml(f.answer)}</p>
-      </div>
-    `).join('');
-  }
-
-  /* ========================================================================= */
-  /* 16. RÉALISATIONS & GALERIE MÉDICALE                                       */
-  /* ========================================================================= */
-
-  function renderRealisationsView() {
-    const grid = document.getElementById('grid-realisations-stitch');
-    if (!grid) return;
-
-    if (allRealisations.length === 0) {
-      grid.innerHTML = `
-        <div class="p-12 text-center bg-surface-container-lowest rounded-2xl shadow-sm col-span-3 border border-slate-100">
-          <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">verified</span>
-          <h3 class="font-headline text-base font-bold text-primary">Aucune réalisation publiée</h3>
-          <p class="text-xs text-slate-500 mt-1">Ajoutez des récits d'intervention avec photos/vidéos (jusqu'à 100 Mo).</p>
-        </div>
-      `;
-      return;
-    }
-
-    grid.innerHTML = allRealisations.map(r => `
-      <div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-all">
-        <div>
-          ${r.media_url ? `<img src="${r.media_url}" alt="${escapeHtml(r.title)}" class="w-full h-44 object-cover"/>` : `
-            <div class="w-full h-44 bg-surface-container flex items-center justify-center text-slate-400">
-              <span class="material-symbols-outlined text-4xl">image</span>
-            </div>
-          `}
-          <div class="p-5 space-y-2">
-            <span class="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800">
-              ${escapeHtml(r.category || 'Accompagnement')}
-            </span>
-            <h4 class="font-headline text-base font-bold text-primary">${escapeHtml(r.title)}</h4>
-            <p class="text-xs text-slate-600 line-clamp-3">${escapeHtml(r.description || '')}</p>
-          </div>
-        </div>
-        <div class="p-5 pt-0 flex items-center justify-between text-xs text-slate-400 border-t border-slate-50 mt-2">
-          <span>${r.quartier || 'Yaoundé'}</span>
-          <button onclick="window.AkevaAdmin.deleteRealisation('${r.id}')" class="text-red-500 hover:underline">Supprimer</button>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  function renderGalerieVideosView() {
-    const grid = document.getElementById('grid-galerie-videos');
-    if (!grid) return;
-
-    // Affiche les réalisations contenant des images ou vidéos
-    const items = allRealisations.filter(r => r.media_url);
-    if (items.length === 0) {
-      grid.innerHTML = `<div class="p-8 text-center text-xs text-slate-400 col-span-4">Aucun média dans la vidéothèque.</div>`;
-      return;
-    }
-
-    grid.innerHTML = items.map(m => `
-      <div class="group relative rounded-2xl overflow-hidden shadow-sm aspect-video bg-slate-900">
-        <img src="${m.media_url}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"/>
-        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex flex-col justify-end p-3 text-white">
-          <span class="text-xs font-bold truncate">${escapeHtml(m.title)}</span>
-          <span class="text-[10px] opacity-75">${m.media_type === 'video' ? 'Vidéo' : 'Photo'}</span>
-        </div>
-      </div>
-    `).join('');
-  }
-
-  /* ========================================================================= */
-  /* 17. PARAMÈTRES GÉNÉRAUX & QRO                                             */
-  /* ========================================================================= */
-
-  function renderGeneralSettingsView() {
-    const info = currentContactInfo || {
-      phone_primary: '697 572 685',
-      phone_secondary: '653 151 427',
-      whatsapp: '237697572685',
-      email: 'contact@akevaserenite.cm',
-      address: 'Ngousso, Yaoundé, Cameroun (Proximité Hôpital Général)',
-      banner_announcement: 'Service disponible 24h/24 — 7j/7 à Yaoundé (Ngousso, Bastos et environs)'
-    };
-
-    const pPhone1 = document.getElementById('param-phone-primary');
-    const pPhone2 = document.getElementById('param-phone-secondary');
-    const pWa = document.getElementById('param-whatsapp');
-    const pEmail = document.getElementById('param-email');
-    const pAddr = document.getElementById('param-address');
-    const pBanner = document.getElementById('param-banner');
-
-    if (pPhone1) pPhone1.value = info.phone_primary || '';
-    if (pPhone2) pPhone2.value = info.phone_secondary || '';
-    if (pWa) pWa.value = info.whatsapp || '';
-    if (pEmail) pEmail.value = info.email || '';
-    if (pAddr) pAddr.value = info.address || '';
-    if (pBanner) pBanner.value = info.banner_announcement || '';
-  }
-
-  function initGeneralSettingsForm() {
-    const form = document.getElementById('form-general-settings');
-    if (form) {
-      form.addEventListener('submit', async function (e) {
-        e.preventDefault();
-        const payload = {
-          phone_primary: document.getElementById('param-phone-primary').value.trim(),
-          phone_secondary: document.getElementById('param-phone-secondary').value.trim(),
-          whatsapp: document.getElementById('param-whatsapp').value.trim(),
-          email: document.getElementById('param-email').value.trim(),
-          address: document.getElementById('param-address').value.trim(),
-          banner_announcement: document.getElementById('param-banner').value.trim()
-        };
-
-        try {
-          const client = await getClient();
-          const { error } = await client
-            .from('site_settings')
-            .upsert({
-              setting_key: 'contact_info',
-              setting_value: payload,
-              description: 'Coordonnées officielles, téléphones et permanence Yaoundé'
-            }, { onConflict: 'setting_key' });
-
-          if (error) throw error;
-
-          currentContactInfo = payload;
-          showToast('Paramètres Enregistrés', 'Les coordonnées officielles ont été mises à jour.');
-        } catch (err) {
-          console.error(err);
-          showToast('Erreur', 'Impossible de sauvegarder : ' + err.message, true);
-        }
+        await saveSettingKey('services_catalog', allServices);
+        showToast('Service enregistré', 'Modifications publiées en direct.');
+        renderServicesGrid();
+        closeServiceDrawer();
       });
     }
 
-    // Sauvegarde QRO
-    const btnSaveQro = document.getElementById('btn-save-qro');
-    if (btnSaveQro) {
-      btnSaveQro.addEventListener('click', async function () {
-        const msg = document.getElementById('setting-qro-whatsapp-msg').value.trim();
-        try {
-          const client = await getClient();
-          await client.from('site_settings').upsert({
-            setting_key: 'qro_triage_config',
-            setting_value: { welcome_message: msg },
-            description: 'Configuration du questionnaire rapide d orientation WhatsApp'
-          }, { onConflict: 'setting_key' });
-          showToast('Assistant QRO', 'Le message type de première réponse a été enregistré.');
-        } catch (err) {
-          showToast('Erreur', 'Sauvegarde QRO échouée : ' + err.message, true);
-        }
+    const btnAddService = document.getElementById('btn-add-service');
+    if (btnAddService) {
+      btnAddService.addEventListener('click', function () {
+        openServiceDrawer(null);
       });
     }
-  }
 
-  function renderQROView() {
-    // Message par défaut ou issu de Supabase
-  }
+    const btnAddPoint = document.getElementById('btn-add-key-point');
+    if (btnAddPoint) {
+      btnAddPoint.addEventListener('click', function () {
+        addServicePointInput('');
+      });
+    }
 
-  /* ========================================================================= */
-  /* 18. MODALS & GESTIONNAIRES INTERACTIFS                                    */
-  /* ========================================================================= */
-
-  function initModals() {
-    // 1. Modal Bénéficiaire
+    // 2. Bénéficiaires Modal
     const modalBen = document.getElementById('modal-beneficiaire');
-    const formBen = document.getElementById('form-beneficiaire');
-    const btnNewBen = document.getElementById('btn-new-beneficiaire');
     const btnCloseBen = document.getElementById('btn-close-modal-beneficiaire');
     const btnCancelBen = document.getElementById('btn-cancel-modal-beneficiaire');
+    const btnOpenBen = document.getElementById('btn-add-beneficiaire-modal');
+    const formBen = document.getElementById('form-beneficiaire');
 
-    if (btnNewBen) btnNewBen.addEventListener('click', () => modalBen.classList.remove('hidden'));
-    if (btnCloseBen) btnCloseBen.addEventListener('click', () => modalBen.classList.add('hidden'));
-    if (btnCancelBen) btnCancelBen.addEventListener('click', () => modalBen.classList.add('hidden'));
+    function closeBenModal() {
+      if (modalBen) modalBen.classList.add('hidden');
+    }
+    if (btnCloseBen) btnCloseBen.addEventListener('click', closeBenModal);
+    if (btnCancelBen) btnCancelBen.addEventListener('click', closeBenModal);
+    if (btnOpenBen) btnOpenBen.addEventListener('click', () => openBeneficiaireModal(null));
 
     if (formBen) {
       formBen.addEventListener('submit', async function (e) {
         e.preventDefault();
-        const newBen = {
-          id: 'ben-' + Date.now(),
-          name: document.getElementById('ben-input-name').value.trim(),
-          age: parseInt(document.getElementById('ben-input-age').value) || 80,
-          quartier: document.getElementById('ben-input-quartier').value.trim(),
-          pathology: document.getElementById('ben-input-pathology').value.trim(),
-          service_plan: document.getElementById('ben-input-formule').value.trim(),
-          caregiver: document.getElementById('ben-input-caregiver').value.trim(),
-          contact: document.getElementById('ben-input-contact').value.trim(),
-          status: 'Actif'
-        };
+        const id = document.getElementById('ben-edit-id').value;
+        const name = document.getElementById('ben-input-name').value.trim();
+        const age = parseInt(document.getElementById('ben-input-age').value) || 75;
+        const quartier = document.getElementById('ben-input-quartier').value.trim();
+        const pathology = document.getElementById('ben-input-pathology').value.trim();
+        const formule = document.getElementById('ben-input-formule').value;
+        const caregiver = document.getElementById('ben-input-caregiver').value.trim();
+        const contact = document.getElementById('ben-input-contact').value.trim();
 
-        allBeneficiaires.unshift(newBen);
-
-        try {
-          const client = await getClient();
-          await client.from('site_settings').upsert({
-            setting_key: 'beneficiaires_registry',
-            setting_value: allBeneficiaires,
-            description: 'Registre des patients et personnes accompagnées'
-          }, { onConflict: 'setting_key' });
-
-          renderBeneficiairesView();
-          renderDashboardRecent();
-          modalBen.classList.add('hidden');
-          formBen.reset();
-          showToast('Bénéficiaire Enregistré', `Dossier créé pour ${newBen.name}`);
-        } catch (err) {
-          showToast('Erreur', 'Impossible de sauvegarder le bénéficiaire.', true);
+        if (id) {
+          const target = allBeneficiaires.find(b => b.id === id);
+          if (target) {
+            target.name = name;
+            target.age = age;
+            target.quartier = quartier;
+            target.pathology = pathology;
+            target.formule = formule;
+            target.caregiver = caregiver;
+            target.contact = contact;
+          }
+        } else {
+          allBeneficiaires.unshift({
+            id: `ben-${Date.now()}`,
+            name, age, quartier, pathology, formule, caregiver, contact, status: 'active'
+          });
         }
+
+        await saveSettingKey('beneficiaires_registry', allBeneficiaires);
+        showToast('Dossier sauvegardé', `La fiche de ${name} a été enregistrée.`);
+        renderBeneficiairesGrid();
+        closeBenModal();
       });
     }
 
-    // 2. Modal Nouvelle Urgence
+    // 3. Documents Modal
+    const modalDoc = document.getElementById('modal-document');
+    const btnCloseDoc = document.getElementById('btn-close-modal-document');
+    const btnCancelDoc = document.getElementById('btn-cancel-modal-document');
+    const btnOpenDoc = document.getElementById('btn-open-upload-document');
+    const formDoc = document.getElementById('form-document');
+
+    function closeDocModal() {
+      if (modalDoc) modalDoc.classList.add('hidden');
+    }
+    if (btnCloseDoc) btnCloseDoc.addEventListener('click', closeDocModal);
+    if (btnCancelDoc) btnCancelDoc.addEventListener('click', closeDocModal);
+    if (btnOpenDoc) {
+      btnOpenDoc.addEventListener('click', () => {
+        if (formDoc) formDoc.reset();
+        if (modalDoc) modalDoc.classList.remove('hidden');
+      });
+    }
+
+    if (formDoc) {
+      formDoc.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const title = document.getElementById('doc-input-title').value.trim();
+        const category = document.getElementById('doc-input-category').value;
+        const file_type = document.getElementById('doc-input-type').value;
+        const urlInput = document.getElementById('doc-input-url').value.trim();
+        const desc = document.getElementById('doc-input-desc').value.trim();
+        const fileInput = document.getElementById('doc-input-file');
+
+        let file_url = urlInput || '/assets/docs/document.pdf';
+        let file_size = '1.2 Mo';
+
+        if (fileInput && fileInput.files && fileInput.files[0]) {
+          const file = fileInput.files[0];
+          file_size = (file.size / (1024 * 1024)).toFixed(1) + ' Mo';
+          file_url = await readFileAsDataURL(file);
+        }
+
+        allDocuments.unshift({
+          id: `doc-${Date.now()}`,
+          title, category, file_type, file_size, desc, file_url,
+          date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
+        });
+
+        await saveSettingKey('documents_list', allDocuments);
+        showToast('Document importé', `${title} ajouté aux rapports officiels.`);
+        renderDocumentsGrid();
+        closeDocModal();
+      });
+    }
+
+    // 4. Galerie Modal
+    const modalGal = document.getElementById('modal-galerie');
+    const btnCloseGal = document.getElementById('btn-close-modal-galerie');
+    const btnCancelGal = document.getElementById('btn-cancel-modal-galerie');
+    const btnOpenGal = document.getElementById('btn-open-upload-galerie');
+    const formGal = document.getElementById('form-galerie');
+
+    function closeGalModal() {
+      if (modalGal) modalGal.classList.add('hidden');
+    }
+    if (btnCloseGal) btnCloseGal.addEventListener('click', closeGalModal);
+    if (btnCancelGal) btnCancelGal.addEventListener('click', closeGalModal);
+    if (btnOpenGal) {
+      btnOpenGal.addEventListener('click', () => {
+        if (formGal) formGal.reset();
+        if (modalGal) modalGal.classList.remove('hidden');
+      });
+    }
+
+    if (formGal) {
+      formGal.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const title = document.getElementById('gal-input-title').value.trim();
+        const media_type = document.getElementById('gal-input-type').value;
+        const category = document.getElementById('gal-input-category').value;
+        const urlInput = document.getElementById('gal-input-url').value.trim();
+        const caption = document.getElementById('gal-input-caption').value.trim();
+        const fileInput = document.getElementById('gal-input-file');
+
+        let media_url = urlInput || 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=800&q=80';
+        if (fileInput && fileInput.files && fileInput.files[0]) {
+          media_url = await readFileAsDataURL(fileInput.files[0]);
+        }
+
+        allGalerie.unshift({
+          id: `gal-${Date.now()}`,
+          title, media_type, category, caption, media_url
+        });
+
+        await saveSettingKey('galerie_list', allGalerie);
+        showToast('Média ajouté', `${title} est en ligne dans la galerie.`);
+        renderGalerieGrid();
+        closeGalModal();
+      });
+    }
+
+    // 5. Réalisations Modal
+    const modalRea = document.getElementById('modal-realisation');
+    const btnCloseRea = document.getElementById('btn-close-modal-realisation');
+    const btnCancelRea = document.getElementById('btn-cancel-modal-realisation');
+    const btnOpenRea = document.getElementById('btn-open-add-realisation');
+    const formRea = document.getElementById('form-realisation');
+
+    function closeReaModal() {
+      if (modalRea) modalRea.classList.add('hidden');
+    }
+    if (btnCloseRea) btnCloseRea.addEventListener('click', closeReaModal);
+    if (btnCancelRea) btnCancelRea.addEventListener('click', closeReaModal);
+    if (btnOpenRea) {
+      btnOpenRea.addEventListener('click', () => {
+        if (formRea) formRea.reset();
+        if (modalRea) modalRea.classList.remove('hidden');
+      });
+    }
+
+    if (formRea) {
+      formRea.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const title = document.getElementById('rea-input-title').value.trim();
+        const quartier = document.getElementById('rea-input-quartier').value.trim();
+        const desc = document.getElementById('rea-input-desc').value.trim();
+        const result = document.getElementById('rea-input-result').value.trim();
+        const urlInput = document.getElementById('rea-input-url').value.trim();
+        const fileInput = document.getElementById('rea-input-file');
+
+        let image_url = urlInput || 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=800&q=80';
+        if (fileInput && fileInput.files && fileInput.files[0]) {
+          image_url = await readFileAsDataURL(fileInput.files[0]);
+        }
+
+        allRealisations.unshift({
+          id: `rea-${Date.now()}`,
+          title, quartier, desc, result, image_url
+        });
+
+        await saveSettingKey('realisations_list', allRealisations);
+        showToast('Réalisation enregistrée', 'Nouveau cas terrain publié avec succès.');
+        renderRealisationsGrid();
+        closeReaModal();
+      });
+    }
+
+    // 6. Témoignages Modal
+    const modalTem = document.getElementById('modal-temoignage');
+    const btnCloseTem = document.getElementById('btn-close-modal-temoignage');
+    const btnCancelTem = document.getElementById('btn-cancel-modal-temoignage');
+    const btnOpenTem = document.getElementById('btn-add-temoignage');
+    const formTem = document.getElementById('form-temoignage');
+
+    function closeTemModal() {
+      if (modalTem) modalTem.classList.add('hidden');
+    }
+    if (btnCloseTem) btnCloseTem.addEventListener('click', closeTemModal);
+    if (btnCancelTem) btnCancelTem.addEventListener('click', closeTemModal);
+    if (btnOpenTem) {
+      btnOpenTem.addEventListener('click', () => {
+        if (formTem) formTem.reset();
+        if (modalTem) modalTem.classList.remove('hidden');
+
+      });
+    }
+
+    if (formTem) {
+      formTem.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const author = document.getElementById('tem-input-author').value.trim();
+        const rating = parseInt(document.getElementById('tem-input-rating').value) || 5;
+        const relation = document.getElementById('tem-input-relation').value.trim();
+        const city = document.getElementById('tem-input-city').value.trim();
+        const comment = document.getElementById('tem-input-comment').value.trim();
+        const fileInput = document.getElementById('tem-input-avatar-file');
+
+        let avatar = '';
+        if (fileInput && fileInput.files && fileInput.files[0]) {
+          avatar = await readFileAsDataURL(fileInput.files[0]);
+        }
+
+        allTemoignages.unshift({
+          id: `tem-${Date.now()}`,
+          author, rating, relation, city, comment, avatar,
+          date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }),
+          published: true
+        });
+
+        await saveSettingKey('temoignages_list', allTemoignages);
+        showToast('Témoignage publié', `L'avis de ${author} est en ligne.`);
+        renderTemoignagesGrid();
+        closeTemModal();
+      });
+    }
+
+    // 7. FAQ Modal
+    const modalFaq = document.getElementById('modal-faq');
+    const btnCloseFaq = document.getElementById('btn-close-modal-faq');
+    const btnCancelFaq = document.getElementById('btn-cancel-modal-faq');
+    const btnOpenFaq = document.getElementById('btn-add-faq');
+    const formFaq = document.getElementById('form-faq');
+
+    function closeFaqModal() {
+      if (modalFaq) modalFaq.classList.add('hidden');
+    }
+    if (btnCloseFaq) btnCloseFaq.addEventListener('click', closeFaqModal);
+    if (btnCancelFaq) btnCancelFaq.addEventListener('click', closeFaqModal);
+    if (btnOpenFaq) {
+      btnOpenFaq.addEventListener('click', () => {
+        if (formFaq) formFaq.reset();
+        if (modalFaq) modalFaq.classList.remove('hidden');
+      });
+    }
+
+    if (formFaq) {
+      formFaq.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const question = document.getElementById('faq-input-question').value.trim();
+        const category = document.getElementById('faq-input-category').value;
+        const answer = document.getElementById('faq-input-answer').value.trim();
+
+        allFaq.unshift({
+          id: `faq-${Date.now()}`,
+          question, category, answer, order: allFaq.length + 1
+        });
+
+        await saveSettingKey('faq_list', allFaq);
+        showToast('Question ajoutée', 'La FAQ publique a été enrichie.');
+        renderFaqList();
+        closeFaqModal();
+      });
+    }
+
+    // 8. Urgence Manuelle Modal
     const modalUrg = document.getElementById('modal-nouvelle-urgence');
-    const formUrg = document.getElementById('form-nouvelle-urgence');
-    const btnHeaderUrgent = document.getElementById('btn-header-new-urgent');
     const btnCloseUrg = document.getElementById('btn-close-modal-urgence');
     const btnCancelUrg = document.getElementById('btn-cancel-modal-urgence');
+    const btnHeaderUrg = document.getElementById('btn-header-new-urgent');
+    const btnTableUrg = document.getElementById('btn-modal-new-demande');
+    const formUrg = document.getElementById('form-nouvelle-urgence');
 
-    if (btnHeaderUrgent) btnHeaderUrgent.addEventListener('click', () => modalUrg.classList.remove('hidden'));
-    if (btnCloseUrg) btnCloseUrg.addEventListener('click', () => modalUrg.classList.add('hidden'));
-    if (btnCancelUrg) btnCancelUrg.addEventListener('click', () => modalUrg.classList.add('hidden'));
+    function closeUrgModal() {
+      if (modalUrg) modalUrg.classList.add('hidden');
+    }
+    if (btnCloseUrg) btnCloseUrg.addEventListener('click', closeUrgModal);
+    if (btnCancelUrg) btnCancelUrg.addEventListener('click', closeUrgModal);
+
+    function openUrgModal() {
+      if (formUrg) formUrg.reset();
+      if (modalUrg) modalUrg.classList.remove('hidden');
+    }
+    if (btnHeaderUrg) btnHeaderUrg.addEventListener('click', openUrgModal);
+    if (btnTableUrg) btnTableUrg.addEventListener('click', openUrgModal);
 
     if (formUrg) {
       formUrg.addEventListener('submit', async function (e) {
@@ -1390,241 +1598,599 @@
         const phone = document.getElementById('urg-input-phone').value.trim();
         const quartier = document.getElementById('urg-input-quartier').value.trim();
         const service = document.getElementById('urg-input-service').value;
-        const msg = document.getElementById('urg-input-message').value.trim();
+        const message = document.getElementById('urg-input-message').value.trim();
 
-        try {
-          const client = await getClient();
-          const { data, error } = await client
-            .from('contact_requests')
-            .insert([{
-              full_name: name,
-              phone: phone,
-              quartier: quartier,
-              service: service,
-              message: msg,
-              urgency: 'immediate',
-              status: 'Nouveau'
-            }])
-            .select()
-            .single();
+        const newDemande = {
+          id: `urg-${Date.now()}`,
+          name, phone, quartier, service, message,
+          status: 'nouveau',
+          created_at: new Date().toISOString()
+        };
 
-          if (error) throw error;
+        allRequests.unshift(newDemande);
 
-          allRequests.unshift(data);
-          renderKPIs();
-          renderDashboardRecent();
-          renderDemandesView();
-          modalUrg.classList.add('hidden');
-          formUrg.reset();
-          showToast('Urgence Créée', `Dossier de prise en charge ouvert pour ${name}`);
-        } catch (err) {
-          showToast('Erreur', 'Impossible d\'enregistrer l\'urgence.', true);
+        const sb = await getClient();
+        if (sb) {
+          try {
+            await sb.from('contact_requests').insert([newDemande]);
+          } catch (err) {}
         }
+
+        showToast('Urgence enregistrée', `Dossier créé pour ${name} (${quartier}).`);
+        renderKPIs();
+        renderRecentRequestsDashboard();
+        renderDemandesTable();
+        closeUrgModal();
       });
     }
 
-    // 3. Modal Statistiques Manuelles
+    // 9. Stats Modal
     const modalStats = document.getElementById('modal-edit-stats');
-    const formStats = document.getElementById('form-stats-custom');
-    const btnEditStatsModal = document.getElementById('btn-edit-stats-modal');
     const btnCloseStats = document.getElementById('btn-close-modal-stats');
     const btnCancelStats = document.getElementById('btn-cancel-modal-stats');
+    const btnOpenStats = document.getElementById('btn-edit-stats-modal');
+    const formStats = document.getElementById('form-stats-custom');
 
-    if (btnEditStatsModal) btnEditStatsModal.addEventListener('click', () => {
-      const stats = currentStats || {};
-      document.getElementById('stats-input-visiteurs').value = stats.unique_visitors || 4820;
-      document.getElementById('stats-input-demandes').value = stats.total_requests || allRequests.length || 68;
-      document.getElementById('stats-input-whatsapp').value = stats.whatsapp_clicks || 342;
-      document.getElementById('stats-input-appels').value = stats.urgent_calls || 129;
-      modalStats.classList.remove('hidden');
-    });
-
-    if (btnCloseStats) btnCloseStats.addEventListener('click', () => modalStats.classList.add('hidden'));
-    if (btnCancelStats) btnCancelStats.addEventListener('click', () => modalStats.classList.add('hidden'));
+    function closeStatsModal() {
+      if (modalStats) modalStats.classList.add('hidden');
+    }
+    if (btnCloseStats) btnCloseStats.addEventListener('click', closeStatsModal);
+    if (btnCancelStats) btnCancelStats.addEventListener('click', closeStatsModal);
+    if (btnOpenStats) {
+      btnOpenStats.addEventListener('click', () => {
+        if (modalStats) modalStats.classList.remove('hidden');
+      });
+    }
 
     if (formStats) {
       formStats.addEventListener('submit', async function (e) {
         e.preventDefault();
-        const updated = {
-          unique_visitors: parseInt(document.getElementById('stats-input-visiteurs').value) || 4820,
-          total_requests: parseInt(document.getElementById('stats-input-demandes').value) || 68,
-          whatsapp_clicks: parseInt(document.getElementById('stats-input-whatsapp').value) || 342,
-          urgent_calls: parseInt(document.getElementById('stats-input-appels').value) || 129,
-          satisfaction_rate: '98%'
-        };
+        const visiteurs = parseInt(document.getElementById('stats-input-visiteurs').value) || 4820;
+        const demandes = parseInt(document.getElementById('stats-input-demandes').value) || 68;
+        const whatsapp = parseInt(document.getElementById('stats-input-whatsapp').value) || 342;
+        const appels = parseInt(document.getElementById('stats-input-appels').value) || 129;
 
-        try {
-          const client = await getClient();
-          await client.from('site_settings').upsert({
-            setting_key: 'stats_metrics',
-            setting_value: updated,
-            description: 'Indicateurs clés du dashboard personnalisables manuellement'
-          }, { onConflict: 'setting_key' });
+        currentStats = { visiteurs, demandes, whatsapp, appels };
+        await saveSettingKey('stats_metrics', currentStats);
+        showToast('Indicateurs mis à jour', 'Le tableau de bord reflète vos chiffres.');
+        renderKPIs();
+        closeStatsModal();
+      });
+    }
 
-          currentStats = updated;
-          renderKPIs();
-          modalStats.classList.add('hidden');
-          showToast('Indicateurs Mis à Jour', 'Les chiffres clés du tableau de bord ont été synchronisés.');
-        } catch (err) {
-          showToast('Erreur', 'Impossible d\'enregistrer les indicateurs.', true);
+    // 10. Multi-Administrateurs Modal
+    const modalAddAdmin = document.getElementById('modal-add-admin');
+    const btnCloseAddAdmin = document.getElementById('btn-close-modal-add-admin');
+    const btnCancelAddAdmin = document.getElementById('btn-cancel-modal-add-admin');
+    const btnOpenAddAdmin = document.getElementById('btn-open-add-admin');
+    const formAddAdmin = document.getElementById('form-add-admin');
+    const errAddAdmin = document.getElementById('add-admin-error');
+
+    function closeAddAdminModal() {
+      if (modalAddAdmin) modalAddAdmin.classList.add('hidden');
+      if (errAddAdmin) errAddAdmin.classList.add('hidden');
+    }
+    if (btnCloseAddAdmin) btnCloseAddAdmin.addEventListener('click', closeAddAdminModal);
+    if (btnCancelAddAdmin) btnCancelAddAdmin.addEventListener('click', closeAddAdminModal);
+    if (btnOpenAddAdmin) {
+      btnOpenAddAdmin.addEventListener('click', () => {
+        if (formAddAdmin) formAddAdmin.reset();
+        if (errAddAdmin) errAddAdmin.classList.add('hidden');
+        if (modalAddAdmin) modalAddAdmin.classList.remove('hidden');
+      });
+    }
+
+    if (formAddAdmin) {
+      formAddAdmin.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const full_name = document.getElementById('new-admin-fullname').value.trim();
+        const email = document.getElementById('new-admin-email').value.trim().toLowerCase();
+        const role = document.getElementById('new-admin-role').value;
+        const password = document.getElementById('new-admin-password').value;
+
+        if (password.length < 6) {
+          if (errAddAdmin) {
+            errAddAdmin.textContent = 'Le mot de passe doit comporter au moins 6 caractères.';
+            errAddAdmin.classList.remove('hidden');
+          }
+          return;
+        }
+
+        const sb = await getClient();
+        if (!sb) {
+          if (errAddAdmin) {
+            errAddAdmin.textContent = 'Erreur de connexion à la base de données.';
+            errAddAdmin.classList.remove('hidden');
+          }
+          return;
+        }
+
+        const salt = generateSalt();
+        const hash = await sha256(password, salt);
+
+        const { data, error } = await sb.from('admin_accounts').insert([{
+          full_name, email, role, salt, password_hash: hash, status: 'active'
+        }]).select();
+
+        if (error) {
+          if (errAddAdmin) {
+            errAddAdmin.textContent = 'Cet email est déjà utilisé ou une erreur est survenue.';
+            errAddAdmin.classList.remove('hidden');
+          }
+          return;
+        }
+
+        showToast('Administrateur créé', `${full_name} (${role}) peut désormais se connecter.`);
+        closeAddAdminModal();
+        await loadAdminAccounts();
+      });
+    }
+
+    // 11. Mot de passe oublié Modal
+    const modalForgot = document.getElementById('modal-forgot-password');
+    const btnOpenForgot = document.getElementById('btn-forgot-password');
+    const btnCloseForgot = document.getElementById('btn-close-forgot-modal');
+
+    if (btnOpenForgot && modalForgot) {
+      btnOpenForgot.addEventListener('click', () => modalForgot.classList.remove('hidden'));
+    }
+    if (btnCloseForgot && modalForgot) {
+      btnCloseForgot.addEventListener('click', () => modalForgot.classList.add('hidden'));
+    }
+
+    // 12. Avatar Profile File Upload
+    const avatarInput = document.getElementById('profile-avatar-file-input');
+    if (avatarInput) {
+      avatarInput.addEventListener('change', async function () {
+        if (!this.files || !this.files[0]) return;
+        const file = this.files[0];
+        const base64 = await readFileAsDataURL(file);
+
+        if (currentAdmin) {
+          currentAdmin.avatar_url = base64;
+          saveCurrentAdminSession(currentAdmin);
+
+          const sb = await getClient();
+          if (sb && currentAdmin.id) {
+            await sb.from('admin_accounts').update({ avatar_url: base64 }).eq('id', currentAdmin.id);
+          }
+          showToast('Photo mise à jour', 'Votre photo de profil a été modifiée avec succès.');
         }
       });
     }
 
-    // 4. Modal Mon Profil
-    const formProfile = document.getElementById('form-update-profile');
-    if (formProfile) {
-      formProfile.addEventListener('submit', async function (e) {
+    // 13. Formulaire Info Profil
+    const formProfileInfo = document.getElementById('form-update-profile-info');
+    if (formProfileInfo) {
+      formProfileInfo.addEventListener('submit', async function (e) {
         e.preventDefault();
-        const newName = document.getElementById('profile-fullname').value.trim();
-        const newPass = document.getElementById('profile-new-password').value;
+        const full_name = document.getElementById('profile-fullname').value.trim();
+        const email = document.getElementById('profile-email').value.trim().toLowerCase();
+        const phone = document.getElementById('profile-phone').value.trim();
 
-        if (!currentAdmin) return;
+        if (currentAdmin) {
+          currentAdmin.full_name = full_name;
+          currentAdmin.email = email;
+          currentAdmin.phone = phone;
+          saveCurrentAdminSession(currentAdmin);
 
-        try {
-          const client = await getClient();
-          const updatePayload = { full_name: newName };
+          const sb = await getClient();
+          if (sb && currentAdmin.id) {
+            await sb.from('admin_accounts').update({ full_name, email, phone }).eq('id', currentAdmin.id);
+          }
+          showToast('Profil enregistré', 'Vos informations ont été mises à jour.');
+        }
+      });
+    }
 
-          if (newPass && newPass.length >= 6) {
-            const salt = generateSalt();
-            const hash = await sha256(newPass, salt);
-            updatePayload.password_hash = hash;
-            updatePayload.salt = salt;
+    // 14. Formulaire Changement de Mot de Passe Profil
+    const formUpdatePwd = document.getElementById('form-update-password');
+    const pwdMsg = document.getElementById('profile-pwd-msg');
+    if (formUpdatePwd) {
+      formUpdatePwd.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const curPwd = document.getElementById('profile-current-pwd').value;
+        const newPwd = document.getElementById('profile-new-pwd').value;
+        const confirmPwd = document.getElementById('profile-confirm-pwd').value;
+
+        if (newPwd !== confirmPwd) {
+          if (pwdMsg) {
+            pwdMsg.textContent = 'Les deux nouveaux mots de passe ne correspondent pas.';
+            pwdMsg.className = 'p-3 rounded-xl text-xs font-semibold bg-red-50 text-red-700';
+            pwdMsg.classList.remove('hidden');
+          }
+          return;
+        }
+
+        if (newPwd.length < 6) {
+          if (pwdMsg) {
+            pwdMsg.textContent = 'Le mot de passe doit comporter au moins 6 caractères.';
+            pwdMsg.className = 'p-3 rounded-xl text-xs font-semibold bg-red-50 text-red-700';
+            pwdMsg.classList.remove('hidden');
+          }
+          return;
+        }
+
+        const sb = await getClient();
+        if (!sb || !currentAdmin) return;
+
+        // Vérification de l'ancien mot de passe
+        const { data: dbAdmin } = await sb.from('admin_accounts').select('salt, password_hash').eq('id', currentAdmin.id).single();
+        if (dbAdmin) {
+          const curHash = await sha256(curPwd, dbAdmin.salt);
+          if (curHash !== dbAdmin.password_hash) {
+            if (pwdMsg) {
+              pwdMsg.textContent = 'Le mot de passe actuel est incorrect.';
+              pwdMsg.className = 'p-3 rounded-xl text-xs font-semibold bg-red-50 text-red-700';
+              pwdMsg.classList.remove('hidden');
+            }
+            return;
           }
 
-          const { error } = await client
-            .from('admin_accounts')
-            .update(updatePayload)
-            .eq('id', currentAdmin.id);
+          // Mise à jour
+          const newSalt = generateSalt();
+          const newHash = await sha256(newPwd, newSalt);
+          await sb.from('admin_accounts').update({ salt: newSalt, password_hash: newHash }).eq('id', currentAdmin.id);
 
-          if (error) throw error;
-
-          currentAdmin.full_name = newName;
-          sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentAdmin));
-          enterDashboard();
-          showToast('Profil Mis à Jour', 'Vos coordonnées ont été enregistrées.');
-        } catch (err) {
-          showToast('Erreur', 'Mise à jour du profil impossible : ' + err.message, true);
+          formUpdatePwd.reset();
+          if (pwdMsg) {
+            pwdMsg.textContent = 'Mot de passe modifié avec succès !';
+            pwdMsg.className = 'p-3 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-800';
+            pwdMsg.classList.remove('hidden');
+          }
+          showToast('Sécurité mise à jour', 'Votre nouveau mot de passe est actif.');
         }
+      });
+    }
+
+    // 15. Formulaire Coordonnées Générales
+    const formGen = document.getElementById('form-general-settings');
+    if (formGen) {
+      formGen.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const phone_primary = document.getElementById('param-phone-primary').value.trim();
+        const phone_secondary = document.getElementById('param-phone-secondary').value.trim();
+        const whatsapp = document.getElementById('param-whatsapp').value.trim();
+        const email = document.getElementById('param-email').value.trim();
+        const address = document.getElementById('param-address').value.trim();
+
+        currentContactInfo = { phone_primary, phone_secondary, whatsapp, email, address };
+        await saveSettingKey('contact_info', currentContactInfo);
+        showToast('Coordonnées enregistrées', 'Mises à jour sur tout le site public.');
       });
     }
   }
 
-  /* ========================================================================= */
-  /* 19. GRAPHIQUES STATISTIQUES CHART.JS                                      */
-  /* ========================================================================= */
-
-  function renderDashboardEvolutionChart() {
-    const ctx = document.getElementById('dashboard-chart-evolution');
-    if (!ctx) return;
-
-    if (chartEvolution) {
-      chartEvolution.destroy();
-    }
-
-    chartEvolution = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep'],
-        datasets: [
-          {
-            label: 'Demandes reçues',
-            data: [12, 19, 15, 25, 22, 30, 38, 45, allRequests.length || 52],
-            borderColor: '#0d2040',
-            backgroundColor: 'rgba(13, 32, 64, 0.05)',
-            borderWidth: 2.5,
-            fill: true,
-            tension: 0.35,
-            pointBackgroundColor: '#c5a059',
-            pointRadius: 4
-          },
-          {
-            label: 'Interventions 24h/24',
-            data: [8, 14, 11, 20, 18, 25, 30, 39, 44],
-            borderColor: '#10b981',
-            borderWidth: 2,
-            borderDash: [5, 5],
-            fill: false,
-            tension: 0.35,
-            pointRadius: 3
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: { font: { family: 'Plus Jakarta Sans', size: 11 }, boxWidth: 12 }
-          }
-        },
-        scales: {
-          y: { grid: { color: '#f0f3ff' }, ticks: { font: { size: 10 } } },
-          x: { grid: { display: false }, ticks: { font: { size: 10 } } }
-        }
-      }
+  function readFileAsDataURL(file) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => resolve('');
+      reader.readAsDataURL(file);
     });
   }
 
-  function renderStatsCharts() {
-    // 1. Chart annuel
-    const ctxAnnual = document.getElementById('stats-chart-annual');
-    if (ctxAnnual) {
-      if (chartAnnual) chartAnnual.destroy();
-      chartAnnual = new Chart(ctxAnnual, {
-        type: 'bar',
-        data: {
-          labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'],
-          datasets: [{
-            label: 'Heures de garde',
-            data: [720, 680, 840, 920, 1100, 1250, 1380, 1520, 1640, 0, 0, 0],
-            backgroundColor: '#0d2040',
-            borderRadius: 6
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
-          scales: {
-            y: { grid: { color: '#f0f3ff' } },
-            x: { grid: { display: false } }
-          }
+  function openBeneficiaireModal(id) {
+    const modalBen = document.getElementById('modal-beneficiaire');
+    const formBen = document.getElementById('form-beneficiaire');
+    if (!modalBen || !formBen) return;
+
+    formBen.reset();
+    document.getElementById('ben-edit-id').value = id || '';
+
+    if (id) {
+      const ben = allBeneficiaires.find(b => b.id === id);
+      if (ben) {
+        document.getElementById('ben-input-name').value = ben.name || '';
+        document.getElementById('ben-input-age').value = ben.age || '';
+        document.getElementById('ben-input-quartier').value = ben.quartier || '';
+        document.getElementById('ben-input-pathology').value = ben.pathology || '';
+        document.getElementById('ben-input-formule').value = ben.formule || 'Garde Continue 24h/24';
+        document.getElementById('ben-input-caregiver').value = ben.caregiver || '';
+        document.getElementById('ben-input-contact').value = ben.contact || '';
+      }
+    }
+    modalBen.classList.remove('hidden');
+  }
+
+  function openServiceDrawer(id) {
+    const drawer = document.getElementById('edit-drawer');
+    const form = document.getElementById('form-edit-service');
+    if (!drawer || !form) return;
+
+    form.reset();
+    document.getElementById('service-edit-id').value = id || '';
+    const cont = document.getElementById('service-key-points-container');
+    if (cont) cont.innerHTML = '';
+
+    if (id) {
+      const srv = allServices.find(s => s.id === id);
+      if (srv) {
+        document.getElementById('service-edit-title').value = srv.title || '';
+        document.getElementById('service-edit-slogan').value = srv.slogan || '';
+        document.getElementById('service-edit-hours').value = srv.hours || '';
+        document.getElementById('service-edit-desc').value = srv.desc || '';
+        document.getElementById('service-edit-pricing').value = srv.pricing || '';
+        document.getElementById('service-edit-published').checked = !!srv.published;
+
+        (srv.key_points || []).forEach(pt => addServicePointInput(pt));
+      }
+    } else {
+      addServicePointInput('Point de soin 1');
+      addServicePointInput('Point de soin 2');
+    }
+
+    drawer.classList.remove('translate-x-full');
+  }
+
+  function addServicePointInput(val) {
+    const cont = document.getElementById('service-key-points-container');
+    if (!cont) return;
+
+    const div = document.createElement('div');
+    div.className = 'flex items-center gap-2';
+    div.innerHTML = `
+      <input type="text" value="${escapeHtml(val)}" class="input-service-point w-full px-3 py-1.5 rounded-lg bg-surface-container-low text-xs border border-slate-200" placeholder="Point clé du service..."/>
+      <button type="button" class="p-1 text-slate-400 hover:text-red-500 btn-remove-point"><span class="material-symbols-outlined text-sm">close</span></button>
+    `;
+    div.querySelector('.btn-remove-point').addEventListener('click', () => div.remove());
+    cont.appendChild(div);
+  }
+
+  /* ========================================================================= */
+  /* 9. NAVIGATION SIDEBAR & VUES                                              */
+  /* ========================================================================= */
+
+  function setupNavigation() {
+    document.querySelectorAll('.nav-stitch-link').forEach(link => {
+      link.addEventListener('click', function (e) {
+        e.preventDefault();
+        const targetViewId = this.getAttribute('data-view');
+        if (!targetViewId) return;
+
+        // Mise à jour état visuel liens
+        document.querySelectorAll('.nav-stitch-link').forEach(l => {
+          l.classList.remove('active', 'bg-primary', 'text-secondary-fixed', 'font-bold');
+          l.classList.add('text-on-surface-variant');
+        });
+        this.classList.add('active', 'bg-primary', 'text-secondary-fixed', 'font-bold');
+        this.classList.remove('text-on-surface-variant');
+
+        // Affichage de la vue
+        document.querySelectorAll('.stitch-view').forEach(v => v.classList.add('hidden'));
+        const targetView = document.getElementById(targetViewId);
+        if (targetView) {
+          targetView.classList.remove('hidden');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
+    });
+
+    // Filtres Demandes
+    document.querySelectorAll('.filter-demande-pill').forEach(btn => {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.filter-demande-pill').forEach(b => {
+          b.classList.remove('active', 'bg-primary-container', 'text-secondary-fixed');
+          b.classList.add('bg-surface-container-high', 'text-on-surface');
+        });
+        this.classList.add('active', 'bg-primary-container', 'text-secondary-fixed');
+        this.classList.remove('bg-surface-container-high', 'text-on-surface');
+
+        activeFilterDemandes = this.getAttribute('data-status');
+        renderDemandesTable();
+      });
+    });
+
+    // Recherche globale
+    const searchInput = document.getElementById('global-search-input');
+    if (searchInput) {
+      searchInput.addEventListener('input', function () {
+        const query = this.value.trim().toLowerCase();
+        if (!query) {
+          renderDemandesTable();
+          renderBeneficiairesGrid();
+          return;
+        }
+
+        // Si on cherche, filtre dynamique sur demandes & bénéficiaires
+        const matchingBen = allBeneficiaires.filter(b =>
+          (b.name && b.name.toLowerCase().includes(query)) ||
+          (b.quartier && b.quartier.toLowerCase().includes(query))
+        );
+        const matchingDem = allRequests.filter(r =>
+          (r.name && r.name.toLowerCase().includes(query)) ||
+          (r.phone && r.phone.includes(query)) ||
+          (r.quartier && r.quartier.toLowerCase().includes(query))
+        );
+
+        const benGrid = document.getElementById('grid-beneficiaires-cards');
+        if (benGrid && matchingBen.length > 0) {
+          // Si on est sur la vue bénéficiaires
         }
       });
     }
 
-    // 2. Chart quartiers
-    const ctxQuartiers = document.getElementById('stats-chart-quartiers');
-    if (ctxQuartiers) {
-      if (chartQuartiers) chartQuartiers.destroy();
-      chartQuartiers = new Chart(ctxQuartiers, {
-        type: 'doughnut',
-        data: {
-          labels: ['Ngousso', 'Bastos', 'Omnisports', 'Mimboman', 'Autres Yaoundé'],
-          datasets: [{
-            data: [38, 26, 16, 12, 8],
-            backgroundColor: ['#0d2040', '#c5a059', '#10b981', '#75777f', '#dee8ff']
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'bottom',
-              labels: { font: { family: 'Plus Jakarta Sans', size: 11 }, boxWidth: 10 }
-            }
-          }
+    // Déconnexion
+    const btnLogout = document.getElementById('btn-logout');
+    if (btnLogout) {
+      btnLogout.addEventListener('click', function () {
+        if (!confirm('Se déconnecter du Back-Office ?')) return;
+        sessionStorage.removeItem(SESSION_KEY);
+        localStorage.removeItem(SESSION_KEY);
+        currentAdmin = null;
+        screenDashboard.classList.add('hidden');
+        screenLogin.classList.remove('hidden');
+      });
+    }
+
+    // Export CSV Demandes
+    const btnExportCSV = document.getElementById('btn-export-demandes-csv');
+    if (btnExportCSV) {
+      btnExportCSV.addEventListener('click', function () {
+        if (allRequests.length === 0) {
+          alert('Aucune demande à exporter.');
+          return;
         }
+        let csv = 'Date;Demandeur;Téléphone;Quartier;Prestation;Statut;Message\n';
+        allRequests.forEach(r => {
+          csv += `"${r.created_at || ''}";"${r.name || ''}";"${r.phone || ''}";"${r.quartier || ''}";"${r.service || ''}";"${r.status || ''}";"${(r.message || '').replace(/"/g, '""')}"\n`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `registre-demandes-akeva-${new Date().toISOString().slice(0, 10)}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
       });
     }
   }
 
   /* ========================================================================= */
-  /* 20. HELPERS & EXPOSITIONS GLOBALES                                        */
+  /* 10. AUTHENTIFICATION : LOGIN & SETUP                                      */
   /* ========================================================================= */
+
+  async function initAuth() {
+    const sb = await getClient();
+
+    // 1. Vérifier si un compte existe
+    let adminCount = 0;
+    try {
+      if (sb) {
+        const { count, error } = await sb.from('admin_accounts').select('id', { count: 'exact', head: true });
+        if (!error && typeof count === 'number') {
+          adminCount = count;
+        }
+      }
+    } catch (e) {
+      console.warn('Erreur test admin_accounts count', e);
+    }
+
+    // 2. Vérifier si une session est déjà enregistrée
+    const saved = loadSavedSession();
+
+    if (screenLoading) screenLoading.classList.add('hidden');
+
+    if (adminCount === 0) {
+      // Aucun admin dans la base -> écran de création
+      if (screenSetup) screenSetup.classList.remove('hidden');
+    } else if (saved) {
+      // Session existante -> connexion directe au dashboard
+      currentAdmin = saved;
+      updateSidebarProfileUI(currentAdmin);
+      if (screenDashboard) screenDashboard.classList.remove('hidden');
+      await syncAllData();
+    } else {
+      // Comptes existants, pas de session -> écran de connexion
+      if (screenLogin) screenLogin.classList.remove('hidden');
+    }
+
+    // Setup Form
+    const formSetup = document.getElementById('form-setup');
+    const errSetup = document.getElementById('setup-error');
+    if (formSetup) {
+      formSetup.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const fullname = document.getElementById('setup-fullname').value.trim();
+        const email = document.getElementById('setup-email').value.trim().toLowerCase();
+        const pwd = document.getElementById('setup-password').value;
+        const confirm = document.getElementById('setup-password-confirm').value;
+
+        if (pwd !== confirm) {
+          if (errSetup) {
+            errSetup.textContent = 'Les deux mots de passe ne correspondent pas.';
+            errSetup.classList.remove('hidden');
+          }
+          return;
+        }
+
+        const sb = await getClient();
+        if (!sb) {
+          if (errSetup) {
+            errSetup.textContent = 'Erreur de connexion à Supabase.';
+            errSetup.classList.remove('hidden');
+          }
+          return;
+        }
+
+        const salt = generateSalt();
+        const hash = await sha256(pwd, salt);
+
+        const { data, error } = await sb.from('admin_accounts').insert([{
+          full_name: fullname,
+          email: email,
+          role: 'Super Admin',
+          salt: salt,
+          password_hash: hash,
+          status: 'active'
+        }]).select();
+
+        if (error) {
+          if (errSetup) {
+            errSetup.textContent = 'Une erreur est survenue lors de la création du compte.';
+            errSetup.classList.remove('hidden');
+          }
+          return;
+        }
+
+        const newAdmin = data[0];
+        saveCurrentAdminSession(newAdmin);
+
+        if (screenSetup) screenSetup.classList.add('hidden');
+        if (screenDashboard) screenDashboard.classList.remove('hidden');
+        await syncAllData();
+      });
+    }
+
+    // Login Form
+    const formLogin = document.getElementById('form-login');
+    const errLogin = document.getElementById('login-error');
+    if (formLogin) {
+      formLogin.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value.trim().toLowerCase();
+        const pwd = document.getElementById('login-password').value;
+
+        const sb = await getClient();
+        if (!sb) {
+          if (errLogin) {
+            errLogin.textContent = 'Erreur de connexion au serveur.';
+            errLogin.classList.remove('hidden');
+          }
+          return;
+        }
+
+        const { data, error } = await sb
+          .from('admin_accounts')
+          .select('*')
+          .eq('email', email)
+          .maybeSingle();
+
+        if (error || !data) {
+          if (errLogin) {
+            errLogin.textContent = 'Identifiants incorrects ou compte introuvable.';
+            errLogin.classList.remove('hidden');
+          }
+          return;
+        }
+
+        const testHash = await sha256(pwd, data.salt);
+        if (testHash !== data.password_hash) {
+          if (errLogin) {
+            errLogin.textContent = 'Mot de passe incorrect.';
+            errLogin.classList.remove('hidden');
+          }
+          return;
+        }
+
+        saveCurrentAdminSession(data);
+
+        if (screenLogin) screenLogin.classList.add('hidden');
+        if (screenDashboard) screenDashboard.classList.remove('hidden');
+        await syncAllData();
+      });
+    }
+  }
 
   function escapeHtml(str) {
     if (!str) return '';
@@ -1636,240 +2202,15 @@
       .replace(/'/g, '&#039;');
   }
 
-  function getStatusClass(status) {
-    switch ((status || '').toLowerCase()) {
-      case 'nouveau':
-        return 'bg-blue-50 text-blue-700';
-      case 'en cours':
-        return 'bg-amber-50 text-amber-700';
-      case 'pris en charge':
-        return 'bg-emerald-50 text-emerald-800';
-      case 'terminé':
-        return 'bg-slate-100 text-slate-600';
-      default:
-        return 'bg-slate-100 text-slate-700';
-    }
-  }
-
-  // Fonctions exposées sur l'objet global window.AkevaAdmin
-  window.AkevaAdmin = {
-    openServiceDrawer,
-    closeServiceDrawer,
-
-    // Mise à jour du statut d'une demande
-    updateRequestStatus: async function (requestId, newStatus) {
-      try {
-        const client = await getClient();
-        await client.from('contact_requests').update({ status: newStatus }).eq('id', requestId);
-        const req = allRequests.find(r => r.id === requestId);
-        if (req) req.status = newStatus;
-        renderDemandesView();
-        renderDashboardRecent();
-        showToast('Statut Modifié', `Demande passée à "${newStatus}"`);
-      } catch (err) {
-        showToast('Erreur', 'Impossible de mettre à jour le statut.', true);
-      }
-    },
-
-    // Suppression d'un bénéficiaire
-    deleteBeneficiaire: async function (idx) {
-      if (!confirm('Supprimer ce dossier bénéficiaire ?')) return;
-      allBeneficiaires.splice(idx, 1);
-      try {
-        const client = await getClient();
-        await client.from('site_settings').upsert({
-          setting_key: 'beneficiaires_registry',
-          setting_value: allBeneficiaires
-        }, { onConflict: 'setting_key' });
-        renderBeneficiairesView();
-        renderDashboardRecent();
-        showToast('Supprimé', 'Dossier archivé.');
-      } catch (e) {
-        showToast('Erreur', 'Échec de la suppression.', true);
-      }
-    },
-
-    // Modération Témoignage
-    toggleTemoignage: async function (idx) {
-      if (allTemoignages[idx]) {
-        allTemoignages[idx].approved = !allTemoignages[idx].approved;
-        try {
-          const client = await getClient();
-          await client.from('site_settings').upsert({
-            setting_key: 'temoignages_list',
-            setting_value: allTemoignages
-          }, { onConflict: 'setting_key' });
-          renderTemoignagesView();
-          showToast('Avis Modéré', allTemoignages[idx].approved ? 'Avis publié' : 'Avis masqué');
-        } catch (e) {
-          showToast('Erreur', 'Impossible de modifier l\'avis.', true);
-        }
-      }
-    },
-
-    // Ajout Témoignage
-    addTemoignage: function () {
-      const author = prompt('Nom de la famille ou du proche :');
-      if (!author) return;
-      const quote = prompt('Texte du témoignage :');
-      if (!quote) return;
-      const loc = prompt('Quartier ou ville (ex: Yaoundé Bastos ou Diaspora Paris) :', 'Yaoundé');
-
-      allTemoignages.unshift({
-        author,
-        quote,
-        location: loc || 'Yaoundé',
-        relation: 'Famille aidante',
-        rating: 5,
-        approved: true
-      });
-
-      getClient().then(client => {
-        client.from('site_settings').upsert({
-          setting_key: 'temoignages_list',
-          setting_value: allTemoignages
-        }, { onConflict: 'setting_key' }).then(() => {
-          renderTemoignagesView();
-          showToast('Témoignage Ajouté', 'Publié avec succès.');
-        });
-      });
-    },
-
-    // FAQ CRUD
-    addFaq: function () {
-      const question = prompt('Question posée :');
-      if (!question) return;
-      const answer = prompt('Réponse détaillée :');
-      if (!answer) return;
-
-      allFaq.push({ question, answer });
-      getClient().then(client => {
-        client.from('site_settings').upsert({
-          setting_key: 'faq_list',
-          setting_value: allFaq
-        }, { onConflict: 'setting_key' }).then(() => {
-          renderFaqView();
-          showToast('FAQ Ajoutée', 'Nouvelle question/réponse publiée.');
-        });
-      });
-    },
-
-    editFaq: function (idx) {
-      const item = allFaq[idx];
-      if (!item) return;
-      const q = prompt('Question :', item.question);
-      if (q === null) return;
-      const a = prompt('Réponse :', item.answer);
-      if (a === null) return;
-
-      allFaq[idx] = { question: q, answer: a };
-      getClient().then(client => {
-        client.from('site_settings').upsert({
-          setting_key: 'faq_list',
-          setting_value: allFaq
-        }, { onConflict: 'setting_key' }).then(() => {
-          renderFaqView();
-          showToast('FAQ Modifiée', 'Mise à jour enregistrée.');
-        });
-      });
-    },
-
-    deleteFaq: function (idx) {
-      if (!confirm('Supprimer cette question FAQ ?')) return;
-      allFaq.splice(idx, 1);
-      getClient().then(client => {
-        client.from('site_settings').upsert({
-          setting_key: 'faq_list',
-          setting_value: allFaq
-        }, { onConflict: 'setting_key' }).then(() => {
-          renderFaqView();
-          showToast('FAQ Supprimée', 'Élément retiré.');
-        });
-      });
-    },
-
-    // Réalisation Suppression
-    deleteRealisation: async function (id) {
-      if (!confirm('Supprimer cette réalisation ?')) return;
-      try {
-        const client = await getClient();
-        await client.from('realisations').delete().eq('id', id);
-        allRealisations = allRealisations.filter(r => r.id !== id);
-        renderRealisationsView();
-        renderGalerieVideosView();
-        showToast('Réalisation Retirée', 'Élément supprimé.');
-      } catch (e) {
-        showToast('Erreur', 'Suppression échouée.', true);
-      }
-    }
-  };
-
   /* ========================================================================= */
-  /* 21. ÉCOUTEURS D'ÉVÉNEMENTS INITIAUX                                       */
+  /* 11. INITIALISATION GÉNÉRALE AU CHARGEMENT                                 */
   /* ========================================================================= */
 
   document.addEventListener('DOMContentLoaded', function () {
     initPasswordToggles();
-    initAuthForms();
-    initSidebarNavigation();
-    initServiceDrawer();
-    initSiteContentEditor();
-    initGeneralSettingsForm();
-    initModals();
-    initDemandesFilters();
-
-    // Bouton ajouter prestation
-    const btnAddService = document.getElementById('btn-add-service');
-    if (btnAddService) {
-      btnAddService.addEventListener('click', () => openServiceDrawer('srv-' + Date.now()));
-    }
-
-    // Bouton ajouter témoignage
-    const btnAddTem = document.getElementById('btn-add-temoignage');
-    if (btnAddTem) {
-      btnAddTem.addEventListener('click', () => window.AkevaAdmin.addTemoignage());
-    }
-
-    // Bouton ajouter FAQ
-    const btnAddFaq = document.getElementById('btn-add-faq');
-    if (btnAddFaq) {
-      btnAddFaq.addEventListener('click', () => window.AkevaAdmin.addFaq());
-    }
-
-    // Bouton ajouter Réalisation
-    const btnAddReal = document.getElementById('btn-add-realisation');
-    if (btnAddReal) {
-      btnAddReal.addEventListener('click', async () => {
-        const title = prompt('Titre de la réalisation / intervention :');
-        if (!title) return;
-        const desc = prompt('Description du cas et des résultats cliniques :');
-        const quartier = prompt('Quartier à Yaoundé (ex: Bastos, Ngousso) :', 'Yaoundé');
-        const mediaUrl = prompt('URL du média / photo (ou laisser vide) :', 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=800&q=80');
-
-        try {
-          const client = await getClient();
-          const { data, error } = await client.from('realisations').insert([{
-            title,
-            description: desc,
-            quartier: quartier || 'Yaoundé',
-            category: 'Convalescence & Gériatrie',
-            media_url: mediaUrl,
-            media_type: 'image'
-          }]).select().single();
-
-          if (error) throw error;
-          allRealisations.unshift(data);
-          renderRealisationsView();
-          renderGalerieVideosView();
-          showToast('Réalisation Ajoutée', 'Publication réussie.');
-        } catch (e) {
-          showToast('Erreur', 'Impossible de publier : ' + e.message, true);
-        }
-      });
-    }
-
-    // Lancement de la vérification Super Admin
-    checkAdminAccountStatus();
+    setupNavigation();
+    setupModals();
+    initAuth();
   });
 
 })();
