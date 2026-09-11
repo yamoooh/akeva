@@ -219,20 +219,32 @@ var AkevaDB = (function () {
   };
 })();
 
-// Exposer window.AkevaSupabase pour admin.js et site-sync.js
+// Exposer window.AkevaSupabase pour admin.js et site-sync.js avec initialisation résiliente
 (function() {
   var url = window.AKEVA_SUPABASE_URL || "https://ztbgcgntluttgzjunwvu.supabase.co";
   var key = window.AKEVA_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp0YmdjZ250bHV0dGd6anVud3Z1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkxNDYxNTYsImV4cCI6MjEwNDcyMjE1Nn0.zbUeyWvnBF7V5DBhbAqJBu1gYaGDt_G7wA5SBtiotmA";
-  var client = null;
-  if (window.supabase && url && key) {
-    try {
-      client = window.supabase.createClient(url, key);
-    } catch (e) {
-      console.warn("AkevaSupabase init warning:", e);
+  var _client = null;
+
+  function getClient() {
+    if (_client) return _client;
+    if (window.supabase && url && key) {
+      try {
+        _client = window.supabase.createClient(url, key);
+        return _client;
+      } catch (e) {
+        console.warn("AkevaSupabase init warning:", e);
+      }
     }
+    return null;
   }
+
+  // Initialisation immédiate si window.supabase est déjà prêt
+  getClient();
+
   window.AkevaSupabase = {
-    client: client,
+    get client() {
+      return getClient();
+    },
     url: url,
     anonKey: key
   };
