@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="goldMetallic" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDF3CD"/>
+      <stop offset="20%" stop-color="#E5BE6C"/>
+      <stop offset="45%" stop-color="#C59B3B"/>
+      <stop offset="70%" stop-color="#E8C67B"/>
+      <stop offset="85%" stop-color="#A57A22"/>
+      <stop offset="100%" stop-color="#734F0C"/>
+    </linearGradient>
+    <linearGradient id="goldHand" x1="20%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" stop-color="#FDF1CA"/>
+      <stop offset="25%" stop-color="#DCAB49"/>
+      <stop offset="60%" stop-color="#B88628"/>
+      <stop offset="85%" stop-color="#E2BE6E"/>
+      <stop offset="100%" stop-color="#845A0E"/>
+    </linearGradient>
+    <linearGradient id="navyRoyal" x1="0%" y1="0%" x2="80%" y2="100%">
+      <stop offset="0%" stop-color="#143460"/>
+      <stop offset="50%" stop-color="#0B2142"/>
+      <stop offset="100%" stop-color="#051226"/>
+    </linearGradient>
+    <linearGradient id="heartGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF0B8"/>
+      <stop offset="50%" stop-color="#D9A838"/>
+      <stop offset="100%" stop-color="#9E6E14"/>
+    </linearGradient>
+    <linearGradient id="goldArc" x1="0%" y1="50%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#C59B3B"/>
+      <stop offset="50%" stop-color="#F7E2A2"/>
+      <stop offset="100%" stop-color="#9E6E14"/>
+    </linearGradient>
+  </defs>
+  <path d="M 215 54 C 135 68 76 138 68 220 C 62 280 88 340 135 385 C 120 370 95 320 95 260 C 95 180 145 105 225 72 Z" fill="url(#navyRoyal)"/>
+  <path d="M 195 56 C 115 80 62 155 64 240 C 65 295 88 348 128 388 C 118 375 80 320 80 245 C 80 165 130 95 210 65 Z" fill="url(#goldArc)" opacity="0.85"/>
+  <path d="M 210 52 C 290 52 360 90 395 140 C 375 110 320 70 240 64 Z" fill="url(#goldArc)"/>
+  <path d="M 215 68 C 228 68 238 78 244 95 L 365 345 C 368 352 355 358 340 354 C 322 349 315 338 310 325 L 285 272 C 265 240 235 230 205 232 C 175 234 148 248 135 270 L 115 315 C 105 338 90 348 75 352 C 65 354 58 345 64 335 L 185 85 C 192 72 202 68 215 68 Z" fill="url(#navyRoyal)"/>
+  <path d="M 216 122 L 270 240 C 255 232 238 228 220 228 C 198 228 178 234 162 244 Z" fill="#FFFFFF" opacity="0.01"/>
+  <ellipse cx="204" cy="254" rx="14" ry="15" fill="url(#navyRoyal)"/>
+  <path d="M 172 272 C 185 268 200 270 208 276 C 215 282 225 292 245 308 C 250 312 248 316 242 318 C 230 322 220 315 208 305 L 198 335 C 196 348 194 362 192 375 C 175 375 160 370 152 355 C 145 340 148 315 158 295 C 162 285 166 278 172 272 Z" fill="url(#navyRoyal)"/>
+  <ellipse cx="254" cy="286" rx="12" ry="13" fill="url(#navyRoyal)"/>
+  <path d="M 244 300 C 256 298 266 304 270 314 C 274 322 278 335 284 345 C 286 348 284 352 280 352 L 272 352 L 272 376 C 265 377 255 377 248 377 L 246 340 C 242 334 235 328 228 325 C 224 323 222 318 225 314 C 230 306 236 302 244 300 Z" fill="url(#navyRoyal)"/>
+  <path d="M 280 340 C 285 340 288 344 288 348 L 288 376 C 288 378 286 380 284 380 C 282 380 280 378 280 376 L 280 348 Z" fill="url(#navyRoyal)"/>
+  <path d="M 252 246 C 252 246 244 236 237 241 C 230 246 232 254 237 260 L 252 274 L 267 260 C 272 254 274 246 267 241 C 260 236 252 246 252 246 Z" fill="url(#heartGold)"/>
+  <path d="M 380 142 C 372 135 360 132 344 135 C 315 140 292 165 290 198 C 288 224 304 245 330 262 C 362 282 376 304 374 330 C 370 365 338 395 295 400 C 275 402 250 398 230 390 C 235 385 242 380 250 380 C 280 380 330 375 342 338 C 348 318 338 302 315 286 C 285 265 264 242 266 205 C 268 165 304 125 352 118 C 375 115 398 120 412 132 C 418 138 412 148 402 152 C 392 155 385 148 380 142 Z" fill="url(#goldMetallic)"/>
+  <path d="M 412 132 C 430 150 438 175 435 205 C 430 175 410 148 380 135 Z" fill="url(#goldMetallic)" opacity="0.6"/>
+  <path d="M 115 365 C 130 395 160 422 198 438 C 245 456 295 454 345 438 C 385 425 418 398 438 360 C 445 348 448 335 450 320 C 448 350 425 392 390 418 C 345 450 280 460 220 450 C 165 440 125 405 105 365 C 102 358 110 355 115 365 Z" fill="url(#goldHand)"/>
+  <path d="M 130 378 C 175 418 240 435 305 430 C 355 425 395 402 422 368 C 390 392 345 408 290 408 C 230 408 175 388 138 355 C 130 348 122 360 130 378 Z" fill="url(#goldMetallic)"/>
+  <path d="M 285 408 C 340 405 385 385 415 352 C 400 375 360 395 310 398 C 275 400 240 392 215 382 C 235 396 260 406 285 408 Z" fill="#FFE599" opacity="0.5"/>
+</svg>
