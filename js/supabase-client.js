@@ -20,10 +20,12 @@ var AkevaDB = (function () {
     }
   }
 
+  // Obtenir toutes les demandes locales
   function getLocalRequests() {
     try {
       var data = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (!data) {
+        // Exemples initiaux pour prévisualiser le back-office
         var initialData = [
           {
             id: 'req-' + Date.now() + '-1',
@@ -58,6 +60,7 @@ var AkevaDB = (function () {
     }
   }
 
+  // Sauvegarder les demandes locales
   function saveLocalRequests(requests) {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(requests));
@@ -67,6 +70,7 @@ var AkevaDB = (function () {
   }
 
   return {
+    // 1. Ajouter une demande
     addRequest: async function (requestData) {
       var newReq = {
         id: 'req-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
@@ -80,10 +84,12 @@ var AkevaDB = (function () {
         traite: false
       };
 
+      // Sauvegarde locale immédiate
       var current = getLocalRequests();
       current.unshift(newReq);
       saveLocalRequests(current);
 
+      // Envoi à Supabase si configuré
       if (supabaseClient) {
         try {
           await supabaseClient.from('contact_requests').insert([
@@ -98,13 +104,14 @@ var AkevaDB = (function () {
             }
           ]);
         } catch (err) {
-          console.warn("Échec d'insertion distante Supabase :", err);
+          console.warn("Échec d'insertion distante Supabase (enregistré localement) :", err);
         }
       }
 
       return newReq;
     },
 
+    // 2. Récupérer toutes les demandes (triées de la plus récente à la plus ancienne)
     getRequests: async function () {
       if (supabaseClient) {
         try {
@@ -134,12 +141,15 @@ var AkevaDB = (function () {
       }
 
       var local = getLocalRequests();
+      // Tri par date de réception décroissante
       return local.sort(function (a, b) {
         return new Date(b.date_reception) - new Date(a.date_reception);
       });
     },
 
+    // 3. Basculer l'état "Traité / Non traité"
     toggleStatus: async function (id, newState) {
+      // Mise à jour locale
       var local = getLocalRequests();
       var found = local.find(function (r) { return r.id === id; });
       if (found) {
@@ -147,6 +157,7 @@ var AkevaDB = (function () {
         saveLocalRequests(local);
       }
 
+      // Mise à jour distante si Supabase est actif
       if (supabaseClient) {
         try {
           await supabaseClient
@@ -161,6 +172,7 @@ var AkevaDB = (function () {
       return true;
     },
 
+    // 4. Authentification Supabase Auth
     signIn: async function (email, password) {
       if (supabaseClient) {
         try {
@@ -175,6 +187,7 @@ var AkevaDB = (function () {
         }
       }
 
+      // Fallback sécurisé compte unique Super Admin pour Akeva
       if (email === 'admin@akeva.cm' && password === 'akeva2026') {
         var mockUser = { email: email, role: 'superadmin' };
         localStorage.setItem('akeva_admin_session', JSON.stringify(mockUser));
@@ -184,6 +197,7 @@ var AkevaDB = (function () {
       }
     },
 
+    // Déconnexion
     signOut: async function () {
       if (supabaseClient) {
         try {
@@ -193,6 +207,7 @@ var AkevaDB = (function () {
       localStorage.removeItem('akeva_admin_session');
     },
 
+    // Vérifier la session active
     getSession: function () {
       try {
         var s = localStorage.getItem('akeva_admin_session');
@@ -201,5 +216,24 @@ var AkevaDB = (function () {
         return null;
       }
     }
+  };
+})();
+
+// Exposer window.AkevaSupabase pour admin.js et site-sync.js
+(function() {
+  var url = window.AKEVA_SUPABASE_URL || "https://ztbgcgntluttgzjunwvu.supabase.co";
+  var key = window.AKEVA_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp0YmdjZ250bHV0dGd6anVud3Z1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkxNDYxNTYsImV4cCI6MjEwNDcyMjE1Nn0.zbUeyWvnBF7V5DBhbAqJBu1gYaGDt_G7wA5SBtiotmA";
+  var client = null;
+  if (window.supabase && url && key) {
+    try {
+      client = window.supabase.createClient(url, key);
+    } catch (e) {
+      console.warn("AkevaSupabase init warning:", e);
+    }
+  }
+  window.AkevaSupabase = {
+    client: client,
+    url: url,
+    anonKey: key
   };
 })();
