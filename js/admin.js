@@ -77,12 +77,28 @@
   /* 3. DÉTECTION DU COMPTE SUPER ADMIN & INITIALISATION                       */
   /* ========================================================================= */
 
+  async function getClient(maxWaitMs = 2500) {
+    const start = Date.now();
+    while (Date.now() - start < maxWaitMs) {
+      if (window.AkevaSupabase && window.AkevaSupabase.client) {
+        return window.AkevaSupabase.client;
+      }
+      if (window.supabase) {
+        try {
+          return window.supabase.createClient(
+            "https://ztbgcgntluttgzjunwvu.supabase.co",
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp0YmdjZ250bHV0dGd6anVud3Z1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkxNDYxNTYsImV4cCI6MjEwNDcyMjE1Nn0.zbUeyWvnBF7V5DBhbAqJBu1gYaGDt_G7wA5SBtiotmA"
+          );
+        } catch (e) {}
+      }
+      await new Promise(res => setTimeout(res, 80));
+    }
+    throw new Error('Initialisation de Supabase non disponible.');
+  }
+
   async function checkAdminAccountStatus() {
     try {
-      const client = window.AkevaSupabase?.client;
-      if (!client) {
-        throw new Error('Client Supabase non initialisé.');
-      }
+      const client = await getClient();
 
       // Vérifie si un compte admin existe
       const { data, count, error } = await client
@@ -684,7 +700,7 @@
             <div class="inline-flex items-center gap-1">
               <a href="https://wa.me/${waPhone}?text=${waText}" target="_blank"
                 class="p-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors" title="Contacter sur WhatsApp">
-                <img src="../assets/whatsapp.svg" alt="WA" class="w-4 h-4"/>
+                <img src="/assets/whatsapp.svg" alt="WA" class="w-4 h-4"/>
               </a>
               <button class="btn-delete-request p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                 data-id="${req.id}" title="Supprimer">
