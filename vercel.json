@@ -1,9 +1,1 @@
-{
-  "cleanUrls": true,
-  "rewrites": [
-    { "source": "/admin", "destination": "/admin.html" },
-    { "source": "/admin/", "destination": "/admin.html" },
-    { "source": "/backoffice", "destination": "/admin.html" },
-    { "source": "/backoffice/", "destination": "/admin.html" }
-  ]
-}
+{\n  "cleanUrls": true,\n  "rewrites": [\n    { "source": "/admin", "destination": "/admin.html" },\n    { "source": "/admin/", "destination": "/admin.html" },\n    { "source": "/backoffice", "destination": "/admin.html" },\n    { "source": "/backoffice/", "destination": "/admin.html" }\n  ]\n}\n
