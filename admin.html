@@ -107,7 +107,7 @@
 <body class="bg-surface text-on-surface antialiased">
 
   <!-- ========================================================================= -->
-  <!-- 0. ÉCRAN DE CHARGEMENT INITIAL (Vérification de l'état du Super Admin)     -->
+  <!-- 0. ÉCRAN DE CHARGEMENT INITIAL                                            -->
   <!-- ========================================================================= -->
   <div id="screen-loading" class="fixed inset-0 bg-white flex flex-col items-center justify-center z-50">
     <div class="w-16 h-16 rounded-full border-4 border-slate-200 border-t-[#c5a059] animate-spin mb-4"></div>
@@ -118,7 +118,7 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- 0.1 ÉCRAN INITIAL : CRÉATION DU PREMIER SUPER ADMIN UNIQUE                -->
+  <!-- 0.1 ÉCRAN INITIAL : CRÉATION DU PREMIER COMPTE ADMINISTRATEUR             -->
   <!-- ========================================================================= -->
   <div id="screen-setup" class="fixed inset-0 bg-slate-900/95 flex items-center justify-center p-4 z-40 hidden backdrop-blur-md overflow-y-auto">
     <div class="bg-white rounded-3xl p-8 max-w-lg w-full shadow-2xl border border-slate-100 my-8">
@@ -130,9 +130,9 @@
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
           <span>Configuration Initiale — Premier Accès</span>
         </div>
-        <h2 class="font-headline-lg text-2xl font-bold text-primary">Création du Super Admin Unique</h2>
+        <h2 class="font-headline-lg text-2xl font-bold text-primary">Création du Super Admin</h2>
         <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-          Définissez le compte maître d'Akeva Sérénité. Dès sa création, ce formulaire sera verrouillé de manière irréversible.
+          Définissez le compte maître d'Akeva Sérénité. Vous pourrez ensuite nommer d'autres administrateurs dans le back-office.
         </p>
       </div>
 
@@ -141,13 +141,13 @@
       <form id="form-setup" class="space-y-4">
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">Nom Complet du Responsable</label>
-          <input type="text" id="setup-fullname" required placeholder="Ex: Dr. Jean-Marc Eba"
+          <input type="text" id="setup-fullname" required placeholder="Ex: Akeva Directeur"
             class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-[#0d2040] focus:outline-none"/>
         </div>
 
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">Adresse Email Super Admin</label>
-          <input type="email" id="setup-email" required placeholder="admin@akevaserenite.cm"
+          <input type="email" id="setup-email" required placeholder="contact@akeva.online"
             class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-[#0d2040] focus:outline-none"/>
         </div>
 
@@ -176,14 +176,14 @@
         <button type="submit" id="btn-submit-setup"
           class="w-full py-3 px-4 rounded-xl bg-primary-container hover:bg-primary text-white font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-2">
           <span class="material-symbols-outlined text-lg text-secondary-fixed">verified_user</span>
-          <span>Créer mon Compte Super Admin Unique</span>
+          <span>Créer mon Compte Super Admin</span>
         </button>
       </form>
     </div>
   </div>
 
   <!-- ========================================================================= -->
-  <!-- 0.2 ÉCRAN DE CONNEXION (Quand le Super Admin existe déjà)                 -->
+  <!-- 0.2 ÉCRAN DE CONNEXION AVEC "MOT DE PASSE OUBLIÉ"                         -->
   <!-- ========================================================================= -->
   <div id="screen-login" class="fixed inset-0 bg-slate-900/95 flex items-center justify-center p-4 z-40 hidden backdrop-blur-md">
     <div class="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-slate-100">
@@ -200,7 +200,7 @@
       <form id="form-login" class="space-y-4">
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">Email Administrateur</label>
-          <input type="email" id="login-email" required placeholder="admin@akevaserenite.cm"
+          <input type="email" id="login-email" required placeholder="contact@akeva.online"
             class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-[#0d2040] focus:outline-none"/>
         </div>
 
@@ -215,6 +215,16 @@
           </div>
         </div>
 
+        <div class="flex items-center justify-between text-xs pt-1">
+          <label class="flex items-center gap-2 cursor-pointer text-slate-600">
+            <input type="checkbox" id="login-remember" checked class="rounded border-slate-300 text-primary focus:ring-0"/>
+            <span>Rester connecté</span>
+          </label>
+          <button type="button" id="btn-forgot-password" class="text-secondary font-bold hover:underline focus:outline-none">
+            Mot de passe oublié ?
+          </button>
+        </div>
+
         <button type="submit" id="btn-submit-login"
           class="w-full py-3 px-4 rounded-xl bg-primary-container hover:bg-primary text-white font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-2">
           <span class="material-symbols-outlined text-lg text-secondary-fixed">login</span>
@@ -225,12 +235,48 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- TABLEAU DE BORD COMPLET (DESIGN EXACT STITCH MULTI-RUBRIQUES)              -->
+  <!-- MODAL : MOT DE PASSE OUBLIÉ                                               -->
+  <!-- ========================================================================= -->
+  <div id="modal-forgot-password" class="fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-4 hidden backdrop-blur-xs">
+    <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100 text-center space-y-4">
+      <div class="w-12 h-12 rounded-2xl bg-amber-50 text-secondary mx-auto flex items-center justify-center border border-amber-100">
+        <span class="material-symbols-outlined text-2xl">lock_reset</span>
+      </div>
+      <h3 class="font-headline text-lg font-bold text-primary">Récupération de Compte</h3>
+      <p class="text-xs text-slate-500 leading-relaxed">
+        Pour des raisons strictes de confidentialité et de sécurité médicale, la réinitialisation d'un compte nécessite l'assistance directe du Super Administrateur ou de la Direction Akeva Sérénité.
+      </p>
+      <div class="p-4 rounded-xl bg-surface-container-low text-xs text-left space-y-2">
+        <div class="flex items-center gap-2 font-bold text-primary">
+          <span class="material-symbols-outlined text-base text-secondary">phone_in_talk</span>
+          <span>Lignes Directes : 697 572 685 • 653 151 427</span>
+        </div>
+        <div class="flex items-center gap-2 font-bold text-primary">
+          <span class="material-symbols-outlined text-base text-secondary">mail</span>
+          <span>Support Direction : contact@akevaserenite.cm</span>
+        </div>
+      </div>
+      <div class="flex gap-2 justify-center pt-2">
+        <a href="https://wa.me/237697572685?text=Bonjour%20Akeva%20S%C3%A9r%C3%A9nit%C3%A9%2C%20je%20suis%20administrateur%20et%20je%20souhaite%20r%C3%A9initialiser%20mon%20mot%20de%20passe."
+           target="_blank" rel="noopener noreferrer"
+           class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#1EBE5D] text-white font-bold text-xs shadow-sm">
+          <img src="/assets/whatsapp.svg" class="w-4 h-4" alt="WhatsApp"/>
+          <span>Assistance WhatsApp Directe</span>
+        </a>
+        <button type="button" id="btn-close-forgot-modal" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 font-bold text-xs text-slate-600">
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- TABLEAU DE BORD COMPLET (NETTOYÉ ET SYNCHRONISÉ)                          -->
   <!-- ========================================================================= -->
   <div id="screen-dashboard" class="hidden min-h-screen">
 
     <!-- ======================================================================= -->
-    <!-- SIDEBAR OFFICIELLE STITCH (w-72 fixe)                                   -->
+    <!-- SIDEBAR OFFICIELLE STITCH (w-72 fixe) SANS RUBRIQUES INUTILES           -->
     <!-- ======================================================================= -->
     <aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between overflow-hidden">
       <div class="flex flex-col flex-1 overflow-y-auto px-4 py-6 custom-scrollbar">
@@ -249,10 +295,10 @@
             <span class="w-2 h-2 rounded-full bg-tertiary-fixed animate-pulse"></span>
             <span class="font-label-xs text-xs uppercase tracking-wider text-on-primary font-bold">Back-Office Admin</span>
           </div>
-          <span class="font-label-xs text-xs text-secondary-fixed bg-secondary/30 px-2 py-0.5 rounded-full font-bold">v2.4</span>
+          <span class="font-label-xs text-xs text-secondary-fixed bg-secondary/30 px-2 py-0.5 rounded-full font-bold">v2.5</span>
         </div>
 
-        <!-- Menu Navigation Stitch -->
+        <!-- Menu Navigation Nettoyé -->
         <nav class="flex flex-col gap-5">
           <!-- Section 1 : Vue d'ensemble -->
           <div class="flex flex-col gap-1">
@@ -282,13 +328,13 @@
                 <span class="material-symbols-outlined text-[20px]">medical_services</span>
                 <span>Services</span>
               </div>
-              <span class="font-label-xs text-[10px] text-outline font-semibold">5/5</span>
+              <span class="font-label-xs text-[10px] text-secondary font-bold">5 actifs</span>
             </a>
           </div>
 
-          <!-- Section 3 : Contenus Éditoriaux -->
+          <!-- Section 3 : Contenus & Médias -->
           <div class="flex flex-col gap-1">
-            <span class="px-3 font-label-xs text-[10px] uppercase tracking-wider text-outline font-bold">Contenus Éditoriaux</span>
+            <span class="px-3 font-label-xs text-[10px] uppercase tracking-wider text-outline font-bold">Contenus & Médias</span>
             <a href="#" class="nav-stitch-link flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-sm font-medium" data-view="view-temoignages">
               <span class="material-symbols-outlined text-[20px]">format_quote</span>
               <span>Témoignages</span>
@@ -311,56 +357,39 @@
             </a>
           </div>
 
-          <!-- Section 4 : Site & Expérience -->
-          <div class="flex flex-col gap-1">
-            <span class="px-3 font-label-xs text-[10px] uppercase tracking-wider text-outline font-bold">Site & Expérience</span>
-            <a href="#" class="nav-stitch-link flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-sm font-medium" data-view="view-contenu-du-site">
-              <span class="material-symbols-outlined text-[20px]">web</span>
-              <span>Contenu du site</span>
-            </a>
-            <a href="#" class="nav-stitch-link flex items-center justify-between px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-sm font-medium" data-view="view-assistant-qro">
-              <div class="flex items-center gap-3">
-                <span class="material-symbols-outlined text-[20px]">assistant_navigation</span>
-                <span>Assistant QRO</span>
-              </div>
-              <span class="px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-xs text-[10px] font-bold">WhatsApp</span>
-            </a>
-          </div>
-
-          <!-- Section 5 : Système -->
+          <!-- Section 4 : Système & Équipe -->
           <div class="flex flex-col gap-1">
             <span class="px-3 font-label-xs text-[10px] uppercase tracking-wider text-outline font-bold">Système</span>
-            <a href="#" class="nav-stitch-link flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-sm font-medium" data-view="view-statistiques">
-              <span class="material-symbols-outlined text-[20px]">insights</span>
-              <span>Statistiques</span>
-            </a>
             <a href="#" class="nav-stitch-link flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-sm font-medium" data-view="view-parametres">
               <span class="material-symbols-outlined text-[20px]">settings</span>
-              <span>Paramètres</span>
+              <span>Paramètres & Équipe</span>
+            </a>
+            <a href="#" class="nav-stitch-link flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all text-sm font-medium" data-view="view-mon-profil">
+              <span class="material-symbols-outlined text-[20px]">account_circle</span>
+              <span>Mon Profil</span>
             </a>
           </div>
         </nav>
       </div>
 
-      <!-- Profil Utilisateur en bas de Sidebar -->
+      <!-- Profil Utilisateur Personnalisable en bas de Sidebar -->
       <div class="p-4 bg-surface-container-low border-t border-surface-container">
         <div class="flex items-center gap-3 mb-2">
-          <div class="relative">
-            <div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center text-white font-bold text-sm">
-              <span id="user-avatar-initials">AS</span>
-            </div>
-            <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-tertiary-fixed-dim ring-2 ring-surface-container-low"></span>
+          <div class="relative w-10 h-10 rounded-full overflow-hidden bg-primary-container flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-sm border border-slate-200">
+            <img id="user-avatar-img" class="w-full h-full object-cover hidden" alt="Avatar"/>
+            <span id="user-avatar-initials">AD</span>
+            <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
           </div>
           <div class="flex flex-col min-w-0">
-            <span id="user-display-name" class="text-xs font-bold text-on-surface truncate">Dr. Jean-Marc Eba</span>
-            <span id="user-display-email" class="text-[10px] text-on-surface-variant truncate">Super Administrateur</span>
+            <span id="user-display-name" class="text-xs font-bold text-on-surface truncate">Akeva Directeur</span>
+            <span id="user-display-email" class="text-[10px] text-on-surface-variant truncate">Super Admin</span>
           </div>
         </div>
         <div class="flex items-center justify-between pt-1 text-xs">
           <div class="flex items-center gap-2">
-            <a href="#" class="nav-stitch-link text-slate-500 hover:text-primary transition-colors text-[11px]" data-view="view-mon-profil">Mon profil</a>
+            <a href="#" class="nav-stitch-link text-slate-500 hover:text-primary transition-colors text-[11px] font-semibold" data-view="view-mon-profil">Gérer mon profil</a>
             <span class="text-outline text-xs">•</span>
-            <span class="text-emerald-700 font-semibold text-[10px]">Actif</span>
+            <span class="text-emerald-700 font-bold text-[10px]">En ligne</span>
           </div>
           <button id="btn-logout" class="p-1.5 rounded-md text-error hover:bg-error-container hover:text-on-error-container transition-colors" title="Déconnexion">
             <span class="material-symbols-outlined text-[18px]">logout</span>
@@ -380,8 +409,8 @@
             <input id="global-search-input" class="bg-transparent border-none outline-none text-xs text-on-surface w-full placeholder:text-outline" placeholder="Rechercher bénéficiaire, dossier, tél, Yaoundé..." type="text"/>
           </div>
           <div class="hidden xl:flex items-center gap-2 px-2.5 py-1 rounded-full bg-surface-container-low text-on-surface-variant text-[11px] font-semibold">
-            <span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim animate-pulse"></span>
-            <span>Sync 24h/24 active</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Sync Supabase 24h/24 active</span>
           </div>
         </div>
 
@@ -402,15 +431,14 @@
       </header>
 
       <!-- ===================================================================== -->
-      <!-- CONTENEUR PRINCIPAL DES VUES STITCH                                    -->
+      <!-- CONTENEUR PRINCIPAL DES VUES                                          -->
       <!-- ===================================================================== -->
       <main class="relative pt-16 bg-surface flex-1 w-full px-8 py-6">
 
         <!-- =================================================================== -->
-        <!-- VUE 1 : TABLEAU DE BORD & GESTION (Screen b5b33620ef8b4764b0ccebf8) -->
+        <!-- VUE 1 : TABLEAU DE BORD & GESTION                                   -->
         <!-- =================================================================== -->
         <div id="view-tableau-de-bord" class="stitch-view flex flex-col w-full space-y-8 pb-12">
-          <!-- 1. En-tête de supervision -->
           <section class="flex flex-col xl:flex-row xl:items-end justify-between gap-6 bg-surface-container-lowest p-6 sm:p-8 rounded-2xl shadow-sm">
             <div class="space-y-2 max-w-3xl">
               <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant text-[11px] tracking-wider uppercase font-bold">
@@ -418,16 +446,16 @@
                 <span>Supervision Centrale — Yaoundé, Cameroun</span>
               </div>
               <h1 class="font-headline text-2xl sm:text-3xl font-bold text-primary tracking-tight">
-                Tableau de bord d'administration — Coordination Akeva Sérénité
+                Tableau de bord de coordination — Akeva Sérénité
               </h1>
               <p class="text-xs sm:text-sm text-on-surface-variant">
-                Suivi en direct des demandes de prise en charge, activité des visiteurs et pilotage des contenus à Yaoundé.
+                Suivi en temps réel des demandes de prise en charge, activité des visiteurs et gestion des services à domicile.
               </p>
             </div>
             <div class="flex flex-wrap items-center gap-3 shrink-0">
               <button id="btn-edit-stats-modal" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-bold transition-colors">
                 <span class="material-symbols-outlined text-[18px] text-secondary">tune</span>
-                <span>Ajuster les chiffres manuellement</span>
+                <span>Ajuster les indicateurs clés</span>
               </button>
               <button onclick="window.print()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface-variant text-xs font-semibold transition-colors">
                 <span class="material-symbols-outlined text-[18px] text-outline">picture_as_pdf</span>
@@ -436,7 +464,7 @@
             </div>
           </section>
 
-          <!-- 2. KPIs dynamiques -->
+          <!-- KPIs dynamiques -->
           <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <div class="p-5 rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col justify-between hover:shadow-md transition-all">
               <div class="flex items-start justify-between">
@@ -465,9 +493,9 @@
                 </div>
               </div>
               <div class="mt-3 pt-2 text-[11px] flex items-center justify-between font-semibold">
-                <span class="text-error">8 non lues</span>
-                <span class="text-secondary">14 en cours</span>
-                <span class="text-slate-500">46 actives</span>
+                <span class="text-error" id="kpi-count-nonlues">8 non lues</span>
+                <span class="text-secondary" id="kpi-count-encours">14 en cours</span>
+                <span class="text-slate-500" id="kpi-count-actives">46 actives</span>
               </div>
             </div>
 
@@ -514,12 +542,12 @@
               </div>
               <div class="mt-3 pt-2 flex items-center gap-1 text-[11px] text-emerald-700 font-semibold">
                 <span class="material-symbols-outlined text-[16px]">verified</span>
-                <span>Engagement &lt; 2h respecté</span>
+                <span>Visite préalable &lt; 2h</span>
               </div>
             </div>
           </section>
 
-          <!-- 3. Demandes récentes en direct (Table Stitch) -->
+          <!-- Demandes récentes en direct -->
           <section class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden p-6">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
               <div>
@@ -550,7 +578,7 @@
             </div>
           </section>
 
-          <!-- 4. Double colonne : Popularité des Formules & Graphique d'évolution -->
+          <!-- Double colonne : Popularité des Formules & Graphique d'évolution -->
           <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div class="lg:col-span-6 bg-surface-container-lowest p-6 rounded-2xl shadow-sm space-y-4">
               <div class="flex items-center justify-between">
@@ -568,10 +596,9 @@
             <div class="lg:col-span-6 bg-surface-container-lowest p-6 rounded-2xl shadow-sm space-y-4">
               <div class="flex items-center justify-between">
                 <div>
-                  <h3 class="font-headline text-base font-bold text-primary">Évolution des Gardes Mensuelles</h3>
+                  <h3 class="font-headline text-base font-bold text-primary">Évolution des Interventions Mensuelles</h3>
                   <p class="text-xs text-slate-500">Gardes de jour vs Gardes de nuit à Yaoundé</p>
                 </div>
-                <button onclick="document.querySelector('[data-view=\'view-statistiques\']').click()" class="text-xs font-bold text-secondary hover:underline">Détails</button>
               </div>
               <div class="h-64 relative">
                 <canvas id="dashboard-chart-evolution"></canvas>
@@ -581,7 +608,7 @@
         </div>
 
         <!-- =================================================================== -->
-        <!-- VUE 2 : GESTION DES DEMANDES (Screen 35d830f649244e30b69ce19d3387) -->
+        <!-- VUE 2 : GESTION DES DEMANDES                                        -->
         <!-- =================================================================== -->
         <div id="view-demandes" class="stitch-view hidden flex flex-col w-full space-y-6 pb-12">
           <div class="flex flex-col xl:flex-row xl:items-end justify-between gap-4">
@@ -658,7 +685,7 @@
         </div>
 
         <!-- =================================================================== -->
-        <!-- VUE 3 : GESTION DES BÉNÉFICIAIRES (Screen 587024bea26c4751af9b4acd) -->
+        <!-- VUE 3 : GESTION DES BÉNÉFICIAIRES                                   -->
         <!-- =================================================================== -->
         <div id="view-beneficiaires" class="stitch-view hidden flex flex-col w-full space-y-6 pb-12">
           <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
@@ -668,7 +695,7 @@
                 <span class="material-symbols-outlined text-xs">chevron_right</span>
                 <span class="text-secondary font-bold uppercase tracking-wider text-[11px]">Bénéficiaires & Dossiers</span>
               </div>
-              <h1 class="font-headline text-2xl sm:text-3xl font-bold text-primary">Répertoire des Bénéficiaires & Dossiers Médicaux</h1>
+              <h1 class="font-headline text-2xl sm:text-3xl font-bold text-primary">Répertoire des Bénéficiaires & Dossiers</h1>
               <p class="text-xs text-slate-500 mt-1">Suivi individualisé des personnes vulnérables accompagnées à domicile à Yaoundé, familles et soignants délégués.</p>
             </div>
             <div class="flex flex-wrap items-center gap-3">
@@ -681,12 +708,12 @@
 
           <!-- Grille des fiches bénéficiaires -->
           <div id="grid-beneficiaires-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Dynamique depuis site_settings ou Supabase -->
+            <!-- Dynamique -->
           </div>
         </div>
 
         <!-- =================================================================== -->
-        <!-- VUE 4 : SERVICES & PRESTATIONS + DRAWER (Screen 68f36e1662ba48a8a1)  -->
+        <!-- VUE 4 : SERVICES & PRESTATIONS                                      -->
         <!-- =================================================================== -->
         <div id="view-services" class="stitch-view hidden flex flex-col w-full space-y-6 pb-12">
           <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
@@ -696,49 +723,48 @@
                 <span class="material-symbols-outlined text-xs">chevron_right</span>
                 <span class="text-secondary font-bold text-xs">Services & Prestations</span>
               </div>
-              <h1 class="font-headline text-2xl sm:text-3xl font-bold text-primary">Gestion du Catalogue des Services & Tarification</h1>
-              <p class="text-xs text-slate-500 mt-1">Administration des descriptions, missions couvertes, modalités et statuts synchronisés en temps réel avec le portail public.</p>
+              <h1 class="font-headline text-2xl sm:text-3xl font-bold text-primary">Catalogue des Services Réels du Site</h1>
+              <p class="text-xs text-slate-500 mt-1">Éditez les 5 formules authentiques d'Akeva Sérénité : points clés, horaires, descriptions et tarifs synchronisés en direct avec le portail public.</p>
             </div>
             <div class="flex items-center gap-3">
               <button id="btn-add-service" class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary-container text-on-primary hover:bg-primary text-xs font-bold shadow-md transition-all">
                 <span class="material-symbols-outlined text-lg text-secondary-fixed">add_circle</span>
-                <span>+ Configurer une nouvelle prestation</span>
+                <span>+ Configurer une prestation</span>
               </button>
             </div>
           </div>
 
-          <!-- Bannière mode CMS dédié -->
-          <div class="p-5 rounded-2xl bg-surface-container-low shadow-sm flex items-center gap-4 relative overflow-hidden">
+          <div class="p-5 rounded-2xl bg-surface-container-low shadow-sm flex items-center gap-4 relative overflow-hidden border border-slate-100">
             <div class="w-1.5 h-full absolute left-0 top-0 bg-secondary"></div>
             <div class="w-10 h-10 rounded-xl bg-primary-container/10 flex items-center justify-center text-primary-container shrink-0">
-              <span class="material-symbols-outlined text-2xl">published_with_changes</span>
+              <span class="material-symbols-outlined text-2xl">sync_saved_locally</span>
             </div>
             <div>
-              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-tertiary-container text-tertiary-fixed mr-2">SYSTÈME CMS DÉDIÉ</span>
-              <span class="text-xs font-bold text-primary">Personnalisation Intégrale Active</span>
-              <p class="text-xs text-slate-600 mt-0.5">Toute modification apportée aux textes, points clés ou tarifs d'une prestation s'enregistre immédiatement dans Supabase et se reflète sur le site vitrine.</p>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 mr-2">SYNCHRONISATION LIVE ACTIVE</span>
+              <span class="text-xs font-bold text-primary">Données Directement Liées au Site Vitrine</span>
+              <p class="text-xs text-slate-600 mt-0.5">Toute modification enregistrée ici met à jour immédiatement les fiches des services sur le portail public.</p>
             </div>
           </div>
 
-          <!-- Grille des cartes de services Stitch -->
+          <!-- Grille des cartes de services -->
           <div id="grid-services-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <!-- Dynamique -->
           </div>
         </div>
 
         <!-- =================================================================== -->
-        <!-- VUE 5 : MODÉRATION DES TÉMOIGNAGES (Screen b994c3745cbd499e8715bc5) -->
+        <!-- VUE 5 : MODÉRATION DES TÉMOIGNAGES                                  -->
         <!-- =================================================================== -->
         <div id="view-temoignages" class="stitch-view hidden flex flex-col w-full space-y-6 pb-12">
           <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
             <div>
               <div class="flex items-center gap-2 text-xs text-slate-500 mb-1">
-                <span>Contenus Éditoriaux</span>
+                <span>Contenus & Médias</span>
                 <span class="material-symbols-outlined text-xs">chevron_right</span>
-                <span class="text-primary font-bold">Modération des Avis Familles</span>
+                <span class="text-primary font-bold">Avis & Retours d'Expérience</span>
               </div>
-              <h1 class="font-headline text-2xl sm:text-3xl font-bold text-primary">Témoignages & Retours d'Expérience</h1>
-              <p class="text-xs text-slate-500 mt-1">Validation, ajout manuel et publication des avis des familles locales et de la diaspora.</p>
+              <h1 class="font-headline text-2xl sm:text-3xl font-bold text-primary">Témoignages & Avis Réels des Familles</h1>
+              <p class="text-xs text-slate-500 mt-1">Consultez, modifiez et ajoutez les retours d'expérience des familles de Yaoundé et de la diaspora.</p>
             </div>
             <button id="btn-add-temoignage" class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary-container text-on-primary hover:bg-primary text-xs font-bold shadow-md">
               <span class="material-symbols-outlined text-lg text-secondary-fixed">rate_review</span>
@@ -752,18 +778,18 @@
         </div>
 
         <!-- =================================================================== -->
-        <!-- VUE 6 : GESTION DE LA FAQ (Screen 77e4f4e3c3854fc6be09ab0667435fe3) -->
+        <!-- VUE 6 : FOIRE AUX QUESTIONS (FAQ)                                   -->
         <!-- =================================================================== -->
         <div id="view-faq" class="stitch-view hidden flex flex-col w-full space-y-6 pb-12">
           <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
             <div>
               <div class="flex items-center gap-2 text-xs text-slate-500 mb-1">
-                <span>Contenus Éditoriaux</span>
+                <span>Contenus & Médias</span>
                 <span class="material-symbols-outlined text-xs">chevron_right</span>
                 <span class="text-primary font-bold">Foire Aux Questions</span>
               </div>
-              <h1 class="font-headline text-2xl sm:text-3xl font-bold text-primary">Gestion de la Foire Aux Questions (FAQ)</h1>
-              <p class="text-xs text-slate-500 mt-1">Éditez les réponses aux interrogations courantes des familles sur les soins et le fonctionnement à Yaoundé.</p>
+              <h1 class="font-headline text-2xl sm:text-3xl font-bold text-primary">Gestion de la FAQ Authentique</h1>
+              <p class="text-xs text-slate-500 mt-1">Éditez les questions/réponses affichées sur la page FAQ publique du site (`faq.html`).</p>
             </div>
             <button id="btn-add-faq" class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary-container text-on-primary hover:bg-primary text-xs font-bold shadow-md">
               <span class="material-symbols-outlined text-lg text-secondary-fixed">add_circle</span>
@@ -772,27 +798,28 @@
           </div>
 
           <div id="container-faq-list" class="space-y-4 max-w-4xl">
+
             <!-- Dynamique -->
           </div>
         </div>
 
         <!-- =================================================================== -->
-        <!-- VUE 7 : RÉALISATIONS (Screen 2346fc1a0ff8482d8b252ee131af9fee)     -->
+        <!-- VUE 7 : RÉALISATIONS & INTERVENTIONS                                -->
         <!-- =================================================================== -->
         <div id="view-realisations" class="stitch-view hidden flex flex-col w-full space-y-6 pb-12">
           <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
             <div>
               <div class="flex items-center gap-2 text-xs text-slate-500 mb-1">
-                <span>Contenus Éditoriaux</span>
+                <span>Contenus & Médias</span>
                 <span class="material-symbols-outlined text-xs">chevron_right</span>
                 <span class="text-primary font-bold">Réalisations & Terrain</span>
               </div>
-              <h1 class="font-headline text-2xl sm:text-3xl font-bold text-primary">Gestion des Réalisations & Interventions</h1>
-              <p class="text-xs text-slate-500 mt-1">Présentation des cas d'accompagnement, réhabilitations réussies et jalons d'Akeva Sérénité.</p>
+              <h1 class="font-headline text-2xl sm:text-3xl font-bold text-primary">Réalisations & Interventions à Yaoundé</h1>
+              <p class="text-xs text-slate-500 mt-1">Illustrez les accompagnements réussis, retours d'hospitalisation et prises en charge avec photos.</p>
             </div>
-            <button id="btn-add-realisation" class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary-container text-on-primary hover:bg-primary text-xs font-bold shadow-md">
+            <button id="btn-open-add-realisation" class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary-container text-on-primary hover:bg-primary text-xs font-bold shadow-md">
               <span class="material-symbols-outlined text-lg text-secondary-fixed">add_photo_alternate</span>
-              <span>+ Nouvelle Réalisation (Upload jusqu'à 100 Mo)</span>
+              <span>+ Nouvelle Réalisation (Formulaire Complet)</span>
             </button>
           </div>
 
@@ -802,282 +829,68 @@
         </div>
 
         <!-- =================================================================== -->
-        <!-- VUE 8 : GALERIE & VIDÉOS (Screen cb22dbfed6e047c88b22b7674ef4c4a8) -->
+        <!-- VUE 8 : GALERIE & VIDÉOS AVEC VRAI FORMULAIRE                       -->
         <!-- =================================================================== -->
         <div id="view-galerie-et-videos" class="stitch-view hidden flex flex-col w-full space-y-6 pb-12">
           <div class="flex items-center justify-between">
             <div>
               <h1 class="font-headline text-2xl font-bold text-primary">Galerie Photos & Vidéothèque Médicale</h1>
-              <p class="text-xs text-slate-500 mt-1">Médias des interventions à domicile, auxiliaires certifiés et équipements de confort.</p>
+              <p class="text-xs text-slate-500 mt-1">Ajoutez et gérez les médias des interventions à domicile, auxiliaires certifiés et équipements.</p>
             </div>
-            <button onclick="document.getElementById('btn-add-realisation').click()" class="px-4 py-2 rounded-lg bg-primary-container text-white text-xs font-bold flex items-center gap-2">
-              <span class="material-symbols-outlined text-base">cloud_upload</span>
-              <span>Téléverser un média</span>
+            <button id="btn-open-upload-galerie" class="px-4 py-2.5 rounded-xl bg-primary-container hover:bg-primary text-white text-xs font-bold flex items-center gap-2 shadow-sm">
+              <span class="material-symbols-outlined text-base text-secondary-fixed">cloud_upload</span>
+              <span>+ Téléverser un Média (Photo / Vidéo)</span>
             </button>
           </div>
-          <div id="grid-galerie-videos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+          <div id="grid-galerie-videos" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <!-- Dynamique -->
           </div>
         </div>
 
         <!-- =================================================================== -->
-        <!-- VUE 9 : DOCUMENTS & MÉDIAS (Screen a75814fa9ec64201b47e8c870354ddb) -->
+        <!-- VUE 9 : DOCUMENTS & MÉDIAS AVEC VRAI FORMULAIRE D'IMPORTATION       -->
         <!-- =================================================================== -->
         <div id="view-documents-et-medias" class="stitch-view hidden flex flex-col w-full space-y-6 pb-12">
           <div class="flex items-center justify-between">
             <div>
               <h1 class="font-headline text-2xl font-bold text-primary">Documents & Rapports Officiels</h1>
-              <p class="text-xs text-slate-500 mt-1">Fiches d'évaluation gériatrique, protocoles sanitaires MINSANTE et guides téléchargeables.</p>
+              <p class="text-xs text-slate-500 mt-1">Fiches d'évaluation gériatrique, protocoles sanitaires et guides téléchargeables.</p>
             </div>
-            <button onclick="alert('Module d\'archivage documentaire actif')" class="px-4 py-2 rounded-lg bg-surface-container text-primary text-xs font-bold">
-              <span>+ Importer un document PDF</span>
-            </button>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
-              <div>
-                <span class="material-symbols-outlined text-4xl text-amber-700 mb-2">description</span>
-                <h3 class="font-bold text-primary text-sm">Fiche d'Évaluation Gériatrique Initiale (Modèle Yaoundé)</h3>
-                <p class="text-xs text-slate-500 mt-1">Document type utilisé lors de la visite préalable à domicile sous 2h.</p>
-              </div>
-              <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                <span class="text-slate-400">PDF • 1.4 Mo</span>
-                <a href="#" class="text-secondary font-bold hover:underline">Consulter</a>
-              </div>
-            </div>
-
-            <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
-              <div>
-                <span class="material-symbols-outlined text-4xl text-emerald-700 mb-2">verified</span>
-                <h3 class="font-bold text-primary text-sm">Charte Déontologique & Soins d'Hygiène Certifiés</h3>
-                <p class="text-xs text-slate-500 mt-1">Protocole clinique signé par chaque auxiliaire de vie et infirmier délégué.</p>
-              </div>
-              <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                <span class="text-slate-400">PDF • 890 Ko</span>
-                <a href="#" class="text-secondary font-bold hover:underline">Consulter</a>
-              </div>
-            </div>
-
-            <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
-              <div>
-                <span class="material-symbols-outlined text-4xl text-blue-700 mb-2">health_and_safety</span>
-                <h3 class="font-bold text-primary text-sm">Guide Pratique de la Famille Aidante & Diaspora</h3>
-                <p class="text-xs text-slate-500 mt-1">Brochure d'accompagnement pour coordonner la garde à distance en toute quiétude.</p>
-              </div>
-              <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                <span class="text-slate-400">PDF • 2.1 Mo</span>
-                <a href="#" class="text-secondary font-bold hover:underline">Consulter</a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- =================================================================== -->
-        <!-- VUE 10 : CONTENU DU SITE (Screen 47b73a4bf857400ca264ae14ae647748) -->
-        <!-- =================================================================== -->
-        <div id="view-contenu-du-site" class="stitch-view hidden flex flex-col w-full space-y-6 pb-12">
-          <!-- Header Éditorial Stitch -->
-          <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
-            <div>
-              <div class="flex items-center gap-2 text-xs text-slate-500 mb-1">
-                <span>Site & Expérience</span>
-                <span class="material-symbols-outlined text-xs">chevron_right</span>
-                <span class="text-primary font-bold">Sanctuarisation Éditoriale</span>
-              </div>
-              <h1 class="font-headline text-2xl sm:text-3xl font-bold text-primary">Administration des Contenus Textuels du Site</h1>
-              <p class="text-xs text-slate-500 mt-1">Modifiez tous les textes de présentation, accroches d'accueil et engagements avec prévisualisation en direct.</p>
-            </div>
-            <button id="btn-save-site-content" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary-container text-on-primary hover:bg-primary text-xs font-bold shadow-md transition-all">
-              <span class="material-symbols-outlined text-lg text-secondary-fixed">cloud_done</span>
-              <span>Publier les textes sur le site</span>
+            <button id="btn-open-upload-document" class="px-4 py-2.5 rounded-xl bg-primary-container hover:bg-primary text-white text-xs font-bold flex items-center gap-2 shadow-sm">
+              <span class="material-symbols-outlined text-base text-secondary-fixed">upload_file</span>
+              <span>+ Importer un Document (PDF / Word)</span>
             </button>
           </div>
 
-          <!-- Zone 2 colonnes : Formulaire à gauche + Prévisualisation en direct à droite -->
-          <div class="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
-            <!-- Formulaire d'édition (7 cols) -->
-            <div class="xl:col-span-7 space-y-6">
-              <!-- Section 1 : Titre & Accroche Hero Accueil -->
-              <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm space-y-4">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-2">
-                    <span class="w-7 h-7 rounded-lg bg-surface-container flex items-center justify-center text-xs font-bold text-primary">01</span>
-                    <h3 class="font-headline text-base font-bold text-primary">Accroche de Tête (Hero Accueil)</h3>
-                  </div>
-                  <span class="text-[10px] text-slate-400 font-medium">Zone à haute visibilité</span>
-                </div>
-
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Grand Titre Principal (Playfair Display)</label>
-                  <input id="input-hero-title" type="text" class="w-full px-4 py-2.5 rounded-xl bg-surface-container-low text-xs font-bold text-primary border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0d2040]"/>
-                </div>
-
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Sous-titre Explicatif (Plus Jakarta Sans)</label>
-                  <textarea id="input-hero-subtitle" rows="3" class="w-full p-4 rounded-xl bg-surface-container-low text-xs text-slate-700 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#0d2040] leading-relaxed"></textarea>
-                </div>
-              </div>
-
-              <!-- Section 2 : Les 3 Piliers d'Engagement -->
-              <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm space-y-4">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-2">
-                    <span class="w-7 h-7 rounded-lg bg-surface-container flex items-center justify-center text-xs font-bold text-primary">02</span>
-                    <h3 class="font-headline text-base font-bold text-primary">Les 3 Piliers d'Engagement</h3>
-                  </div>
-                  <span class="text-[10px] text-slate-400 font-medium">Cartes sous le Hero</span>
-                </div>
-
-                <!-- Pilier 1 -->
-                <div class="p-4 rounded-xl bg-surface-container-low space-y-2">
-                  <span class="text-[11px] font-bold text-primary">Pilier 1 : Continuité des soins</span>
-                  <input id="input-pillar1-title" type="text" class="w-full px-3 py-1.5 rounded-lg bg-white text-xs font-semibold border border-slate-200"/>
-                  <input id="input-pillar1-desc" type="text" class="w-full px-3 py-1.5 rounded-lg bg-white text-xs text-slate-600 border border-slate-200"/>
-                </div>
-
-                <!-- Pilier 2 -->
-                <div class="p-4 rounded-xl bg-surface-container-low space-y-2">
-                  <span class="text-[11px] font-bold text-primary">Pilier 2 : Qualification médicale</span>
-                  <input id="input-pillar2-title" type="text" class="w-full px-3 py-1.5 rounded-lg bg-white text-xs font-semibold border border-slate-200"/>
-                  <input id="input-pillar2-desc" type="text" class="w-full px-3 py-1.5 rounded-lg bg-white text-xs text-slate-600 border border-slate-200"/>
-                </div>
-
-                <!-- Pilier 3 -->
-                <div class="p-4 rounded-xl bg-surface-container-low space-y-2">
-                  <span class="text-[11px] font-bold text-primary">Pilier 3 : Soutien aux proches aidants</span>
-                  <input id="input-pillar3-title" type="text" class="w-full px-3 py-1.5 rounded-lg bg-white text-xs font-semibold border border-slate-200"/>
-                  <input id="input-pillar3-desc" type="text" class="w-full px-3 py-1.5 rounded-lg bg-white text-xs text-slate-600 border border-slate-200"/>
-                </div>
-              </div>
-
-              <!-- Section 3 : Mission & Engagements (À Propos) -->
-              <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm space-y-4">
-                <div class="flex items-center gap-2">
-                  <span class="w-7 h-7 rounded-lg bg-surface-container flex items-center justify-center text-xs font-bold text-primary">03</span>
-                  <h3 class="font-headline text-base font-bold text-primary">Mission & Valeurs (Page À Propos)</h3>
-                </div>
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Titre de la Mission</label>
-                  <input id="input-mission-title" type="text" class="w-full px-4 py-2 rounded-xl bg-surface-container-low text-xs font-bold border border-slate-200"/>
-                </div>
-                <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Manifeste & Déclaration éthique</label>
-                  <textarea id="input-mission-desc" rows="3" class="w-full p-4 rounded-xl bg-surface-container-low text-xs border border-slate-200 leading-relaxed"></textarea>
-                </div>
-              </div>
-            </div>
-
-            <!-- Colonne de droite : Prévisualisation en direct fidèle (5 cols) -->
-            <div class="xl:col-span-5 sticky top-24 space-y-4">
-              <div class="p-4 rounded-2xl bg-surface-container-lowest shadow-md border border-slate-100">
-                <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
-                  <div class="flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span class="text-xs font-bold text-primary">Gabarit de Contrôle Visuel (Live Guard)</span>
-                  </div>
-                  <span class="text-[10px] text-slate-400 font-semibold">Rendu public direct</span>
-                </div>
-
-                <!-- Live Hero Box -->
-                <div class="p-6 rounded-2xl bg-gradient-to-b from-[#0d2040] to-[#00091e] text-white space-y-3">
-                  <span class="inline-block px-2.5 py-0.5 rounded-full bg-[#c5a059]/20 text-[#fed488] text-[10px] font-bold uppercase tracking-wider">
-                    Akeva Sérénité • Yaoundé
-                  </span>
-                  <h2 id="live-preview-hero-title" class="font-headline text-xl font-bold leading-snug text-white">
-                    L'Excellence de l'Accompagnement & des Soins à Domicile à Yaoundé
-                  </h2>
-                  <p id="live-preview-hero-subtitle" class="text-xs text-slate-300 leading-relaxed">
-                    Prise en charge personnalisée des aînés, convalescence post-opératoire et soins bienveillants au cœur de vos foyers.
-                  </p>
-                  <div class="pt-2 flex items-center gap-2">
-                    <span class="px-3 py-1.5 rounded-lg bg-[#c5a059] text-[#0d2040] font-bold text-[10px]">Demander une prise en charge</span>
-                    <span class="px-3 py-1.5 rounded-lg bg-white/10 text-white font-semibold text-[10px]">Nos 5 Formules</span>
-                  </div>
-                </div>
-
-                <!-- Live Pillars Preview -->
-                <div class="mt-4 space-y-2">
-                  <span class="text-[11px] font-bold text-slate-700 block">Aperçu des Piliers :</span>
-                  <div class="p-3 rounded-xl bg-surface-container-low border border-slate-100">
-                    <div id="live-preview-p1-title" class="font-bold text-primary text-xs">Présence Continue 24h/24 & 7j/7</div>
-                    <div id="live-preview-p1-desc" class="text-[11px] text-slate-500 mt-0.5">Coordination médicale et garde vigilante.</div>
-                  </div>
-                  <div class="p-3 rounded-xl bg-surface-container-low border border-slate-100">
-                    <div id="live-preview-p2-title" class="font-bold text-primary text-xs">Personnel Qualifié & Certifié</div>
-                    <div id="live-preview-p2-desc" class="text-[11px] text-slate-500 mt-0.5">Auxiliaires formés et infirmiers diplômés.</div>
-                  </div>
-                  <div class="p-3 rounded-xl bg-surface-container-low border border-slate-100">
-                    <div id="live-preview-p3-title" class="font-bold text-primary text-xs">Soutien Actif des Proches Aidants</div>
-                    <div id="live-preview-p3-desc" class="text-[11px] text-slate-500 mt-0.5">Relais bienveillant des familles et de la diaspora.</div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div id="grid-documents-list" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Dynamique -->
           </div>
         </div>
 
         <!-- =================================================================== -->
-        <!-- VUE 11 : ASSISTANT QRO & WHATSAPP (Screen 9a8c89555fa14bafa20f61e0) -->
+        <!-- VUE 13 : PARAMÈTRES & GESTION MULTI-ADMINISTRATEURS                 -->
         <!-- =================================================================== -->
-        <div id="view-assistant-qro" class="stitch-view hidden flex flex-col w-full space-y-6 pb-12">
-          <div class="flex items-center justify-between">
-            <div>
-              <h1 class="font-headline text-2xl font-bold text-primary">Assistant Clinique QRO & Triage WhatsApp</h1>
-              <p class="text-xs text-slate-500 mt-1">Paramétrage du questionnaire d'orientation rapide et des messages types envoyés sur WhatsApp.</p>
-            </div>
-          </div>
-          <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm space-y-4 max-w-3xl">
-            <h3 class="font-bold text-sm text-primary">Message Type de Première Réponse WhatsApp</h3>
-            <textarea id="setting-qro-whatsapp-msg" rows="4" class="w-full p-4 rounded-xl bg-surface-container-low text-xs border border-slate-200 leading-relaxed">Bonjour, nous avons bien reçu votre demande d'accompagnement Akeva Sérénité pour votre proche à Yaoundé. Notre coordinateur clinique est à votre écoute pour organiser la visite préalable d'évaluation sous 2h.</textarea>
-            <button id="btn-save-qro" class="px-5 py-2.5 rounded-xl bg-primary-container text-white text-xs font-bold">Enregistrer le message de triage</button>
-          </div>
-        </div>
-
-        <!-- =================================================================== -->
-        <!-- VUE 12 : STATISTIQUES & PILOTAGE (Screen 36622b8b2c2648f397448a18b) -->
-        <!-- =================================================================== -->
-        <div id="view-statistiques" class="stitch-view hidden flex flex-col w-full space-y-6 pb-12">
-          <div class="flex items-center justify-between">
-            <div>
-              <h1 class="font-headline text-2xl font-bold text-primary">Statistiques Avancées & Pilotage Stratégique</h1>
-              <p class="text-xs text-slate-500 mt-1">Analysez les tendances, les heures de garde délivrées et personnalisez les indicateurs à tout moment.</p>
-            </div>
-            <button onclick="document.getElementById('btn-edit-stats-modal').click()" class="px-4 py-2.5 rounded-xl bg-primary-container text-white text-xs font-bold flex items-center gap-2">
-              <span class="material-symbols-outlined text-base text-secondary-fixed">tune</span>
-              <span>Modifier les indicateurs manuellement</span>
-            </button>
-          </div>
-
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm space-y-4">
-              <h3 class="font-headline text-base font-bold text-primary">Volume d'Activité Annuel (Heures de garde)</h3>
-              <div class="h-72">
-                <canvas id="stats-chart-annual"></canvas>
-              </div>
-            </div>
-            <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm space-y-4">
-              <h3 class="font-headline text-base font-bold text-primary">Répartition par Quartier à Yaoundé</h3>
-              <div class="h-72 flex items-center justify-center">
-                <canvas id="stats-chart-quartiers"></canvas>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- =================================================================== -->
-        <!-- VUE 13 : PARAMÈTRES GÉNÉRAUX (Screen 53c20dfafe3a4479b5015336c1358) -->
-        <!-- =================================================================== -->
-        <div id="view-parametres" class="stitch-view hidden flex flex-col w-full space-y-6 pb-12">
+        <div id="view-parametres" class="stitch-view hidden flex flex-col w-full space-y-8 pb-12">
           <div>
-            <h1 class="font-headline text-2xl font-bold text-primary">Paramètres Généraux de la Plateforme</h1>
-            <p class="text-xs text-slate-500 mt-1">Coordonnées d'urgence, adresses physiques, permanence téléphonique et synchronisation.</p>
+            <h1 class="font-headline text-2xl sm:text-3xl font-bold text-primary">Paramètres & Gestion de l'Équipe</h1>
+            <p class="text-xs text-slate-500 mt-1">Coordonnées de la plateforme et administration des utilisateurs du back-office.</p>
           </div>
 
-          <div class="bg-surface-container-lowest p-8 rounded-2xl shadow-sm max-w-3xl space-y-6">
+          <!-- Bloc 1 : Coordonnées Générales -->
+          <div class="bg-surface-container-lowest p-8 rounded-2xl shadow-sm max-w-4xl space-y-6 border border-slate-100">
+            <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
+              <span class="material-symbols-outlined text-secondary text-2xl">store</span>
+              <div>
+                <h3 class="font-headline text-base font-bold text-primary">Coordonnées Officielles de la Plateforme</h3>
+                <p class="text-xs text-slate-500">Ces informations sont affichées sur toutes les pages du site vitrine et le pied de page.</p>
+              </div>
+            </div>
+
             <form id="form-general-settings" class="space-y-4">
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Téléphone Principal (Permanence)</label>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">Téléphone Principal (Permanence 24h/24)</label>
                   <input type="text" id="param-phone-primary" class="w-full px-4 py-2.5 rounded-xl bg-surface-container-low text-xs font-semibold border border-slate-200" value="697 572 685"/>
                 </div>
                 <div>
@@ -1099,15 +912,10 @@
 
               <div>
                 <label class="block text-xs font-bold text-slate-700 mb-1">Adresse Physique à Yaoundé</label>
-                <input type="text" id="param-address" class="w-full px-4 py-2.5 rounded-xl bg-surface-container-low text-xs font-semibold border border-slate-200" value="Ngousso, Yaoundé, Cameroun (Proximité Hôpital Général)"/>
+                <input type="text" id="param-address" class="w-full px-4 py-2.5 rounded-xl bg-surface-container-low text-xs font-semibold border border-slate-200" value="Ngousso, Yaoundé, Cameroun (Proximité immédiate Hôpital Général)"/>
               </div>
 
-              <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Bannière Supérieure du Site</label>
-                <input type="text" id="param-banner" class="w-full px-4 py-2.5 rounded-xl bg-surface-container-low text-xs font-semibold border border-slate-200" value="Service disponible 24h/24 — 7j/7 à Yaoundé (Ngousso, Bastos et environs)"/>
-              </div>
-
-              <div class="pt-4 flex justify-end">
+              <div class="pt-2 flex justify-end">
                 <button type="submit" class="px-6 py-2.5 rounded-xl bg-primary-container hover:bg-primary text-white text-xs font-bold shadow-sm flex items-center gap-2">
                   <span class="material-symbols-outlined text-base text-secondary-fixed">save</span>
                   <span>Enregistrer les coordonnées</span>
@@ -1115,49 +923,143 @@
               </div>
             </form>
           </div>
+
+          <!-- Bloc 2 : Gestion Multi-Administrateurs -->
+          <div class="bg-surface-container-lowest p-8 rounded-2xl shadow-sm max-w-4xl space-y-6 border border-slate-100">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+              <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-secondary text-2xl">manage_accounts</span>
+                <div>
+                  <h3 class="font-headline text-base font-bold text-primary">Équipe & Administrateurs du Back-Office</h3>
+                  <p class="text-xs text-slate-500">Gérez les accès, nommez de nouveaux administrateurs et définissez leurs rôles.</p>
+                </div>
+              </div>
+              <button id="btn-open-add-admin" class="px-4 py-2.5 rounded-xl bg-primary-container hover:bg-primary text-white text-xs font-bold flex items-center gap-2 shadow-sm shrink-0">
+                <span class="material-symbols-outlined text-base text-secondary-fixed">person_add</span>
+                <span>+ Ajouter un Administrateur</span>
+              </button>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-surface-container-low text-on-surface-variant text-[11px] uppercase tracking-wider font-bold">
+                  <tr>
+                    <th class="py-3 px-4">Administrateur</th>
+                    <th class="py-3 px-4">Email</th>
+                    <th class="py-3 px-4">Rôle Attribué</th>
+                    <th class="py-3 px-4">Statut</th>
+                    <th class="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="list-admin-accounts" class="divide-y divide-slate-100">
+                  <!-- Dynamique -->
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
         <!-- =================================================================== -->
-        <!-- VUE 14 : MON PROFIL SUPER ADMIN (Screen 888e3538833946db802e00758) -->
+        <!-- VUE 14 : MON PROFIL PERSONNALISABLE AVEC PHOTO & SÉCURITÉ           -->
         <!-- =================================================================== -->
-        <div id="view-mon-profil" class="stitch-view hidden flex flex-col w-full space-y-6 pb-12">
+        <div id="view-mon-profil" class="stitch-view hidden flex flex-col w-full space-y-8 pb-12">
           <div>
-            <h1 class="font-headline text-2xl font-bold text-primary">Mon Profil Super Administrateur</h1>
-            <p class="text-xs text-slate-500 mt-1">Gestion de vos identifiants et sécurisation du compte maître.</p>
+            <h1 class="font-headline text-2xl sm:text-3xl font-bold text-primary">Mon Profil Administrateur</h1>
+            <p class="text-xs text-slate-500 mt-1">Personnalisez votre identité, ajoutez votre photo de profil et modifiez votre mot de passe.</p>
           </div>
 
-          <div class="bg-surface-container-lowest p-8 rounded-2xl shadow-sm max-w-xl space-y-6">
-            <form id="form-update-profile" class="space-y-4">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 max-w-4xl">
+            <!-- Colonne 1 : Photo de profil & Identité (5 cols) -->
+            <div class="lg:col-span-5 bg-surface-container-lowest p-6 rounded-3xl shadow-sm border border-slate-100 text-center space-y-4">
+              <div class="relative w-28 h-28 mx-auto rounded-full overflow-hidden bg-primary-container text-white flex items-center justify-center text-2xl font-bold border-4 border-white shadow-lg ring-2 ring-secondary-fixed/50">
+                <img id="profile-avatar-preview-img" class="w-full h-full object-cover hidden" alt="Avatar"/>
+                <span id="profile-avatar-preview-initials">AD</span>
+              </div>
               <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Nom Complet</label>
-                <input type="text" id="profile-fullname" class="w-full px-4 py-2.5 rounded-xl bg-surface-container-low text-xs font-bold border border-slate-200" required/>
+                <h3 id="profile-display-title-name" class="font-headline text-lg font-bold text-primary">Akeva Directeur</h3>
+                <span id="profile-display-title-role" class="inline-block mt-1 px-3 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed text-[10px] font-bold uppercase">Super Administrateur</span>
               </div>
 
-              <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Adresse Email</label>
-                <input type="email" id="profile-email" class="w-full px-4 py-2.5 rounded-xl bg-surface-container-low text-xs font-semibold border border-slate-200" readonly/>
+              <div class="pt-2">
+                <input type="file" id="profile-avatar-file-input" accept="image/*" class="hidden"/>
+                <button type="button" onclick="document.getElementById('profile-avatar-file-input').click()"
+                  class="w-full py-2.5 px-4 rounded-xl bg-surface-container hover:bg-surface-container-high text-primary font-bold text-xs flex items-center justify-center gap-2 transition-colors">
+                  <span class="material-symbols-outlined text-base text-secondary">photo_camera</span>
+                  <span>Changer ma photo de profil</span>
+                </button>
+                <p class="text-[10px] text-slate-400 mt-1">Format JPG, PNG ou WEBP (max 5 Mo)</p>
               </div>
+            </div>
 
-              <div class="border-t border-slate-100 pt-4">
-                <h4 class="text-xs font-bold text-primary mb-2">Modifier mon mot de passe</h4>
-                <div class="space-y-3">
+            <!-- Colonne 2 : Informations & Mot de passe (7 cols) -->
+            <div class="lg:col-span-7 space-y-6">
+              <!-- Formulaire Informations Personnelles -->
+              <div class="bg-surface-container-lowest p-6 rounded-3xl shadow-sm border border-slate-100 space-y-4">
+                <h3 class="font-headline text-base font-bold text-primary">Informations Personnelles</h3>
+                <form id="form-update-profile-info" class="space-y-3 text-xs">
                   <div>
-                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Nouveau mot de passe</label>
+                    <label class="block font-bold text-slate-700 mb-1">Nom Complet</label>
+                    <input type="text" id="profile-fullname" required class="w-full px-4 py-2.5 rounded-xl bg-surface-container-low border border-slate-200 font-semibold focus:bg-white focus:ring-2 focus:ring-[#0d2040] outline-none"/>
+                  </div>
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Adresse Email</label>
+                    <input type="email" id="profile-email" required class="w-full px-4 py-2.5 rounded-xl bg-surface-container-low border border-slate-200 font-semibold focus:bg-white focus:ring-2 focus:ring-[#0d2040] outline-none"/>
+                  </div>
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Numéro de Téléphone</label>
+                    <input type="text" id="profile-phone" placeholder="Ex: +237 697 57 26 85" class="w-full px-4 py-2.5 rounded-xl bg-surface-container-low border border-slate-200 focus:bg-white focus:ring-2 focus:ring-[#0d2040] outline-none"/>
+                  </div>
+                  <div class="pt-2 flex justify-end">
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-primary-container hover:bg-primary text-white font-bold text-xs shadow-sm">
+                      Enregistrer mes informations
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Formulaire Changement de Mot de Passe -->
+              <div class="bg-surface-container-lowest p-6 rounded-3xl shadow-sm border border-slate-100 space-y-4">
+                <h3 class="font-headline text-base font-bold text-primary">Sécurité & Changement de Mot de Passe</h3>
+                <div id="profile-pwd-msg" class="hidden p-3 rounded-xl text-xs font-semibold"></div>
+                <form id="form-update-password" class="space-y-3 text-xs">
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Mot de Passe Actuel</label>
                     <div class="relative flex items-center">
-                      <input type="password" id="profile-new-password" placeholder="Laisser vide pour ne pas changer"
-                        class="w-full px-4 py-2.5 pr-10 rounded-xl bg-surface-container-low text-xs border border-slate-200"/>
-                      <button type="button" class="btn-toggle-password absolute right-3 text-slate-400" data-target="profile-new-password">
+                      <input type="password" id="profile-current-pwd" required placeholder="Votre mot de passe actuel"
+                        class="w-full px-4 py-2.5 pr-10 rounded-xl bg-surface-container-low border border-slate-200 outline-none focus:bg-white focus:ring-2 focus:ring-[#0d2040]"/>
+                      <button type="button" class="btn-toggle-password absolute right-3 text-slate-400" data-target="profile-current-pwd">
                         <span class="material-symbols-outlined text-lg">visibility</span>
                       </button>
                     </div>
                   </div>
-                </div>
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Nouveau Mot de Passe (min. 6 caractères)</label>
+                    <div class="relative flex items-center">
+                      <input type="password" id="profile-new-pwd" required minlength="6" placeholder="Nouveau mot de passe"
+                        class="w-full px-4 py-2.5 pr-10 rounded-xl bg-surface-container-low border border-slate-200 outline-none focus:bg-white focus:ring-2 focus:ring-[#0d2040]"/>
+                      <button type="button" class="btn-toggle-password absolute right-3 text-slate-400" data-target="profile-new-pwd">
+                        <span class="material-symbols-outlined text-lg">visibility</span>
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block font-bold text-slate-700 mb-1">Confirmer le Nouveau Mot de Passe</label>
+                    <div class="relative flex items-center">
+                      <input type="password" id="profile-confirm-pwd" required minlength="6" placeholder="Répétez le nouveau mot de passe"
+                        class="w-full px-4 py-2.5 pr-10 rounded-xl bg-surface-container-low border border-slate-200 outline-none focus:bg-white focus:ring-2 focus:ring-[#0d2040]"/>
+                      <button type="button" class="btn-toggle-password absolute right-3 text-slate-400" data-target="profile-confirm-pwd">
+                        <span class="material-symbols-outlined text-lg">visibility</span>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="pt-2 flex justify-end">
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-secondary-container hover:bg-secondary-fixed text-on-secondary-fixed font-bold text-xs shadow-sm">
+                      Mettre à jour mon mot de passe
+                    </button>
+                  </div>
+                </form>
               </div>
-
-              <button type="submit" class="w-full py-2.5 rounded-xl bg-primary-container text-white text-xs font-bold hover:bg-primary shadow-sm">
-                Enregistrer mon profil
-              </button>
-            </form>
+            </div>
           </div>
         </div>
 
@@ -1166,7 +1068,7 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- MODAL / DRAWER LATÉRAL D'ÉDITION DE SERVICE (Screen 68f36e1662ba48a8a15)  -->
+  <!-- MODAL / DRAWER LATÉRAL D'ÉDITION DE SERVICE                               -->
   <!-- ========================================================================= -->
   <div id="edit-drawer" class="fixed inset-y-0 right-0 w-full max-w-xl bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 flex flex-col justify-between overflow-hidden">
     <div class="p-6 bg-primary-container text-on-primary flex items-center justify-between shrink-0">
@@ -1175,7 +1077,7 @@
           <span class="material-symbols-outlined text-2xl">tune</span>
         </div>
         <div>
-          <h2 class="font-headline text-lg font-bold text-on-primary">Éditeur de Service</h2>
+          <h2 class="font-headline text-lg font-bold text-on-primary">Éditeur de Prestation</h2>
           <span class="text-[11px] text-secondary-fixed">Synchronisation directe portail public</span>
         </div>
       </div>
@@ -1184,32 +1086,32 @@
       </button>
     </div>
 
-    <form id="form-edit-service" class="p-6 overflow-y-auto flex-1 space-y-4 custom-scrollbar">
+    <form id="form-edit-service" class="p-6 overflow-y-auto flex-1 space-y-4 custom-scrollbar text-xs">
       <input type="hidden" id="service-edit-id"/>
 
       <div>
-        <label class="block text-xs font-bold text-primary mb-1">Intitulé public de la formule</label>
+        <label class="block font-bold text-primary mb-1">Intitulé public de la formule</label>
         <input id="service-edit-title" type="text" required class="w-full px-4 py-2.5 rounded-xl bg-surface-container-low text-xs font-bold text-primary border border-slate-200"/>
       </div>
 
       <div>
-        <label class="block text-xs font-bold text-primary mb-1">Accroche / Slogan éditorial</label>
+        <label class="block font-bold text-primary mb-1">Accroche / Slogan éditorial</label>
         <input id="service-edit-slogan" type="text" required class="w-full px-4 py-2.5 rounded-xl bg-surface-container-low text-xs border border-slate-200"/>
       </div>
 
       <div>
-        <label class="block text-xs font-bold text-primary mb-1">Amplitude Horaire / Présence</label>
+        <label class="block font-bold text-primary mb-1">Amplitude Horaire / Présence</label>
         <input id="service-edit-hours" type="text" required class="w-full px-4 py-2 rounded-xl bg-surface-container-low text-xs border border-slate-200" placeholder="Ex: En journée (8h - 18h)"/>
       </div>
 
       <div>
-        <label class="block text-xs font-bold text-primary mb-1">Description détaillée pour le site</label>
+        <label class="block font-bold text-primary mb-1">Description détaillée pour le site</label>
         <textarea id="service-edit-desc" rows="4" class="w-full p-4 rounded-xl bg-surface-container-low text-xs border border-slate-200 leading-relaxed"></textarea>
       </div>
 
       <div>
         <div class="flex items-center justify-between mb-1">
-          <label class="block text-xs font-bold text-primary">Points Clés & Missions Incluses</label>
+          <label class="block font-bold text-primary">Points Clés & Missions Incluses</label>
           <button type="button" id="btn-add-key-point" class="text-[11px] font-bold text-secondary hover:underline flex items-center gap-1">
             <span class="material-symbols-outlined text-xs">add</span>
             <span>Ajouter un point</span>
@@ -1221,24 +1123,20 @@
       </div>
 
       <div>
-        <label class="block text-xs font-bold text-primary mb-1">Modalités de Tarification Indicative</label>
+        <label class="block font-bold text-primary mb-1">Modalités de Tarification Indicative</label>
         <input id="service-edit-pricing" type="text" class="w-full px-4 py-2 rounded-xl bg-surface-container-low text-xs border border-slate-200" placeholder="Ex: Sur devis personnalisé"/>
       </div>
 
       <div class="p-4 bg-surface-container-low rounded-xl space-y-2">
-        <label class="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700">
+        <label class="flex items-center gap-2 cursor-pointer font-semibold text-slate-700">
           <input type="checkbox" id="service-edit-published" class="rounded border-slate-300 text-[#0d2040]"/>
           <span>Publier sur le site public</span>
-        </label>
-        <label class="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700">
-          <input type="checkbox" id="service-edit-qro" class="rounded border-slate-300 text-[#0d2040]"/>
-          <span>Proposer dans le Triage QRO WhatsApp</span>
         </label>
       </div>
 
       <div class="pt-4 flex items-center justify-end gap-3">
-        <button type="button" id="btn-cancel-service-drawer" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold">Annuler</button>
-        <button type="submit" class="px-5 py-2 rounded-xl bg-primary-container text-white text-xs font-bold shadow-md">Enregistrer les modifications</button>
+        <button type="button" id="btn-cancel-service-drawer" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 font-bold">Annuler</button>
+        <button type="submit" class="px-5 py-2 rounded-xl bg-primary-container text-white font-bold">Enregistrer les modifications</button>
       </div>
     </form>
   </div>
@@ -1255,6 +1153,7 @@
         </button>
       </div>
       <form id="form-beneficiaire" class="space-y-3 text-xs">
+        <input type="hidden" id="ben-edit-id"/>
         <div>
           <label class="block font-bold text-slate-700 mb-1">Nom Complet du Patient / Aîné</label>
           <input type="text" id="ben-input-name" required class="w-full px-3 py-2 rounded-xl border border-slate-200" placeholder="Ex: M. Paul Nguema"/>
@@ -1275,19 +1174,314 @@
         </div>
         <div>
           <label class="block font-bold text-slate-700 mb-1">Formule Attribuée</label>
-          <input type="text" id="ben-input-formule" required class="w-full px-3 py-2 rounded-xl border border-slate-200" placeholder="Ex: Garde Continue 24h/24"/>
+          <select id="ben-input-formule" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-semibold">
+            <option value="Garde Continue 24h/24">Garde Continue 24h/24</option>
+            <option value="Garde & Veille de Nuit Sécurisée">Garde & Veille de Nuit Sécurisée</option>
+            <option value="Accompagnement des Personnes Âgées">Accompagnement des Personnes Âgées</option>
+            <option value="Convalescence & Retour d'Hospitalisation">Convalescence & Retour d'Hospitalisation</option>
+            <option value="Programme Familles de la Diaspora">Programme Familles de la Diaspora</option>
+          </select>
         </div>
         <div>
           <label class="block font-bold text-slate-700 mb-1">Soignant / Auxiliaire Délégué</label>
           <input type="text" id="ben-input-caregiver" required class="w-full px-3 py-2 rounded-xl border border-slate-200" placeholder="Ex: Mme Carine Mbarga"/>
         </div>
         <div>
-          <label class="block font-bold text-slate-700 mb-1">Contact Famille (Téléphone / WhatsApp)</label>
+          <label class="block font-bold text-slate-700 mb-1">Contact Famille / Urgence (Téléphone / WhatsApp)</label>
           <input type="text" id="ben-input-contact" required class="w-full px-3 py-2 rounded-xl border border-slate-200" placeholder="+237 699 12 45 88"/>
         </div>
         <div class="pt-3 flex justify-end gap-2">
           <button type="button" id="btn-cancel-modal-beneficiaire" class="px-4 py-2 rounded-xl bg-slate-100 font-bold">Annuler</button>
           <button type="submit" class="px-5 py-2 rounded-xl bg-primary-container text-white font-bold">Enregistrer le dossier</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL : IMPORTER UN DOCUMENT (DOCUMENTS & MÉDIAS)                         -->
+  <!-- ========================================================================= -->
+  <div id="modal-document" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 hidden backdrop-blur-xs">
+    <div class="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl">
+      <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+        <h3 class="font-headline text-lg font-bold text-primary">Importer un Document Officiel</h3>
+        <button id="btn-close-modal-document" class="p-1 text-slate-400 hover:text-slate-600">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <form id="form-document" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Titre du Document</label>
+          <input type="text" id="doc-input-title" required class="w-full px-3 py-2 rounded-xl border border-slate-200" placeholder="Ex: Fiche d'Évaluation Gériatrique"/>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Catégorie</label>
+            <select id="doc-input-category" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-semibold">
+              <option value="Fiche Médicale">Fiche Médicale</option>
+              <option value="Protocole Clinique">Protocole Clinique</option>
+              <option value="Guide Famille">Guide Famille</option>
+              <option value="Rapport d'Activité">Rapport d'Activité</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Format</label>
+            <select id="doc-input-type" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-semibold">
+              <option value="PDF">PDF</option>
+              <option value="DOCX">DOCX / Word</option>
+              <option value="IMAGE">Image / Scan</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Fichier du Document (Téléversement)</label>
+          <input type="file" id="doc-input-file" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-surface-container-low file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-primary file:text-white file:text-xs"/>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Ou Lien / URL du Document (Optionnel)</label>
+          <input type="text" id="doc-input-url" class="w-full px-3 py-2 rounded-xl border border-slate-200" placeholder="Ex: /assets/docs/mon-fichier.pdf"/>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Description sommaire</label>
+          <textarea id="doc-input-desc" rows="3" class="w-full p-3 rounded-xl border border-slate-200" placeholder="Précisez le rôle de ce document..."></textarea>
+        </div>
+        <div class="pt-3 flex justify-end gap-2">
+          <button type="button" id="btn-cancel-modal-document" class="px-4 py-2 rounded-xl bg-slate-100 font-bold">Annuler</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-primary-container text-white font-bold">Enregistrer le Document</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL : AJOUTER UN MÉDIA (GALERIE & VIDÉOS)                               -->
+  <!-- ========================================================================= -->
+  <div id="modal-galerie" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 hidden backdrop-blur-xs">
+    <div class="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl">
+      <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+        <h3 class="font-headline text-lg font-bold text-primary">Téléverser un Média</h3>
+        <button id="btn-close-modal-galerie" class="p-1 text-slate-400 hover:text-slate-600">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <form id="form-galerie" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Titre / Intitulé</label>
+          <input type="text" id="gal-input-title" required class="w-full px-3 py-2 rounded-xl border border-slate-200" placeholder="Ex: Soins à domicile auprès d'une aînée"/>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Type de Média</label>
+            <select id="gal-input-type" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-semibold">
+              <option value="image">Photo / Image</option>
+              <option value="video">Vidéo</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Catégorie</label>
+            <select id="gal-input-category" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-semibold">
+              <option value="Accompagnement">Accompagnement</option>
+              <option value="Soins">Soins & Hygiène</option>
+              <option value="Coordination">Coordination Médicale</option>
+              <option value="Nutrition">Nutrition & Repas</option>
+              <option value="Équipe">Auxiliaires Certifiés</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Sélectionner un fichier (Image / Vidéo)</label>
+          <input type="file" id="gal-input-file" accept="image/*,video/*" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-surface-container-low file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-primary file:text-white file:text-xs"/>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Ou Lien / URL direct</label>
+          <input type="text" id="gal-input-url" class="w-full px-3 py-2 rounded-xl border border-slate-200" placeholder="https://..."/>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Légende / Description</label>
+          <textarea id="gal-input-caption" rows="3" class="w-full p-3 rounded-xl border border-slate-200" placeholder="Description affichée sous le média..."></textarea>
+        </div>
+        <div class="pt-3 flex justify-end gap-2">
+          <button type="button" id="btn-cancel-modal-galerie" class="px-4 py-2 rounded-xl bg-slate-100 font-bold">Annuler</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-primary-container text-white font-bold">Enregistrer le Média</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL : NOUVELLE RÉALISATION                                              -->
+  <!-- ========================================================================= -->
+  <div id="modal-realisation" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 hidden backdrop-blur-xs">
+    <div class="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl">
+      <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+        <h3 class="font-headline text-lg font-bold text-primary">Ajouter une Réalisation</h3>
+        <button id="btn-close-modal-realisation" class="p-1 text-slate-400 hover:text-slate-600">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <form id="form-realisation" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Titre de l'Intervention</label>
+          <input type="text" id="rea-input-title" required class="w-full px-3 py-2 rounded-xl border border-slate-200" placeholder="Ex: Réhabilitation post-opératoire réussie"/>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Quartier (Yaoundé)</label>
+          <input type="text" id="rea-input-quartier" required class="w-full px-3 py-2 rounded-xl border border-slate-200" placeholder="Ex: Bastos"/>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Photo d'illustration (Fichier)</label>
+          <input type="file" id="rea-input-file" accept="image/*" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-surface-container-low file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-primary file:text-white file:text-xs"/>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Ou Lien / URL de l'image</label>
+          <input type="text" id="rea-input-url" class="w-full px-3 py-2 rounded-xl border border-slate-200" placeholder="https://..."/>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Description de la prise en charge</label>
+          <textarea id="rea-input-desc" rows="3" required class="w-full p-3 rounded-xl border border-slate-200" placeholder="Besoins initiaux, actions menées..."></textarea>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Résultat obtenu / Bénéfice famille</label>
+          <input type="text" id="rea-input-result" required class="w-full px-3 py-2 rounded-xl border border-slate-200" placeholder="Ex: Autonomie retrouvée, 0 complication"/>
+        </div>
+        <div class="pt-3 flex justify-end gap-2">
+          <button type="button" id="btn-cancel-modal-realisation" class="px-4 py-2 rounded-xl bg-slate-100 font-bold">Annuler</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-primary-container text-white font-bold">Enregistrer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL : AJOUTER UN TÉMOIGNAGE                                             -->
+  <!-- ========================================================================= -->
+  <div id="modal-temoignage" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 hidden backdrop-blur-xs">
+    <div class="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl">
+      <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+        <h3 class="font-headline text-lg font-bold text-primary">Ajouter un Témoignage Famille</h3>
+        <button id="btn-close-modal-temoignage" class="p-1 text-slate-400 hover:text-slate-600">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <form id="form-temoignage" class="space-y-3 text-xs">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Auteur / Famille</label>
+            <input type="text" id="tem-input-author" required class="w-full px-3 py-2 rounded-xl border border-slate-200" placeholder="Ex: Famille N."/>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Note Attribuée</label>
+            <select id="tem-input-rating" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold text-secondary">
+              <option value="5">★★★★★ (5 étoiles)</option>
+              <option value="4">★★★★☆ (4 étoiles)</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Relation / Type d'accompagnement</label>
+            <input type="text" id="tem-input-relation" required class="w-full px-3 py-2 rounded-xl border border-slate-200" placeholder="Ex: Accompagnement à domicile"/>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Ville / Quartier</label>
+            <input type="text" id="tem-input-city" required class="w-full px-3 py-2 rounded-xl border border-slate-200" placeholder="Ex: Yaoundé / Bastos"/>
+          </div>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Photo / Avatar de la famille (Optionnel)</label>
+          <input type="file" id="tem-input-avatar-file" accept="image/*" class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-surface-container-low file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-primary file:text-white file:text-xs"/>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Commentaire / Citation</label>
+          <textarea id="tem-input-comment" rows="3" required class="w-full p-3 rounded-xl border border-slate-200" placeholder="« Grâce à Akeva Sérénité... »"></textarea>
+        </div>
+        <div class="pt-3 flex justify-end gap-2">
+          <button type="button" id="btn-cancel-modal-temoignage" class="px-4 py-2 rounded-xl bg-slate-100 font-bold">Annuler</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-primary-container text-white font-bold">Publier le Témoignage</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL : AJOUTER UNE FAQ                                                   -->
+  <!-- ========================================================================= -->
+  <div id="modal-faq" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 hidden backdrop-blur-xs">
+    <div class="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl">
+      <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+        <h3 class="font-headline text-lg font-bold text-primary">Ajouter une Question / Réponse</h3>
+        <button id="btn-close-modal-faq" class="p-1 text-slate-400 hover:text-slate-600">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <form id="form-faq" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Question Fréquente</label>
+          <input type="text" id="faq-input-question" required class="w-full px-3 py-2 rounded-xl border border-slate-200" placeholder="Ex: Quelles sont vos zones d'intervention ?"/>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Catégorie</label>
+          <select id="faq-input-category" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-semibold">
+            <option value="Organisation">Organisation & Logistique</option>
+            <option value="Disponibilité">Disponibilité & Horaires</option>
+            <option value="Tarifs">Tarifs & Devis</option>
+            <option value="Prise en charge">Prise en charge & Urgences</option>
+            <option value="Personnel">Personnel & Auxiliaires</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Réponse détaillée</label>
+          <textarea id="faq-input-answer" rows="4" required class="w-full p-3 rounded-xl border border-slate-200" placeholder="Rédigez la réponse officielle..."></textarea>
+        </div>
+        <div class="pt-3 flex justify-end gap-2">
+          <button type="button" id="btn-cancel-modal-faq" class="px-4 py-2 rounded-xl bg-slate-100 font-bold">Annuler</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-primary-container text-white font-bold">Enregistrer la FAQ</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL : AJOUTER UN NOUVEL ADMINISTRATEUR (MULTI-ADMIN)                    -->
+  <!-- ========================================================================= -->
+  <div id="modal-add-admin" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 hidden backdrop-blur-xs">
+    <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl">
+      <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+        <h3 class="font-headline text-lg font-bold text-primary">Nommer un Administrateur</h3>
+        <button id="btn-close-modal-add-admin" class="p-1 text-slate-400 hover:text-slate-600">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <div id="add-admin-error" class="hidden mb-3 p-2.5 rounded-xl bg-red-50 text-red-700 text-xs font-semibold"></div>
+      <form id="form-add-admin" class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Nom Complet</label>
+          <input type="text" id="new-admin-fullname" required placeholder="Ex: Dr. Martin Eba" class="w-full px-3 py-2 rounded-xl border border-slate-200"/>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Adresse Email</label>
+          <input type="email" id="new-admin-email" required placeholder="martin@akeva.online" class="w-full px-3 py-2 rounded-xl border border-slate-200"/>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Rôle Attribué</label>
+          <select id="new-admin-role" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-semibold">
+            <option value="Coordinateur Médical">Coordinateur Médical</option>
+            <option value="Opérateur de Permanence">Opérateur de Permanence</option>
+            <option value="Super Admin">Super Admin</option>
+          </select>
+        </div>
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">Mot de Passe Initial</label>
+          <div class="relative flex items-center">
+            <input type="password" id="new-admin-password" required minlength="6" placeholder="Min 6 caractères" class="w-full px-3 py-2 pr-10 rounded-xl border border-slate-200"/>
+            <button type="button" class="btn-toggle-password absolute right-3 text-slate-400" data-target="new-admin-password">
+              <span class="material-symbols-outlined text-base">visibility</span>
+            </button>
+          </div>
+        </div>
+        <div class="pt-3 flex justify-end gap-2">
+          <button type="button" id="btn-cancel-modal-add-admin" class="px-4 py-2 rounded-xl bg-slate-100 font-bold">Annuler</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-primary-container text-white font-bold">Créer le compte</button>
         </div>
       </form>
     </div>
@@ -1325,11 +1519,11 @@
         <div>
           <label class="block font-bold text-slate-700 mb-1">Type de Prestation</label>
           <select id="urg-input-service" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-semibold">
-            <option value="Garde Continue 24h/24">Garde Continue 24h/24</option>
-            <option value="Garde de Nuit Sécurisée">Garde de Nuit Sécurisée</option>
-            <option value="Garde de Jour">Garde de Jour</option>
-            <option value="Soins & Convalescence Post-Opératoire">Soins & Convalescence</option>
-            <option value="Compagnie & Soutien Moral">Compagnie & Soutien Moral</option>
+            <option value="Garde Continue 24h/24 & Grande Dépendance">Garde Continue 24h/24 & Grande Dépendance</option>
+            <option value="Garde & Veille de Nuit Sécurisée">Garde & Veille de Nuit Sécurisée</option>
+            <option value="Accompagnement des Personnes Âgées">Accompagnement des Personnes Âgées</option>
+            <option value="Convalescence & Retour d'Hospitalisation">Convalescence & Retour d'Hospitalisation</option>
+            <option value="Programme Familles de la Diaspora">Programme Familles de la Diaspora</option>
           </select>
         </div>
         <div>
@@ -1345,12 +1539,12 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- MODAL : AJUSTER LES STATISTIQUES & CHIFFRES CLÉS                          -->
+  <!-- MODAL : AJUSTER LES INDICATEURS CLÉS                                      -->
   <!-- ========================================================================= -->
   <div id="modal-edit-stats" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 hidden backdrop-blur-xs">
     <div class="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl">
       <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
-        <h3 class="font-headline text-lg font-bold text-primary">Ajuster les Indicateurs Clés du Dashboard</h3>
+        <h3 class="font-headline text-lg font-bold text-primary">Ajuster les Indicateurs du Dashboard</h3>
         <button id="btn-close-modal-stats" class="p-1 text-slate-400 hover:text-slate-600">
           <span class="material-symbols-outlined">close</span>
         </button>
@@ -1391,7 +1585,7 @@
     </div>
   </div>
 
-  <!-- Scripts Supabase & Logique Complète Stitch -->
+  <!-- Scripts Supabase & Logique Complète -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/js/supabase-client.js"></script>
   <script src="/js/admin.js"></script>
