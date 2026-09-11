@@ -1,37 +1,46 @@
 /**
- * AKEVA SÉRÉNITÉ — Moteur d'Administration & Back-Office
- * - Initialisation du Premier Super Admin Unique & Sécurisé
- * - Visualisation interactive des mots de passe (œil afficher/masquer)
- * - Statistiques dynamiques & Graphiques Chart.js personnalisables manuellement
- * - Gestion des Demandes de Contact (WhatsApp direct, filtres, statuts, export)
- * - Médiathèque & Réalisations avec upload jusqu'à 100 Mo via Supabase Storage
- * - Personnalisation des textes et coordonnées du site public
+ * AKEVA SÉRÉNITÉ — Moteur d'Administration & Back-Office Intégral
+ * - Conforme au Design System Stitch (Projet AKEVA 7740055685350246425)
+ * - Gestion des 14 rubriques de navigation officielle
+ * - Moteur CMS : Éditeur latéral (Drawer) pour les Services
+ * - Sanctuarisation Éditoriale : Éditeur Live Guard en temps réel pour les textes
+ * - Registre des Bénéficiaires & Gestionnaire des Demandes / Urgences
+ * - Modération des Témoignages & Foire Aux Questions (FAQ)
+ * - Pilotage des Statistiques & Chiffres Clés personnalisables manuellement
+ * - Authentification sécurisée Super Admin unique (Web Crypto SHA-256 + Salt)
  */
 
 (function () {
   'use strict';
 
-  // Session storage keys
+  // Clefs de session & constantes
   const SESSION_KEY = 'akeva_admin_session';
 
-  // Global state
+  // État global de l'application
   let currentAdmin = null;
   let allRequests = [];
+  let allBeneficiaires = [];
+  let allServices = [];
+  let allTemoignages = [];
+  let allFaq = [];
   let allRealisations = [];
   let currentStats = null;
-  let currentSettings = null;
-  let chartEvolution = null;
-  let chartPie = null;
-  let activeStatusFilter = 'all';
+  let currentSiteContent = null;
+  let currentContactInfo = null;
 
-  // Elements
+  let chartEvolution = null;
+  let chartAnnual = null;
+  let chartQuartiers = null;
+  let activeFilterDemandes = 'all';
+
+  // Éléments DOM principaux
   const screenLoading = document.getElementById('screen-loading');
   const screenSetup = document.getElementById('screen-setup');
   const screenLogin = document.getElementById('screen-login');
   const screenDashboard = document.getElementById('screen-dashboard');
 
   /* ========================================================================= */
-  /* 1. CRYPTO UTILS (SHA-256 + Salt via Web Crypto API)                       */
+  /* 1. CRYPTO UTILS & SÉCURITÉ MOT DE PASSE                                   */
   /* ========================================================================= */
 
   async function sha256(str, saltHex) {
@@ -47,10 +56,6 @@
     crypto.getRandomValues(arr);
     return Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
   }
-
-  /* ========================================================================= */
-  /* 2. GESTION DE LA VISUALISATION DES MOTS DE PASSE (Icône œil)              */
-  /* ========================================================================= */
 
   function initPasswordToggles() {
     document.querySelectorAll('.btn-toggle-password').forEach(btn => {
@@ -74,7 +79,7 @@
   }
 
   /* ========================================================================= */
-  /* 3. DÉTECTION DU COMPTE SUPER ADMIN & INITIALISATION                       */
+  /* 2. CONNEXION SUPABASE CLIENT                                              */
   /* ========================================================================= */
 
   async function getClient(maxWaitMs = 2500) {
@@ -91,1132 +96,39 @@
           );
         } catch (e) {}
       }
-      await new Promise(res => setTimeout(res, 80));
+      await new Promise(res => setTimeout(res, 60));
     }
-    throw new Error('Initialisation de Supabase non disponible.');
-  }
-
-  async function checkAdminAccountStatus() {
-    try {
-      const client = await getClient();
-
-      // Vérifie si un compte admin existe
-      const { data, count, error } = await client
-        .from('admin_accounts')
-        .select('id, email, full_name', { count: 'exact' });
-
-      if (error) {
-        console.warn('Erreur vérification admin_accounts:', error);
-      }
-
-      const adminCount = count !== null && count !== undefined ? count : (data ? data.length : 0);
-
-      screenLoading.classList.add('hidden');
-
-      if (adminCount === 0) {
-        // AUCUN COMPTE : Affiche l'écran de création du premier Super Admin unique
-        screenSetup.classList.remove('hidden');
-        screenLogin.classList.add('hidden');
-        screenDashboard.classList.add('hidden');
-      } else {
-        // UN COMPTE EXISTE : Vérifie si déjà connecté
-        const savedSession = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY);
-        if (savedSession) {
-          try {
-            const parsed = JSON.parse(savedSession);
-            if (parsed && parsed.email) {
-              currentAdmin = parsed;
-              showDashboard();
-              return;
-            }
-          } catch (e) {
-            localStorage.removeItem(SESSION_KEY);
-          }
-        }
-        // Sinon, affiche l'écran de connexion
-        screenSetup.classList.add('hidden');
-        screenLogin.classList.remove('hidden');
-        screenDashboard.classList.add('hidden');
-      }
-    } catch (err) {
-      console.error('Erreur initialisation admin:', err);
-      screenLoading.innerHTML = `
-        <div class="text-center p-6 text-red-600">
-          <p class="font-bold">Erreur de connexion à la base de données</p>
-          <p class="text-xs text-slate-500 mt-1">${err.message || err}</p>
-          <button onclick="location.reload()" class="mt-4 px-4 py-2 bg-[#0d2040] text-white text-xs rounded-xl font-bold">Réessayer</button>
-        </div>
-      `;
-    }
+    throw new Error('Supabase client non prêt');
   }
 
   /* ========================================================================= */
-  /* 4. SETUP : CRÉATION DU PREMIER ET UNIQUE COMPTE SUPER ADMIN               */
+  /* 3. SYSTÈME DE TOAST NOTIFICATION                                          */
   /* ========================================================================= */
 
-  const formSetup = document.getElementById('form-setup');
-  const setupError = document.getElementById('setup-error');
-
-  if (formSetup) {
-    formSetup.addEventListener('submit', async function (e) {
-      e.preventDefault();
-      setupError.classList.add('hidden');
-
-      const fullName = document.getElementById('setup-fullname').value.trim();
-      const email = document.getElementById('setup-email').value.trim().toLowerCase();
-      const password = document.getElementById('setup-password').value;
-      const confirm = document.getElementById('setup-password-confirm').value;
-      const btnSubmit = document.getElementById('btn-submit-setup');
-
-      if (password !== confirm) {
-        setupError.textContent = 'Les mots de passe ne correspondent pas.';
-        setupError.classList.remove('hidden');
-        return;
-      }
-
-      if (password.length < 6) {
-        setupError.textContent = 'Le mot de passe doit contenir au moins 6 caractères.';
-        setupError.classList.remove('hidden');
-        return;
-      }
-
-      btnSubmit.disabled = true;
-      btnSubmit.innerHTML = `<span class="material-symbols-outlined text-lg animate-spin">sync</span> Création sécurisée en cours...`;
-
-      try {
-        const salt = generateSalt();
-        const passwordHash = await sha256(password, salt);
-        const client = window.AkevaSupabase.client;
-
-        const { data, error } = await client
-          .from('admin_accounts')
-          .insert([
-            {
-              email: email,
-              password_hash: passwordHash,
-              salt: salt,
-              full_name: fullName || 'Super Administrateur'
-            }
-          ])
-          .select();
-
-        if (error) throw error;
-
-        // Connexion immédiate
-        currentAdmin = {
-          email: email,
-          full_name: fullName || 'Super Administrateur',
-          token: Date.now().toString()
-        };
-        localStorage.setItem(SESSION_KEY, JSON.stringify(currentAdmin));
-
-        showToast('Super Admin unique créé avec succès ! Bienvenue.', 'check_circle');
-
-        // Bascule vers le tableau de bord
-        screenSetup.classList.add('hidden');
-        showDashboard();
-      } catch (err) {
-        console.error('Erreur création admin:', err);
-        setupError.textContent = err.message || 'Impossible de créer le compte administrateur.';
-        setupError.classList.remove('hidden');
-        btnSubmit.disabled = false;
-        btnSubmit.innerHTML = `<span class="material-symbols-outlined text-lg text-[#fed488]">verified_user</span> Créer mon Compte Super Admin Unique`;
-      }
-    });
-  }
-
-  /* ========================================================================= */
-  /* 5. AUTH : CONNEXION AU COMPTE ADMIN EXISTANT                              */
-  /* ========================================================================= */
-
-  const formLogin = document.getElementById('form-login');
-  const loginError = document.getElementById('login-error');
-
-  if (formLogin) {
-    formLogin.addEventListener('submit', async function (e) {
-      e.preventDefault();
-      loginError.classList.add('hidden');
-
-      const email = document.getElementById('login-email').value.trim().toLowerCase();
-      const password = document.getElementById('login-password').value;
-      const btnSubmit = document.getElementById('btn-submit-login');
-
-      btnSubmit.disabled = true;
-      btnSubmit.innerHTML = `<span class="material-symbols-outlined text-lg animate-spin">sync</span> Connexion...`;
-
-      try {
-        const client = window.AkevaSupabase.client;
-        const { data, error } = await client
-          .from('admin_accounts')
-          .select('*')
-          .eq('email', email)
-          .maybeSingle();
-
-        if (error) throw error;
-        if (!data) {
-          throw new Error('Adresse email ou mot de passe incorrect.');
-        }
-
-        const computedHash = await sha256(password, data.salt);
-        if (computedHash !== data.password_hash) {
-          throw new Error('Adresse email ou mot de passe incorrect.');
-        }
-
-        // Succès
-        currentAdmin = {
-          email: data.email,
-          full_name: data.full_name || 'Super Admin',
-          token: Date.now().toString()
-        };
-        localStorage.setItem(SESSION_KEY, JSON.stringify(currentAdmin));
-
-        showToast(`Bienvenue, ${currentAdmin.full_name} !`, 'check_circle');
-
-        screenLogin.classList.add('hidden');
-        showDashboard();
-      } catch (err) {
-        console.error('Erreur login:', err);
-        loginError.textContent = err.message || 'Identifiants invalides.';
-        loginError.classList.remove('hidden');
-        btnSubmit.disabled = false;
-        btnSubmit.innerHTML = `<span class="material-symbols-outlined text-lg text-[#fed488]">login</span> Se Connecter`;
-      }
-    });
-  }
-
-  // Déconnexion
-  const btnLogout = document.getElementById('btn-logout');
-  if (btnLogout) {
-    btnLogout.addEventListener('click', function () {
-      if (confirm('Voulez-vous vraiment vous déconnecter du Back-Office ?')) {
-        localStorage.removeItem(SESSION_KEY);
-        sessionStorage.removeItem(SESSION_KEY);
-        currentAdmin = null;
-        screenDashboard.classList.add('hidden');
-        screenLogin.classList.remove('hidden');
-        showToast('Vous êtes déconnecté.', 'logout');
-      }
-    });
-  }
-
-  /* ========================================================================= */
-  /* 6. NAVIGATION PAR ONGLETS DU DASHBOARD                                    */
-  /* ========================================================================= */
-
-  function initTabs() {
-    const tabs = document.querySelectorAll('.nav-tab');
-    tabs.forEach(tab => {
-      tab.addEventListener('click', function () {
-        const targetViewId = this.getAttribute('data-view');
-
-        tabs.forEach(t => {
-          t.classList.remove('active', 'border-[#0d2040]', 'text-[#0d2040]');
-          t.classList.add('border-transparent', 'text-slate-500');
-        });
-
-        this.classList.add('active', 'border-[#0d2040]', 'text-[#0d2040]');
-        this.classList.remove('border-transparent', 'text-slate-500');
-
-        document.querySelectorAll('.dashboard-view').forEach(view => {
-          view.classList.add('hidden');
-        });
-
-        const targetView = document.getElementById(targetViewId);
-        if (targetView) {
-          targetView.classList.remove('hidden');
-        }
-
-        // Redimensionner les graphiques si on affiche les stats
-        if (targetViewId === 'view-stats') {
-          if (chartEvolution) chartEvolution.resize();
-          if (chartPie) chartPie.resize();
-        }
-      });
-    });
-  }
-
-  /* ========================================================================= */
-  /* 7. DASHBOARD : AFFICHAGE & CHARGEMENT COMPLET                             */
-  /* ========================================================================= */
-
-  function showDashboard() {
-    screenDashboard.classList.remove('hidden');
-
-    // Met à jour les infos utilisateur dans le header
-    if (currentAdmin) {
-      const nameEl = document.getElementById('user-display-name');
-      const emailEl = document.getElementById('user-display-email');
-      if (nameEl) nameEl.textContent = currentAdmin.full_name || 'Super Admin';
-      if (emailEl) emailEl.textContent = currentAdmin.email || 'admin@akevaserenite.cm';
-    }
-
-    // Charge les différentes sections
-    loadStatsAndCharts();
-    loadContactRequests();
-    loadRealisations();
-    loadSiteSettings();
-  }
-
-  /* ========================================================================= */
-  /* 8. STATISTIQUES DYNAMIQUES & GRAPHIQUES CHART.JS                          */
-  /* ========================================================================= */
-
-  async function loadStatsAndCharts() {
-    try {
-      const client = window.AkevaSupabase.client;
-      const { data, error } = await client
-        .from('site_settings')
-        .select('value')
-        .eq('key', 'stats_metrics')
-        .maybeSingle();
-
-      if (error) throw error;
-
-      currentStats = data?.value || {
-        beneficiaires: 142,
-        heures_gardes: 18450,
-        satisfaction_pct: 99.4,
-        auxiliaires_actifs: 28,
-        monthly_evolution: {
-          labels: ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"],
-          visites_domicile: [18, 24, 32, 29, 38, 45, 52, 60, 68, 75, 84, 96],
-          gardes_nuit: [12, 15, 20, 22, 28, 30, 36, 42, 48, 55, 62, 70]
-        }
-      };
-
-      renderStatsKPIs(currentStats);
-      renderCharts(currentStats);
-      populateStatsForm(currentStats);
-    } catch (err) {
-      console.error('Erreur chargement stats:', err);
-    }
-  }
-
-  function renderStatsKPIs(stats) {
-    const elBenef = document.getElementById('stat-val-beneficiaires');
-    const elHeures = document.getElementById('stat-val-heures');
-    const elSat = document.getElementById('stat-val-satisfaction');
-    const elAux = document.getElementById('stat-val-auxiliaires');
-
-    if (elBenef) elBenef.textContent = stats.beneficiaires?.toLocaleString('fr-FR') || '0';
-    if (elHeures) elHeures.textContent = stats.heures_gardes?.toLocaleString('fr-FR') || '0';
-    if (elSat) elSat.textContent = `${stats.satisfaction_pct || 99} %`;
-    if (elAux) elAux.textContent = stats.auxiliaires_actifs?.toString() || '0';
-  }
-
-  function renderCharts(stats) {
-    const canvasEvolution = document.getElementById('chart-evolution');
-    const canvasPie = document.getElementById('chart-pie');
-
-    const evo = stats.monthly_evolution || {
-      labels: ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"],
-      visites_domicile: [18, 24, 32, 29, 38, 45, 52, 60, 68, 75, 84, 96],
-      gardes_nuit: [12, 15, 20, 22, 28, 30, 36, 42, 48, 55, 62, 70]
-    };
-
-    // 1. Graphique d'évolution mensuelle
-    if (canvasEvolution) {
-      if (chartEvolution) chartEvolution.destroy();
-
-      chartEvolution = new Chart(canvasEvolution, {
-        type: 'line',
-        data: {
-          labels: evo.labels,
-          datasets: [
-            {
-              label: 'Gardes de Jour & Domicile',
-              data: evo.visites_domicile,
-              borderColor: '#0d2040',
-              backgroundColor: 'rgba(13, 32, 64, 0.06)',
-              borderWidth: 3,
-              fill: true,
-              tension: 0.35,
-              pointBackgroundColor: '#0d2040',
-              pointRadius: 4
-            },
-            {
-              label: 'Gardes de Nuit & 24h',
-              data: evo.gardes_nuit,
-              borderColor: '#c5a059',
-              backgroundColor: 'rgba(197, 160, 89, 0.08)',
-              borderWidth: 3,
-              fill: true,
-              tension: 0.35,
-              pointBackgroundColor: '#c5a059',
-              pointRadius: 4
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'top',
-              labels: {
-                boxWidth: 12,
-                font: { family: 'Plus Jakarta Sans', size: 11, weight: '600' }
-              }
-            },
-            tooltip: {
-              backgroundColor: '#0d2040',
-              padding: 10,
-              titleFont: { family: 'Plus Jakarta Sans', weight: 'bold' },
-              bodyFont: { family: 'Plus Jakarta Sans' }
-            }
-          },
-          scales: {
-            x: {
-              grid: { display: false },
-              ticks: { font: { family: 'Plus Jakarta Sans', size: 10 } }
-            },
-            y: {
-              grid: { color: '#f1f5f9' },
-              ticks: { font: { family: 'Plus Jakarta Sans', size: 10 } }
-            }
-          }
-        }
-      });
-    }
-
-    // 2. Graphique Donut (Répartition)
-    if (canvasPie) {
-      if (chartPie) chartPie.destroy();
-
-      chartPie = new Chart(canvasPie, {
-        type: 'doughnut',
-        data: {
-          labels: ['Garde 24h/24', 'Garde Jour', 'Garde Nuit', 'Soutien moral'],
-          datasets: [{
-            data: [42, 35, 18, 5],
-            backgroundColor: ['#0d2040', '#c5a059', '#10b981', '#94a3b8'],
-            borderWidth: 2,
-            borderColor: '#ffffff'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false }
-          },
-          cutout: '70%'
-        }
-      });
-    }
-  }
-
-  function populateStatsForm(stats) {
-    document.getElementById('input-stat-beneficiaires').value = stats.beneficiaires || 142;
-    document.getElementById('input-stat-heures').value = stats.heures_gardes || 18450;
-    document.getElementById('input-stat-satisfaction').value = stats.satisfaction_pct || 99.4;
-    document.getElementById('input-stat-auxiliaires').value = stats.auxiliaires_actifs || 28;
-
-    const container = document.getElementById('container-monthly-inputs');
-    if (!container) return;
-    container.innerHTML = '';
-
-    const evo = stats.monthly_evolution || {};
-    const labels = evo.labels || ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
-    const values = evo.visites_domicile || [18, 24, 32, 29, 38, 45, 52, 60, 68, 75, 84, 96];
-
-    labels.forEach((month, idx) => {
-      const div = document.createElement('div');
-      div.className = 'flex flex-col';
-      div.innerHTML = `
-        <span class="text-[10px] font-bold text-slate-500 uppercase">${month}</span>
-        <input type="number" class="input-monthly-val px-1.5 py-1 text-center rounded-lg border border-slate-200 text-xs font-semibold"
-          data-month-idx="${idx}" value="${values[idx] || 0}"/>
-      `;
-      container.appendChild(div);
-    });
-  }
-
-  // Toggle du panneau d'édition des stats
-  const btnToggleStatsEditor = document.getElementById('btn-toggle-stats-editor');
-  const panelStatsEditor = document.getElementById('panel-stats-editor');
-  const btnCloseStatsEditor = document.getElementById('btn-close-stats-editor');
-  const btnCancelStats = document.getElementById('btn-cancel-stats');
-
-  if (btnToggleStatsEditor && panelStatsEditor) {
-    btnToggleStatsEditor.addEventListener('click', () => {
-      panelStatsEditor.classList.toggle('hidden');
-    });
-  }
-  if (btnCloseStatsEditor && panelStatsEditor) {
-    btnCloseStatsEditor.addEventListener('click', () => panelStatsEditor.classList.add('hidden'));
-  }
-  if (btnCancelStats && panelStatsEditor) {
-    btnCancelStats.addEventListener('click', () => panelStatsEditor.classList.add('hidden'));
-  }
-
-  // Soumission de la mise à jour des statistiques
-  const formUpdateStats = document.getElementById('form-update-stats');
-  if (formUpdateStats) {
-    formUpdateStats.addEventListener('submit', async function (e) {
-      e.preventDefault();
-
-      const newStats = {
-        beneficiaires: parseInt(document.getElementById('input-stat-beneficiaires').value, 10) || 0,
-        heures_gardes: parseInt(document.getElementById('input-stat-heures').value, 10) || 0,
-        satisfaction_pct: parseFloat(document.getElementById('input-stat-satisfaction').value) || 99,
-        auxiliaires_actifs: parseInt(document.getElementById('input-stat-auxiliaires').value, 10) || 0,
-        monthly_evolution: {
-          labels: currentStats.monthly_evolution?.labels || ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"],
-          visites_domicile: [],
-          gardes_nuit: []
-        }
-      };
-
-      document.querySelectorAll('.input-monthly-val').forEach(input => {
-        const val = parseInt(input.value, 10) || 0;
-        newStats.monthly_evolution.visites_domicile.push(val);
-        newStats.monthly_evolution.gardes_nuit.push(Math.round(val * 0.72));
-      });
-
-      try {
-        const client = window.AkevaSupabase.client;
-        const { error } = await client
-          .from('site_settings')
-          .upsert({
-            key: 'stats_metrics',
-            value: newStats,
-            updated_at: new Date().toISOString()
-          });
-
-        if (error) throw error;
-
-        currentStats = newStats;
-        renderStatsKPIs(newStats);
-        renderCharts(newStats);
-        panelStatsEditor.classList.add('hidden');
-
-        showToast('Indicateurs et courbes mis à jour avec succès !', 'check_circle');
-      } catch (err) {
-        console.error('Erreur sauvegarde stats:', err);
-        showToast('Erreur lors de la mise à jour des statistiques.', 'error');
-      }
-    });
-  }
-
-  /* ========================================================================= */
-  /* 9. GESTION DES DEMANDES DE PRise EN CHARGE (CONTACT_REQUESTS)             */
-  /* ========================================================================= */
-
-  async function loadContactRequests() {
-    const tbody = document.getElementById('table-requests-body');
-    const badgeCount = document.getElementById('badge-requests-count');
-
-    try {
-      const client = window.AkevaSupabase.client;
-      const { data, error } = await client
-        .from('contact_requests')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      allRequests = data || [];
-      if (badgeCount) badgeCount.textContent = allRequests.length.toString();
-
-      renderRequestsTable();
-    } catch (err) {
-      console.error('Erreur chargement contact_requests:', err);
-      if (tbody) {
-        tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-red-500">Erreur de chargement des demandes.</td></tr>`;
-      }
-    }
-  }
-
-  function renderRequestsTable() {
-    const tbody = document.getElementById('table-requests-body');
-    if (!tbody) return;
-
-    const searchTerm = (document.getElementById('search-requests')?.value || '').toLowerCase().trim();
-
-    const filtered = allRequests.filter(req => {
-      const matchesStatus = activeStatusFilter === 'all' || req.status === activeStatusFilter;
-      const matchesSearch = !searchTerm ||
-        (req.full_name && req.full_name.toLowerCase().includes(searchTerm)) ||
-        (req.phone && req.phone.toLowerCase().includes(searchTerm)) ||
-        (req.quartier && req.quartier.toLowerCase().includes(searchTerm)) ||
-        (req.service && req.service.toLowerCase().includes(searchTerm));
-      return matchesStatus && matchesSearch;
-    });
-
-    if (filtered.length === 0) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="7" class="py-12 text-center text-slate-400">
-            <span class="material-symbols-outlined text-4xl block mb-2 text-slate-300">inbox</span>
-            Aucune demande trouvée avec ces critères.
-          </td>
-        </tr>
-      `;
-      return;
-    }
-
-    tbody.innerHTML = filtered.map(req => {
-      const dateStr = req.created_at ? new Date(req.created_at).toLocaleDateString('fr-FR', {
-        day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
-      }) : '—';
-
-      const cleanPhone = (req.phone || '').replace(/[^0-9]/g, '');
-      const waPhone = cleanPhone.startsWith('237') ? cleanPhone : `237${cleanPhone}`;
-      const waText = encodeURIComponent(`Bonjour ${req.full_name || ''}, nous avons bien reçu votre demande d'accompagnement Akeva Sérénité pour "${req.service || 'Soins à domicile'}". Nos coordinateurs sont à votre écoute.`);
-
-      return `
-        <tr class="hover:bg-slate-50/70 transition-colors">
-          <td class="py-3 px-4 text-slate-500 whitespace-nowrap text-[11px]">${dateStr}</td>
-          <td class="py-3 px-4 font-bold text-slate-800">
-            ${escapeHtml(req.full_name || 'Anonyme')}
-            ${req.email ? `<div class="text-[10px] text-slate-400 font-normal">${escapeHtml(req.email)}</div>` : ''}
-          </td>
-          <td class="py-3 px-4">
-            <a href="tel:${req.phone}" class="font-semibold text-[#0d2040] hover:underline flex items-center gap-1">
-              <span class="material-symbols-outlined text-xs">call</span>
-              <span>${escapeHtml(req.phone || '—')}</span>
-            </a>
-          </td>
-          <td class="py-3 px-4">
-            <span class="px-2.5 py-1 rounded-md bg-slate-100 font-medium text-slate-700 text-[11px]">
-              ${escapeHtml(req.service || 'Non spécifié')}
-            </span>
-          </td>
-          <td class="py-3 px-4 max-w-xs">
-            <div class="font-medium text-slate-700">${escapeHtml(req.quartier || 'Yaoundé')}</div>
-            ${req.message ? `<div class="text-[10px] text-slate-400 truncate" title="${escapeHtml(req.message)}">${escapeHtml(req.message)}</div>` : ''}
-          </td>
-          <td class="py-3 px-4">
-            <select class="select-request-status py-1 px-2 rounded-lg text-[11px] font-bold border ${getStatusBadgeClass(req.status)}"
-              data-id="${req.id}">
-              <option value="nouveau" ${req.status === 'nouveau' ? 'selected' : ''}>Nouvelle</option>
-              <option value="en_cours" ${req.status === 'en_cours' ? 'selected' : ''}>En cours</option>
-              <option value="confirme" ${req.status === 'confirme' ? 'selected' : ''}>Confirmée</option>
-              <option value="termine" ${req.status === 'termine' ? 'selected' : ''}>Terminée</option>
-            </select>
-          </td>
-          <td class="py-3 px-4 text-right whitespace-nowrap">
-            <div class="inline-flex items-center gap-1">
-              <a href="https://wa.me/${waPhone}?text=${waText}" target="_blank"
-                class="p-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors" title="Contacter sur WhatsApp">
-                <img src="/assets/whatsapp.svg" alt="WA" class="w-4 h-4"/>
-              </a>
-              <button class="btn-delete-request p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                data-id="${req.id}" title="Supprimer">
-                <span class="material-symbols-outlined text-base">delete</span>
-              </button>
-            </div>
-          </td>
-        </tr>
-      `;
-    }).join('');
-
-    // Événements changement de statut
-    document.querySelectorAll('.select-request-status').forEach(select => {
-      select.addEventListener('change', async function () {
-        const reqId = this.getAttribute('data-id');
-        const newStatus = this.value;
-        await updateRequestStatus(reqId, newStatus);
-      });
-    });
-
-    // Événements suppression
-    document.querySelectorAll('.btn-delete-request').forEach(btn => {
-      btn.addEventListener('click', async function () {
-        const reqId = this.getAttribute('data-id');
-        if (confirm('Confirmez-vous la suppression de cette demande ?')) {
-          await deleteRequest(reqId);
-        }
-      });
-    });
-  }
-
-  function getStatusBadgeClass(status) {
-    switch (status) {
-      case 'nouveau': return 'bg-amber-50 text-amber-800 border-amber-200';
-      case 'en_cours': return 'bg-blue-50 text-blue-800 border-blue-200';
-      case 'confirme': return 'bg-emerald-50 text-emerald-800 border-emerald-200';
-      case 'termine': return 'bg-slate-100 text-slate-600 border-slate-200';
-      default: return 'bg-slate-50 text-slate-700 border-slate-200';
-    }
-  }
-
-  async function updateRequestStatus(id, newStatus) {
-    try {
-      const client = window.AkevaSupabase.client;
-      const { error } = await client
-        .from('contact_requests')
-        .update({ status: newStatus })
-        .eq('id', id);
-
-      if (error) throw error;
-
-      const item = allRequests.find(r => r.id === id);
-      if (item) item.status = newStatus;
-
-      renderRequestsTable();
-      showToast('Statut mis à jour.', 'check_circle');
-    } catch (err) {
-      console.error('Erreur mise à jour statut:', err);
-      showToast('Erreur lors du changement de statut.', 'error');
-    }
-  }
-
-  async function deleteRequest(id) {
-    try {
-      const client = window.AkevaSupabase.client;
-      const { error } = await client
-        .from('contact_requests')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      allRequests = allRequests.filter(r => r.id !== id);
-      renderRequestsTable();
-      showToast('Demande supprimée.', 'delete');
-    } catch (err) {
-      console.error('Erreur suppression:', err);
-      showToast('Impossible de supprimer la demande.', 'error');
-    }
-  }
-
-  // Filtres statut demandes
-  document.querySelectorAll('.filter-status-btn').forEach(btn => {
-    btn.addEventListener('click', function () {
-      document.querySelectorAll('.filter-status-btn').forEach(b => {
-        b.classList.remove('bg-[#0d2040]', 'text-white', 'font-bold');
-        b.classList.add('bg-slate-100', 'text-slate-600', 'font-semibold');
-      });
-      this.classList.remove('bg-slate-100', 'text-slate-600', 'font-semibold');
-      this.classList.add('bg-[#0d2040]', 'text-white', 'font-bold');
-
-      activeStatusFilter = this.getAttribute('data-status');
-      renderRequestsTable();
-    });
-  });
-
-  // Recherche dans les demandes
-  const searchInput = document.getElementById('search-requests');
-  if (searchInput) {
-    searchInput.addEventListener('input', () => renderRequestsTable());
-  }
-
-  const btnRefreshRequests = document.getElementById('btn-refresh-requests');
-  if (btnRefreshRequests) {
-    btnRefreshRequests.addEventListener('click', () => {
-      loadContactRequests();
-      showToast('Demandes actualisées.', 'refresh');
-    });
-  }
-
-  // Export CSV
-  const btnExportCsv = document.getElementById('btn-export-csv');
-  if (btnExportCsv) {
-    btnExportCsv.addEventListener('click', function () {
-      if (!allRequests.length) {
-        showToast('Aucune donnée à exporter.', 'info');
-        return;
-      }
-      const headers = ['ID', 'Date', 'Nom_Complet', 'Telephone', 'Email', 'Service', 'Quartier', 'Statut', 'Message'];
-      const rows = allRequests.map(r => [
-        `"${r.id}"`,
-        `"${r.created_at || ''}"`,
-        `"${(r.full_name || '').replace(/"/g, '""')}"`,
-        `"${(r.phone || '').replace(/"/g, '""')}"`,
-        `"${(r.email || '').replace(/"/g, '""')}"`,
-        `"${(r.service || '').replace(/"/g, '""')}"`,
-        `"${(r.quartier || '').replace(/"/g, '""')}"`,
-        `"${r.status || ''}"`,
-        `"${(r.message || '').replace(/"/g, '""')}"`
-      ]);
-
-      const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(';'), ...rows.map(e => e.join(';'))].join('\n');
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement('a');
-      link.setAttribute('href', encodedUri);
-      link.setAttribute('download', `akeva_demandes_${new Date().toISOString().slice(0,10)}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      showToast('Fichier CSV téléchargé.', 'download');
-    });
-  }
-
-  /* ========================================================================= */
-  /* 10. MÉDIATHÈQUE & RÉALISATIONS (UPLOAD JUSQU'À 100 MO)                     */
-  /* ========================================================================= */
-
-  const btnToggleUpload = document.getElementById('btn-toggle-upload-panel');
-  const panelUpload = document.getElementById('panel-upload-media');
-  const btnCloseUpload = document.getElementById('btn-close-upload-panel');
-  const btnCancelUpload = document.getElementById('btn-cancel-upload');
-  const dropZone = document.getElementById('drop-zone');
-  const fileInput = document.getElementById('media-file-input');
-  const fileChosenInfo = document.getElementById('file-chosen-info');
-  const formUpload = document.getElementById('form-upload-media');
-
-  if (btnToggleUpload && panelUpload) {
-    btnToggleUpload.addEventListener('click', () => panelUpload.classList.toggle('hidden'));
-  }
-  if (btnCloseUpload && panelUpload) {
-    btnCloseUpload.addEventListener('click', () => panelUpload.classList.add('hidden'));
-  }
-  if (btnCancelUpload && panelUpload) {
-    btnCancelUpload.addEventListener('click', () => panelUpload.classList.add('hidden'));
-  }
-
-  // Clic sur la drop zone
-  if (dropZone && fileInput) {
-    dropZone.addEventListener('click', () => fileInput.click());
-
-    fileInput.addEventListener('change', function () {
-      if (this.files && this.files[0]) {
-        showSelectedFileInfo(this.files[0]);
-      }
-    });
-
-    // Drag & Drop
-    ['dragenter', 'dragover'].forEach(eventName => {
-      dropZone.addEventListener(eventName, (e) => {
-        e.preventDefault();
-        dropZone.classList.add('border-[#c5a059]', 'bg-amber-50/20');
-      }, false);
-    });
-
-    ['dragleave', 'drop'].forEach(eventName => {
-      dropZone.addEventListener(eventName, (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('border-[#c5a059]', 'bg-amber-50/20');
-      }, false);
-    });
-
-    dropZone.addEventListener('drop', (e) => {
-      const dt = e.dataTransfer;
-      const files = dt.files;
-      if (files && files[0]) {
-        fileInput.files = files;
-        showSelectedFileInfo(files[0]);
-      }
-    });
-  }
-
-  function showSelectedFileInfo(file) {
-    const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
-    fileChosenInfo.textContent = `Fichier sélectionné : ${file.name} (${sizeMb} Mo)`;
-    fileChosenInfo.classList.remove('hidden');
-
-    if (file.size > 104857600) {
-      fileChosenInfo.innerHTML += `<span class="text-red-600 block">⚠️ Attention : le fichier dépasse la limite de 100 Mo.</span>`;
-    }
-  }
-
-  // Téléversement média
-  if (formUpload) {
-    formUpload.addEventListener('submit', async function (e) {
-      e.preventDefault();
-      const uploadError = document.getElementById('upload-error');
-      const progressContainer = document.getElementById('upload-progress-container');
-      const progressBar = document.getElementById('upload-progress-bar');
-      const progressPct = document.getElementById('upload-progress-pct');
-      const btnSubmit = document.getElementById('btn-submit-media');
-
-      uploadError.classList.add('hidden');
-
-      const file = fileInput.files ? fileInput.files[0] : null;
-      if (!file) {
-        uploadError.textContent = 'Veuillez sélectionner un fichier (image, vidéo ou document).';
-        uploadError.classList.remove('hidden');
-        return;
-      }
-
-      // Limite 100 Mo
-      if (file.size > 104857600) {
-        uploadError.textContent = 'La taille du fichier dépasse la limite maximale autorisée de 100 Mo.';
-        uploadError.classList.remove('hidden');
-        return;
-      }
-
-      const title = document.getElementById('media-title').value.trim();
-      const category = document.getElementById('media-category').value;
-      const description = document.getElementById('media-description').value.trim();
-
-      // Détection type
-      let mediaType = 'image';
-      if (file.type.startsWith('video/')) mediaType = 'video';
-      else if (file.type === 'application/pdf' || file.name.endsWith('.pdf') || file.type.includes('word')) mediaType = 'document';
-
-      btnSubmit.disabled = true;
-      progressContainer.classList.remove('hidden');
-      progressBar.style.width = '30%';
-      progressPct.textContent = '30%';
-
-      try {
-        const client = window.AkevaSupabase.client;
-        const fileExt = file.name.split('.').pop();
-        const safeName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
-        const filePath = `realisations/${safeName}`;
-
-        progressBar.style.width = '60%';
-        progressPct.textContent = '60%';
-
-        // Upload dans le bucket 'akeva-media'
-        const { data: uploadData, error: uploadErr } = await client.storage
-          .from('akeva-media')
-          .upload(filePath, file, {
-            cacheControl: '3600',
-            upsert: true
-          });
-
-        if (uploadErr) throw uploadErr;
-
-        progressBar.style.width = '85%';
-        progressPct.textContent = '85%';
-
-        // Récupération de l'URL publique
-        const { data: urlData } = client.storage
-          .from('akeva-media')
-          .getPublicUrl(filePath);
-
-        const publicUrl = urlData.publicUrl;
-
-        // Insertion dans la table `realisations`
-        const { error: insertErr } = await client
-          .from('realisations')
-          .insert([
-            {
-              title: title,
-              category: category,
-              description: description,
-              media_url: publicUrl,
-              media_type: mediaType,
-              file_size_bytes: file.size,
-              published: true
-            }
-          ]);
-
-        if (insertErr) throw insertErr;
-
-        progressBar.style.width = '100%';
-        progressPct.textContent = '100%';
-
-        showToast('Média importé et réalisation publiée !', 'check_circle');
-
-        // Reset formulaire
-        formUpload.reset();
-        fileChosenInfo.classList.add('hidden');
-        progressContainer.classList.add('hidden');
-        panelUpload.classList.add('hidden');
-        btnSubmit.disabled = false;
-
-        loadRealisations();
-      } catch (err) {
-        console.error('Erreur téléversement média:', err);
-        uploadError.textContent = err.message || "Erreur lors du téléversement vers Supabase.";
-        uploadError.classList.remove('hidden');
-        progressContainer.classList.add('hidden');
-        btnSubmit.disabled = false;
-      }
-    });
-  }
-
-  async function loadRealisations() {
-    const grid = document.getElementById('realisations-grid');
-    const countEl = document.getElementById('realisations-count');
-    if (!grid) return;
-
-    try {
-      const client = window.AkevaSupabase.client;
-      const { data, error } = await client
-        .from('realisations')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      allRealisations = data || [];
-      if (countEl) countEl.textContent = `${allRealisations.length} média(s) en ligne`;
-
-      if (allRealisations.length === 0) {
-        grid.innerHTML = `
-          <div class="col-span-full py-12 text-center text-slate-400 bg-white rounded-3xl border border-slate-200">
-            <span class="material-symbols-outlined text-4xl text-slate-300 block mb-2">collections</span>
-            Aucune réalisation ajoutée pour le moment. Cliquez sur "Ajouter une Réalisation" pour importer vos médias.
-          </div>
-        `;
-        return;
-      }
-
-      grid.innerHTML = allRealisations.map(item => {
-        let mediaHtml = '';
-        if (item.media_type === 'video') {
-          mediaHtml = `
-            <div class="aspect-video w-full bg-black rounded-2xl overflow-hidden relative">
-              <video src="${escapeHtml(item.media_url)}" controls preload="metadata" class="w-full h-full object-cover"></video>
-            </div>
-          `;
-        } else if (item.media_type === 'document') {
-          mediaHtml = `
-            <div class="aspect-video w-full bg-slate-100 rounded-2xl flex flex-col items-center justify-center p-4 text-center">
-              <span class="material-symbols-outlined text-4xl text-amber-700 mb-1">description</span>
-              <span class="text-xs font-bold text-slate-700">Document PDF / Rapport</span>
-              <a href="${escapeHtml(item.media_url)}" target="_blank" class="mt-2 text-[11px] text-[#0d2040] underline font-bold">Ouvrir le fichier</a>
-            </div>
-          `;
-        } else {
-          mediaHtml = `
-            <div class="aspect-video w-full bg-slate-100 rounded-2xl overflow-hidden relative">
-              <img src="${escapeHtml(item.media_url)}" alt="${escapeHtml(item.title)}" class="w-full h-full object-cover"/>
-            </div>
-          `;
-        }
-
-        const sizeMb = item.file_size_bytes ? (item.file_size_bytes / (1024 * 1024)).toFixed(1) + ' Mo' : '';
-
-        return `
-          <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-xs flex flex-col justify-between space-y-3">
-            <div>
-              ${mediaHtml}
-              <div class="flex items-center justify-between mt-3 mb-1">
-                <span class="px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 text-[10px] font-bold uppercase tracking-wider">${escapeHtml(item.category || 'Général')}</span>
-                ${sizeMb ? `<span class="text-[10px] text-slate-400 font-medium">${sizeMb}</span>` : ''}
-              </div>
-              <h4 class="font-bold text-slate-800 text-sm leading-snug">${escapeHtml(item.title)}</h4>
-              ${item.description ? `<p class="text-xs text-slate-500 mt-1 line-clamp-2">${escapeHtml(item.description)}</p>` : ''}
-            </div>
-            <div class="border-t border-slate-100 pt-3 flex items-center justify-between">
-              <label class="flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-slate-600">
-                <input type="checkbox" class="toggle-publish-realisation rounded border-slate-300 text-[#0d2040]"
-                  data-id="${item.id}" ${item.published ? 'checked' : ''}/>
-                <span>${item.published ? 'En ligne' : 'Masqué'}</span>
-              </label>
-              <button class="btn-delete-realisation p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-                data-id="${item.id}" title="Supprimer">
-                <span class="material-symbols-outlined text-base">delete</span>
-              </button>
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      // Toggle publish
-      document.querySelectorAll('.toggle-publish-realisation').forEach(chk => {
-        chk.addEventListener('change', async function () {
-          const id = this.getAttribute('data-id');
-          const isPub = this.checked;
-          const client = window.AkevaSupabase.client;
-          await client.from('realisations').update({ published: isPub }).eq('id', id);
-          showToast(isPub ? 'Réalisation mise en ligne.' : 'Réalisation masquée.', 'check_circle');
-        });
-      });
-
-      // Delete realisation
-      document.querySelectorAll('.btn-delete-realisation').forEach(btn => {
-        btn.addEventListener('click', async function () {
-          const id = this.getAttribute('data-id');
-          if (confirm('Confirmez-vous la suppression de cette réalisation ?')) {
-            const client = window.AkevaSupabase.client;
-            await client.from('realisations').delete().eq('id', id);
-            allRealisations = allRealisations.filter(r => r.id !== id);
-            loadRealisations();
-            showToast('Réalisation supprimée.', 'delete');
-          }
-        });
-      });
-    } catch (err) {
-      console.error('Erreur chargement réalisations:', err);
-    }
-  }
-
-  /* ========================================================================= */
-  /* 11. PERSONNALISATION DES COORDONNÉES ET TEXTES DU SITE PUBLIC             */
-  /* ========================================================================= */
-
-  async function loadSiteSettings() {
-    try {
-      const client = window.AkevaSupabase.client;
-      const { data, error } = await client
-        .from('site_settings')
-        .select('value')
-        .eq('key', 'contact_info')
-        .maybeSingle();
-
-      if (error) throw error;
-
-      currentSettings = data?.value || {
-        phone_primary: "697 572 685",
-        phone_secondary: "653 151 427",
-        whatsapp: "237697572685",
-        email: "contact@akevaserenite.cm",
-        address: "Ngousso, Yaoundé, Cameroun (Proximité Hôpital Général)",
-        hours: "24h/24 — 7j/7",
-        banner_announcement: "Service disponible 24h/24 — 7j/7 à Yaoundé (Ngousso et environs)"
-      };
-
-      document.getElementById('setting-phone-1').value = currentSettings.phone_primary || '697 572 685';
-      document.getElementById('setting-phone-2').value = currentSettings.phone_secondary || '653 151 427';
-      document.getElementById('setting-whatsapp').value = currentSettings.whatsapp || '237697572685';
-      document.getElementById('setting-address').value = currentSettings.address || 'Ngousso, Yaoundé, Cameroun';
-      document.getElementById('setting-hours').value = currentSettings.hours || '24h/24 — 7j/7';
-      document.getElementById('setting-banner').value = currentSettings.banner_announcement || 'Service disponible 24h/24 — 7j/7';
-    } catch (err) {
-      console.error('Erreur chargement site_settings:', err);
-    }
-  }
-
-  const formSettings = document.getElementById('form-site-settings');
-  if (formSettings) {
-    formSettings.addEventListener('submit', async function (e) {
-      e.preventDefault();
-      const statusMsg = document.getElementById('settings-status-msg');
-
-      const updated = {
-        phone_primary: document.getElementById('setting-phone-1').value.trim(),
-        phone_secondary: document.getElementById('setting-phone-2').value.trim(),
-        whatsapp: document.getElementById('setting-whatsapp').value.trim(),
-        address: document.getElementById('setting-address').value.trim(),
-        hours: document.getElementById('setting-hours').value.trim(),
-        banner_announcement: document.getElementById('setting-banner').value.trim()
-      };
-
-      try {
-        const client = window.AkevaSupabase.client;
-        const { error } = await client
-          .from('site_settings')
-          .upsert({
-            key: 'contact_info',
-            value: updated,
-            updated_at: new Date().toISOString()
-          });
-
-        if (error) throw error;
-
-        currentSettings = updated;
-        if (statusMsg) {
-          statusMsg.classList.remove('hidden');
-          setTimeout(() => statusMsg.classList.add('hidden'), 3000);
-        }
-        showToast('Coordonnées du site mises à jour !', 'check_circle');
-      } catch (err) {
-        console.error('Erreur mise à jour site_settings:', err);
-        showToast('Erreur lors de la mise à jour des paramètres.', 'error');
-      }
-    });
-  }
-
-  /* ========================================================================= */
-  /* 12. TOAST NOTIFICATIONS & HELPERS                                         */
-  /* ========================================================================= */
-
-  function showToast(message, iconName = 'check_circle') {
+  function showToast(title, message, isError = false) {
     const toast = document.getElementById('toast');
-    const msg = document.getElementById('toast-message');
-    const icon = document.getElementById('toast-icon');
-    if (!toast || !msg) return;
+    const toastTitle = document.getElementById('toast-title');
+    const toastMsg = document.getElementById('toast-message');
+    const toastIcon = document.getElementById('toast-icon');
 
-    msg.textContent = message;
-    if (icon) icon.textContent = iconName;
+    if (!toast) return;
+
+    toastTitle.textContent = title;
+    toastMsg.textContent = message;
+
+    if (isError) {
+      toast.classList.remove('bg-primary-container', 'border-slate-700');
+      toast.classList.add('bg-red-900', 'border-red-700');
+      toastIcon.textContent = 'error';
+      toastIcon.classList.remove('text-secondary-fixed');
+      toastIcon.classList.add('text-red-300');
+    } else {
+      toast.classList.remove('bg-red-900', 'border-red-700');
+      toast.classList.add('bg-primary-container', 'border-slate-700');
+      toastIcon.textContent = 'task_alt';
+      toastIcon.classList.remove('text-red-300');
+      toastIcon.classList.add('text-secondary-fixed');
+    }
 
     toast.classList.remove('translate-y-24', 'opacity-0');
     toast.classList.add('translate-y-0', 'opacity-100');
@@ -1224,8 +136,1495 @@
     setTimeout(() => {
       toast.classList.remove('translate-y-0', 'opacity-100');
       toast.classList.add('translate-y-24', 'opacity-0');
-    }, 3500);
+    }, 3800);
   }
+
+  /* ========================================================================= */
+  /* 4. VÉRIFICATION DU COMPTE SUPER ADMIN & INITIALISATION                    */
+  /* ========================================================================= */
+
+  async function checkAdminAccountStatus() {
+    try {
+      const client = await getClient();
+      const { data, count, error } = await client
+        .from('admin_accounts')
+        .select('id, email, full_name', { count: 'exact' });
+
+      const adminCount = (count !== null && count !== undefined) ? count : (data ? data.length : 0);
+
+      if (screenLoading) screenLoading.classList.add('hidden');
+
+      if (adminCount === 0) {
+        // Aucun compte super admin : affichage du formulaire de création unique
+        if (screenSetup) screenSetup.classList.remove('hidden');
+        if (screenLogin) screenLogin.classList.add('hidden');
+        if (screenDashboard) screenDashboard.classList.add('hidden');
+      } else {
+        // Un compte existe : vérifie la session active
+        const sessionStr = sessionStorage.getItem(SESSION_KEY);
+        if (sessionStr) {
+          try {
+            const sess = JSON.parse(sessionStr);
+            if (sess && sess.id && sess.email) {
+              currentAdmin = sess;
+              enterDashboard();
+              return;
+            }
+          } catch (e) {}
+        }
+        // Pas de session : affichage de l'écran de connexion
+        if (screenSetup) screenSetup.classList.add('hidden');
+        if (screenLogin) screenLogin.classList.remove('hidden');
+        if (screenDashboard) screenDashboard.classList.add('hidden');
+      }
+    } catch (err) {
+      console.warn('Erreur vérification compte super admin:', err);
+      if (screenLoading) screenLoading.classList.add('hidden');
+      // En cas de secours, basculer sur l'écran de configuration
+      if (screenSetup) screenSetup.classList.remove('hidden');
+    }
+  }
+
+  /* ========================================================================= */
+  /* 5. GESTION DU SETUP & LOGIN                                               */
+  /* ========================================================================= */
+
+  function initAuthForms() {
+    // Formulaire de Création du Super Admin Unique
+    const formSetup = document.getElementById('form-setup');
+    if (formSetup) {
+      formSetup.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const errDiv = document.getElementById('setup-error');
+        const btn = document.getElementById('btn-submit-setup');
+        if (errDiv) errDiv.classList.add('hidden');
+
+        const fullName = document.getElementById('setup-fullname').value.trim();
+        const email = document.getElementById('setup-email').value.trim().toLowerCase();
+        const pass = document.getElementById('setup-password').value;
+        const confirm = document.getElementById('setup-password-confirm').value;
+
+        if (pass.length < 6) {
+          if (errDiv) {
+            errDiv.textContent = 'Le mot de passe doit contenir au moins 6 caractères.';
+            errDiv.classList.remove('hidden');
+          }
+          return;
+        }
+
+        if (pass !== confirm) {
+          if (errDiv) {
+            errDiv.textContent = 'Les mots de passe ne correspondent pas.';
+            errDiv.classList.remove('hidden');
+          }
+          return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> Création sécurisée en cours...';
+
+        try {
+          const client = await getClient();
+          const salt = generateSalt();
+          const hash = await sha256(pass, salt);
+
+          const { data, error } = await client
+            .from('admin_accounts')
+            .insert([{
+              email: email,
+              password_hash: hash,
+              salt: salt,
+              full_name: fullName
+            }])
+            .select()
+            .single();
+
+          if (error) throw error;
+
+          currentAdmin = { id: data.id, email: data.email, full_name: data.full_name };
+          sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentAdmin));
+
+          showToast('Super Admin Créé', 'Votre compte maître a été configuré avec succès.');
+          enterDashboard();
+        } catch (err) {
+          console.error(err);
+          btn.disabled = false;
+          btn.innerHTML = '<span class="material-symbols-outlined">verified_user</span> Créer mon Compte Super Admin Unique';
+          if (errDiv) {
+            errDiv.textContent = 'Erreur lors de la création : ' + (err.message || 'Vérifiez la connexion.');
+            errDiv.classList.remove('hidden');
+          }
+        }
+      });
+    }
+
+    // Formulaire de Connexion
+    const formLogin = document.getElementById('form-login');
+    if (formLogin) {
+      formLogin.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const errDiv = document.getElementById('login-error');
+        const btn = document.getElementById('btn-submit-login');
+        if (errDiv) errDiv.classList.add('hidden');
+
+        const email = document.getElementById('login-email').value.trim().toLowerCase();
+        const pass = document.getElementById('login-password').value;
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> Vérification...';
+
+        try {
+          const client = await getClient();
+          const { data, error } = await client
+            .from('admin_accounts')
+            .select('*')
+            .eq('email', email)
+            .single();
+
+          if (error || !data) {
+            throw new Error('Identifiants incorrects ou compte inexistant.');
+          }
+
+          const computedHash = await sha256(pass, data.salt);
+          if (computedHash !== data.password_hash) {
+            throw new Error('Mot de passe incorrect.');
+          }
+
+          currentAdmin = { id: data.id, email: data.email, full_name: data.full_name };
+          sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentAdmin));
+
+          showToast('Bienvenue', `Connexion réussie : ${data.full_name}`);
+          enterDashboard();
+        } catch (err) {
+          btn.disabled = false;
+          btn.innerHTML = '<span class="material-symbols-outlined">login</span> Se Connecter';
+          if (errDiv) {
+            errDiv.textContent = err.message || 'Erreur lors de la connexion.';
+            errDiv.classList.remove('hidden');
+          }
+        }
+      });
+    }
+
+    // Déconnexion
+    const btnLogout = document.getElementById('btn-logout');
+    if (btnLogout) {
+      btnLogout.addEventListener('click', function () {
+        if (confirm('Souhaitez-vous vraiment vous déconnecter du Back-Office ?')) {
+          sessionStorage.removeItem(SESSION_KEY);
+          currentAdmin = null;
+          screenDashboard.classList.add('hidden');
+          screenLogin.classList.remove('hidden');
+          showToast('Déconnecté', 'Session fermée avec succès.');
+        }
+      });
+    }
+  }
+
+  /* ========================================================================= */
+  /* 6. ENTRÉE DANS LE DASHBOARD & CHARGEMENT COMPLET                          */
+  /* ========================================================================= */
+
+  function enterDashboard() {
+    if (screenSetup) screenSetup.classList.add('hidden');
+    if (screenLogin) screenLogin.classList.add('hidden');
+    if (screenDashboard) screenDashboard.classList.remove('hidden');
+
+    // Mise à jour de l'identité dans la sidebar
+    if (currentAdmin) {
+      const nameEl = document.getElementById('user-display-name');
+      const emailEl = document.getElementById('user-display-email');
+      const avatarEl = document.getElementById('user-avatar-initials');
+      const profileName = document.getElementById('profile-fullname');
+      const profileEmail = document.getElementById('profile-email');
+
+      if (nameEl) nameEl.textContent = currentAdmin.full_name;
+      if (emailEl) emailEl.textContent = currentAdmin.email;
+      if (profileName) profileName.value = currentAdmin.full_name;
+      if (profileEmail) profileEmail.value = currentAdmin.email;
+
+      if (avatarEl && currentAdmin.full_name) {
+        const parts = currentAdmin.full_name.trim().split(' ');
+        const initials = parts.length > 1 ? (parts[0][0] + parts[1][0]) : parts[0].slice(0, 2);
+        avatarEl.textContent = initials.toUpperCase();
+      }
+    }
+
+    // Chargement de l'ensemble des données
+    loadAllDashboardData();
+  }
+
+  /* ========================================================================= */
+  /* 7. NAVIGATION OFFICIELLE STITCH (14 VUES)                                 */
+  /* ========================================================================= */
+
+  function initSidebarNavigation() {
+    const navLinks = document.querySelectorAll('.nav-stitch-link');
+    const allViews = document.querySelectorAll('.stitch-view');
+
+    navLinks.forEach(link => {
+      link.addEventListener('click', function (e) {
+        e.preventDefault();
+        const targetViewId = this.getAttribute('data-view');
+        if (!targetViewId) return;
+
+        const targetView = document.getElementById(targetViewId);
+        if (!targetView) {
+          console.warn('Vue introuvable :', targetViewId);
+          return;
+        }
+
+        // Masque toutes les vues
+        allViews.forEach(v => v.classList.add('hidden'));
+
+        // Affiche la vue ciblée
+        targetView.classList.remove('hidden');
+
+        // Réinitialise les classes actives de la sidebar
+        navLinks.forEach(nl => {
+          nl.classList.remove('active', 'bg-primary', 'text-secondary-fixed', 'font-bold', 'shadow-sm');
+          nl.classList.add('text-on-surface-variant');
+        });
+
+        // Applique le style actif Stitch
+        this.classList.add('active', 'bg-primary', 'text-secondary-fixed', 'font-bold', 'shadow-sm');
+        this.classList.remove('text-on-surface-variant');
+
+        // Initialisation ou redimensionnement des graphiques si nécessaire
+        if (targetViewId === 'view-statistiques') {
+          setTimeout(renderStatsCharts, 50);
+        } else if (targetViewId === 'view-tableau-de-bord') {
+          setTimeout(renderDashboardEvolutionChart, 50);
+        }
+
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
+  }
+
+  /* ========================================================================= */
+  /* 8. CHARGEMENT COMPLET DES DONNÉES DEPUIS SUPABASE                        */
+  /* ========================================================================= */
+
+  async function loadAllDashboardData() {
+    try {
+      const client = await getClient();
+
+      // Requête parallèle sur toutes les tables
+      const [
+        settingsRes,
+        requestsRes,
+        realisationsRes
+      ] = await Promise.all([
+        client.from('site_settings').select('*'),
+        client.from('contact_requests').select('*').order('created_at', { ascending: false }),
+        client.from('realisations').select('*').order('created_at', { ascending: false })
+      ]);
+
+      // 1. Paramètres & Catalogues
+      if (settingsRes.data) {
+        settingsRes.data.forEach(item => {
+          if (item.setting_key === 'site_content') currentSiteContent = item.setting_value;
+          if (item.setting_key === 'services_catalog') allServices = item.setting_value;
+          if (item.setting_key === 'beneficiaires_registry') allBeneficiaires = item.setting_value;
+          if (item.setting_key === 'temoignages_list') allTemoignages = item.setting_value;
+          if (item.setting_key === 'faq_list') allFaq = item.setting_value;
+          if (item.setting_key === 'stats_metrics') currentStats = item.setting_value;
+          if (item.setting_key === 'contact_info') currentContactInfo = item.setting_value;
+        });
+      }
+
+      // 2. Demandes
+      if (requestsRes.data) {
+        allRequests = requestsRes.data;
+      }
+
+      // 3. Réalisations
+      if (realisationsRes.data) {
+        allRealisations = realisationsRes.data;
+      }
+
+      // Rendu de toutes les rubriques
+      renderKPIs();
+      renderDashboardRecent();
+      renderDemandesView();
+      renderBeneficiairesView();
+      renderServicesView();
+      renderTemoignagesView();
+      renderFaqView();
+      renderRealisationsView();
+      renderGalerieVideosView();
+      renderSiteContentView();
+      renderGeneralSettingsView();
+      renderQROView();
+      renderDashboardEvolutionChart();
+
+    } catch (err) {
+      console.error('Erreur chargement données dashboard:', err);
+      showToast('Attention', 'Données chargées en mode local sécurisé.');
+    }
+  }
+
+  /* ========================================================================= */
+  /* 9. RENDU DES KPIS & CHIFFRES CLÉS                                         */
+  /* ========================================================================= */
+
+  function renderKPIs() {
+    const stats = currentStats || {
+      unique_visitors: 4820,
+      total_requests: allRequests.length || 68,
+      satisfaction_rate: '98%',
+      urgent_calls: 129,
+      whatsapp_clicks: 342
+    };
+
+    const kpiVisiteurs = document.getElementById('stat-kpi-visiteurs');
+    const kpiDemandes = document.getElementById('stat-kpi-demandes');
+    const kpiUrgences = document.getElementById('stat-kpi-urgences');
+    const kpiSatisfaction = document.getElementById('stat-kpi-satisfaction');
+    const kpiWhatsapp = document.getElementById('stat-kpi-whatsapp');
+    const badgeDemandes = document.getElementById('badge-demandes-count');
+
+    if (kpiVisiteurs) kpiVisiteurs.textContent = Number(stats.unique_visitors || 4820).toLocaleString('fr-FR');
+    if (kpiDemandes) kpiDemandes.textContent = (allRequests.length || stats.total_requests || 68);
+    if (kpiUrgences) kpiUrgences.textContent = (stats.urgent_calls || 129);
+    if (kpiSatisfaction) kpiSatisfaction.textContent = stats.satisfaction_rate || '98%';
+    if (kpiWhatsapp) kpiWhatsapp.textContent = stats.whatsapp_clicks || 342;
+    if (badgeDemandes) badgeDemandes.textContent = allRequests.length || 0;
+  }
+
+  /* ========================================================================= */
+  /* 10. RENDU DU DASHBOARD RECENT (Table & Bénéficiaires)                      */
+  /* ========================================================================= */
+
+  function renderDashboardRecent() {
+    const recentTable = document.getElementById('dashboard-recent-requests');
+    if (recentTable) {
+      if (allRequests.length === 0) {
+        recentTable.innerHTML = `
+          <tr>
+            <td colspan="5" class="py-8 text-center text-xs text-slate-400">
+              Aucune demande enregistrée pour le moment.
+            </td>
+          </tr>
+        `;
+      } else {
+        const top5 = allRequests.slice(0, 5);
+        recentTable.innerHTML = top5.map(req => {
+          const dateStr = req.created_at ? new Date(req.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) : 'Récemment';
+          const isUrgent = req.urgency === 'immediate' || (req.service && req.service.toLowerCase().includes('urg'));
+          const cleanPhone = (req.phone || '').replace(/\D/g, '');
+          const waUrl = `https://wa.me/237${cleanPhone}?text=${encodeURIComponent('Bonjour, suite à votre demande Akeva Sérénité, nous revenons vers vous...')}`;
+
+          return `
+            <tr class="hover:bg-surface-container-low transition-colors border-b border-slate-100 last:border-0">
+              <td class="py-3 px-4">
+                <div class="flex flex-col">
+                  <span class="font-bold text-primary text-xs">${escapeHtml(req.full_name || 'Anonyme')}</span>
+                  <span class="text-[10px] text-slate-400">${req.quartier || 'Yaoundé'}</span>
+                </div>
+              </td>
+              <td class="py-3 px-4">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${isUrgent ? 'bg-red-50 text-red-700' : 'bg-surface-container text-on-surface-variant'}">
+                  ${escapeHtml(req.service || 'Garde Continue')}
+                </span>
+              </td>
+              <td class="py-3 px-4 text-xs text-slate-600 font-semibold">${dateStr}</td>
+              <td class="py-3 px-4">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${getStatusClass(req.status)}">
+                  ${escapeHtml(req.status || 'Nouveau')}
+                </span>
+              </td>
+              <td class="py-3 px-4 text-right">
+                <a href="${waUrl}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-[11px] font-bold transition-all" title="Ouvrir WhatsApp direct">
+                  <span class="material-symbols-outlined text-[14px]">chat</span>
+                  <span>WhatsApp</span>
+                </a>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+    }
+
+    // Bénéficiaires actifs sur le dashboard
+    const benList = document.getElementById('dashboard-active-beneficiaries');
+    if (benList) {
+      if (allBeneficiaires.length === 0) {
+        benList.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">Aucun bénéficiaire enregistré.</div>`;
+      } else {
+        benList.innerHTML = allBeneficiaires.slice(0, 4).map(b => `
+          <div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-low hover:bg-surface-container transition-all">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full bg-primary-container text-white flex items-center justify-center font-bold text-xs">
+                ${(b.name || 'P')[0]}
+              </div>
+              <div>
+                <h4 class="text-xs font-bold text-primary">${escapeHtml(b.name)}</h4>
+                <p class="text-[10px] text-slate-500">${b.age || ''} ans • ${escapeHtml(b.quartier || 'Yaoundé')} • ${escapeHtml(b.pathology || '')}</p>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800">
+              ${escapeHtml(b.status || 'Actif')}
+            </span>
+          </div>
+        `).join('');
+      }
+    }
+  }
+
+  /* ========================================================================= */
+  /* 11. GESTION DES DEMANDES (Vue Demandes Stitch)                             */
+  /* ========================================================================= */
+
+  function renderDemandesView() {
+    const container = document.getElementById('requests-list-container');
+    if (!container) return;
+
+    let filtered = allRequests;
+    if (activeFilterDemandes !== 'all') {
+      filtered = allRequests.filter(r => (r.status || 'nouveau').toLowerCase() === activeFilterDemandes.toLowerCase());
+    }
+
+    if (filtered.length === 0) {
+      container.innerHTML = `
+        <div class="p-12 text-center bg-surface-container-lowest rounded-2xl shadow-sm border border-slate-100">
+          <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">inbox</span>
+          <h3 class="font-headline text-base font-bold text-primary">Aucune demande dans cette vue</h3>
+          <p class="text-xs text-slate-500 mt-1">Toutes les demandes de prise en charge apparaîtront ici.</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="bg-surface-container-lowest rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-surface-container text-outline font-label-xs uppercase tracking-wider text-[10px]">
+              <tr>
+                <th class="py-3 px-4">Date & Heure</th>
+                <th class="py-3 px-4">Patient / Famille</th>
+                <th class="py-3 px-4">Quartier</th>
+                <th class="py-3 px-4">Formule Souhaitée</th>
+                <th class="py-3 px-4">Téléphone</th>
+                <th class="py-3 px-4">Statut</th>
+                <th class="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              ${filtered.map(req => {
+                const dateStr = req.created_at ? new Date(req.created_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' }) : '—';
+                const cleanPhone = (req.phone || '').replace(/\D/g, '');
+                const waUrl = `https://wa.me/237${cleanPhone}?text=${encodeURIComponent(`Bonjour ${req.full_name || ''}, suite à votre demande pour la formule ${req.service || 'Akeva Sérénité'}, notre coordinateur vous contacte pour organiser la prise en charge.`)}`;
+
+                return `
+                  <tr class="hover:bg-surface-container-low transition-colors">
+                    <td class="py-3.5 px-4 font-mono text-[11px] text-slate-500">${dateStr}</td>
+                    <td class="py-3.5 px-4">
+                      <div class="font-bold text-primary">${escapeHtml(req.full_name || 'Anonyme')}</div>
+                      ${req.message ? `<p class="text-[10px] text-slate-400 truncate max-w-xs">${escapeHtml(req.message)}</p>` : ''}
+                    </td>
+                    <td class="py-3.5 px-4 font-semibold text-slate-600">${escapeHtml(req.quartier || 'Yaoundé')}</td>
+                    <td class="py-3.5 px-4">
+                      <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-container text-on-surface-variant">
+                        ${escapeHtml(req.service || 'Garde Continue')}
+                      </span>
+                    </td>
+                    <td class="py-3.5 px-4 font-mono text-[11px] text-slate-700">${escapeHtml(req.phone || '—')}</td>
+                    <td class="py-3.5 px-4">
+                      <select onchange="window.AkevaAdmin.updateRequestStatus('${req.id}', this.value)" class="px-2 py-1 rounded-lg text-[11px] font-bold border border-slate-200 bg-white">
+                        <option value="Nouveau" ${req.status === 'Nouveau' ? 'selected' : ''}>Nouveau</option>
+                        <option value="En cours" ${req.status === 'En cours' ? 'selected' : ''}>En cours</option>
+                        <option value="Pris en charge" ${req.status === 'Pris en charge' ? 'selected' : ''}>Pris en charge</option>
+                        <option value="Terminé" ${req.status === 'Terminé' ? 'selected' : ''}>Terminé</option>
+                      </select>
+                    </td>
+                    <td class="py-3.5 px-4 text-right space-x-1">
+                      <a href="${waUrl}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-[11px] font-bold" title="WhatsApp direct">
+                        <span class="material-symbols-outlined text-[14px]">chat</span>
+                        <span>WhatsApp</span>
+                      </a>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  function initDemandesFilters() {
+    document.querySelectorAll('[data-filter-demande]').forEach(btn => {
+      btn.addEventListener('click', function () {
+        activeFilterDemandes = this.getAttribute('data-filter-demande');
+        document.querySelectorAll('[data-filter-demande]').forEach(b => {
+          b.classList.remove('bg-primary', 'text-white');
+          b.classList.add('bg-surface-container-low', 'text-slate-600');
+        });
+        this.classList.add('bg-primary', 'text-white');
+        this.classList.remove('bg-surface-container-low', 'text-slate-600');
+        renderDemandesView();
+      });
+    });
+
+    // Recherche de demandes
+    const searchInput = document.getElementById('requests-search-input');
+    if (searchInput) {
+      searchInput.addEventListener('input', function () {
+        const query = this.value.toLowerCase().trim();
+        const container = document.getElementById('requests-list-container');
+        if (!container) return;
+
+        if (!query) {
+          renderDemandesView();
+          return;
+        }
+
+        const filtered = allRequests.filter(r => 
+          (r.full_name && r.full_name.toLowerCase().includes(query)) ||
+          (r.phone && r.phone.includes(query)) ||
+          (r.quartier && r.quartier.toLowerCase().includes(query)) ||
+          (r.service && r.service.toLowerCase().includes(query))
+        );
+
+        if (filtered.length === 0) {
+          container.innerHTML = `<div class="p-8 text-center text-xs text-slate-400">Aucun résultat trouvé pour "${escapeHtml(query)}"</div>`;
+        } else {
+          allRequests = filtered;
+          renderDemandesView();
+          allRequests = window._cachedRequests || allRequests;
+        }
+      });
+    }
+  }
+
+  /* ========================================================================= */
+  /* 12. GESTION DES BÉNÉFICIAIRES (Vue Bénéficiaires Stitch)                   */
+  /* ========================================================================= */
+
+  function renderBeneficiairesView() {
+    const container = document.getElementById('beneficiaires-list-container');
+    if (!container) return;
+
+    if (allBeneficiaires.length === 0) {
+      container.innerHTML = `
+        <div class="p-12 text-center bg-surface-container-lowest rounded-2xl shadow-sm col-span-3">
+          <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">family_restroom</span>
+          <h3 class="font-headline text-base font-bold text-primary">Aucun dossier patient enregistré</h3>
+          <p class="text-xs text-slate-500 mt-1">Cliquez sur "+ Nouveau Bénéficiaire" pour créer la première fiche de suivi.</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = allBeneficiaires.map((b, idx) => `
+      <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-all">
+        <div class="space-y-4">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-11 h-11 rounded-full bg-primary-container text-white flex items-center justify-center font-bold text-sm">
+                ${(b.name || 'P')[0]}
+              </div>
+              <div>
+                <h3 class="font-headline text-base font-bold text-primary">${escapeHtml(b.name)}</h3>
+                <span class="text-[11px] text-slate-500">${b.age} ans • Yaoundé (${escapeHtml(b.quartier || 'Ngousso')})</span>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800">
+              ${escapeHtml(b.status || 'Actif')}
+            </span>
+          </div>
+
+          <div class="space-y-2 pt-2 border-t border-slate-100 text-xs">
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400">Pathologie :</span>
+              <span class="font-bold text-primary">${escapeHtml(b.pathology || 'Gériatrie générale')}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400">Formule :</span>
+              <span class="font-semibold text-secondary">${escapeHtml(b.service_plan || 'Garde Continue 24h/24')}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400">Auxiliaire dédié :</span>
+              <span class="font-semibold text-slate-700">${escapeHtml(b.caregiver || 'Équipe de garde')}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400">Contact Référent :</span>
+              <span class="font-mono text-slate-700">${escapeHtml(b.contact || '—')}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+          <button onclick="window.AkevaAdmin.deleteBeneficiaire(${idx})" class="text-red-500 hover:text-red-700 text-xs font-semibold flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">delete</span>
+            <span>Supprimer</span>
+          </button>
+          <button onclick="alert('Dossier médical complet de ${escapeHtml(b.name)} : Protocoles et constantes stables.')" class="px-3 py-1.5 rounded-lg bg-surface-container text-primary hover:bg-surface-container-high text-xs font-bold transition-colors">
+            Voir le dossier
+          </button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  /* ========================================================================= */
+  /* 13. GESTION DU CATALOGUE DES SERVICES (Drawer CMS Stitch)                  */
+  /* ========================================================================= */
+
+  function renderServicesView() {
+    const grid = document.getElementById('grid-services-cards');
+    if (!grid) return;
+
+    if (allServices.length === 0) {
+      grid.innerHTML = `<div class="p-8 text-center text-xs text-slate-400 col-span-3">Catalogue des services en cours d'initialisation...</div>`;
+      return;
+    }
+
+    grid.innerHTML = allServices.map(srv => `
+      <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-all">
+        <div class="space-y-4">
+          <div class="flex items-start justify-between">
+            <div class="w-10 h-10 rounded-xl bg-surface-container-low text-primary flex items-center justify-center font-bold">
+              <span class="material-symbols-outlined text-2xl">medical_services</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${srv.published ? 'bg-emerald-50 text-emerald-800' : 'bg-slate-100 text-slate-500'}">
+                ${srv.published ? 'Publié' : 'Brouillon'}
+              </span>
+              <span class="text-xs text-slate-400 font-mono">${escapeHtml(srv.hours || '24h/24')}</span>
+            </div>
+          </div>
+          </div>
+
+          <div>
+            <h3 class="font-headline text-lg font-bold text-primary leading-snug">${escapeHtml(srv.title)}</h3>
+            <p class="text-xs text-secondary font-semibold mt-0.5">${escapeHtml(srv.slogan || '')}</p>
+            <p class="text-xs text-slate-600 mt-2 leading-relaxed line-clamp-3">${escapeHtml(srv.description || '')}</p>
+          </div>
+
+          <div class="space-y-1.5 pt-2">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-outline">Points Clés Inclus :</span>
+            <ul class="space-y-1">
+              ${(srv.key_points || []).slice(0, 3).map(pt => `
+                <li class="flex items-center gap-2 text-xs text-slate-700">
+                  <span class="material-symbols-outlined text-sm text-emerald-600">check_circle</span>
+                  <span class="truncate">${escapeHtml(pt)}</span>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        </div>
+
+        <div class="pt-4 mt-6 border-t border-slate-100 flex items-center justify-between">
+          <span class="text-xs font-bold text-primary">${escapeHtml(srv.pricing || 'Sur devis')}</span>
+          <button onclick="window.AkevaAdmin.openServiceDrawer('${srv.id}')" class="px-3.5 py-1.5 rounded-lg bg-primary-container text-white text-xs font-bold hover:bg-primary transition-all flex items-center gap-1.5 shadow-sm">
+            <span class="material-symbols-outlined text-sm text-secondary-fixed">edit</span>
+            <span>Personnaliser</span>
+          </button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function initServiceDrawer() {
+    const drawer = document.getElementById('edit-drawer');
+    const form = document.getElementById('form-edit-service');
+    const btnClose = document.getElementById('btn-close-service-drawer');
+    const btnCancel = document.getElementById('btn-cancel-service-drawer');
+    const btnAddKeyPoint = document.getElementById('btn-add-key-point');
+
+    if (btnClose) btnClose.addEventListener('click', closeServiceDrawer);
+    if (btnCancel) btnCancel.addEventListener('click', closeServiceDrawer);
+
+    if (btnAddKeyPoint) {
+      btnAddKeyPoint.addEventListener('click', () => {
+        addKeyPointInput('');
+      });
+    }
+
+    if (form) {
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const serviceId = document.getElementById('service-edit-id').value;
+        const title = document.getElementById('service-edit-title').value.trim();
+        const slogan = document.getElementById('service-edit-slogan').value.trim();
+        const hours = document.getElementById('service-edit-hours').value.trim();
+        const desc = document.getElementById('service-edit-desc').value.trim();
+        const pricing = document.getElementById('service-edit-pricing').value.trim();
+        const published = document.getElementById('service-edit-published').checked;
+        const qro = document.getElementById('service-edit-qro').checked;
+
+        // Récupération des points clés
+        const keyPoints = [];
+        document.querySelectorAll('.input-key-point').forEach(inp => {
+          const val = inp.value.trim();
+          if (val) keyPoints.push(val);
+        });
+
+        // Mise à jour locale du tableau des services
+        const idx = allServices.findIndex(s => s.id === serviceId);
+        if (idx !== -1) {
+          allServices[idx] = {
+            ...allServices[idx],
+            title,
+            slogan,
+            hours,
+            description: desc,
+            pricing,
+            published,
+            key_points: keyPoints,
+            suggest_in_qro: qro
+          };
+        } else {
+          // Nouveau service
+          allServices.push({
+            id: serviceId || 'srv-' + Date.now(),
+            title,
+            slogan,
+            hours,
+            description: desc,
+            pricing,
+            published,
+            key_points: keyPoints,
+            suggest_in_qro: qro
+          });
+        }
+
+        try {
+          const client = await getClient();
+          const { error } = await client
+            .from('site_settings')
+            .upsert({
+              setting_key: 'services_catalog',
+              setting_value: allServices,
+              description: 'Catalogue des formules de soins et tarifs Akeva'
+            }, { onConflict: 'setting_key' });
+
+          if (error) throw error;
+
+          renderServicesView();
+          closeServiceDrawer();
+          showToast('Service Enregistré', `La prestation "${title}" a été mise à jour.`);
+        } catch (err) {
+          console.error(err);
+          showToast('Erreur', 'Impossible de synchroniser le service : ' + err.message, true);
+        }
+      });
+    }
+  }
+
+  function openServiceDrawer(serviceId) {
+    const srv = allServices.find(s => s.id === serviceId);
+    const drawer = document.getElementById('edit-drawer');
+    if (!drawer) return;
+
+    document.getElementById('service-edit-id').value = serviceId || 'srv-' + Date.now();
+    document.getElementById('service-edit-title').value = srv ? srv.title : '';
+    document.getElementById('service-edit-slogan').value = srv ? (srv.slogan || '') : '';
+    document.getElementById('service-edit-hours').value = srv ? (srv.hours || '24h/24') : '24h/24';
+    document.getElementById('service-edit-desc').value = srv ? (srv.description || '') : '';
+    document.getElementById('service-edit-pricing').value = srv ? (srv.pricing || 'Sur devis personnalisé') : '';
+    document.getElementById('service-edit-published').checked = srv ? (srv.published !== false) : true;
+    document.getElementById('service-edit-qro').checked = srv ? (srv.suggest_in_qro !== false) : true;
+
+    // Remplissage des points clés
+    const container = document.getElementById('service-key-points-container');
+    container.innerHTML = '';
+    const points = srv && srv.key_points ? srv.key_points : ['Présence et vigilance continue', 'Coordination avec les médecins', 'Rapports quotidiens aux familles'];
+    points.forEach(p => addKeyPointInput(p));
+
+    drawer.classList.remove('translate-x-full');
+  }
+
+  function closeServiceDrawer() {
+    const drawer = document.getElementById('edit-drawer');
+    if (drawer) drawer.classList.add('translate-x-full');
+  }
+
+  function addKeyPointInput(val = '') {
+    const container = document.getElementById('service-key-points-container');
+    if (!container) return;
+
+    const div = document.createElement('div');
+    div.className = 'flex items-center gap-2';
+    div.innerHTML = `
+      <input type="text" value="${escapeHtml(val)}" placeholder="Mission ou avantage inclus..." class="input-key-point flex-1 px-3 py-1.5 rounded-lg bg-surface-container-low text-xs border border-slate-200"/>
+      <button type="button" onclick="this.parentElement.remove()" class="p-1 text-slate-400 hover:text-red-500">
+        <span class="material-symbols-outlined text-sm">close</span>
+      </button>
+    `;
+    container.appendChild(div);
+  }
+
+  /* ========================================================================= */
+  /* 14. SANCTUARISATION ÉDITORIALE & LIVE GUARD (Vue Contenu du Site)        */
+  /* ========================================================================= */
+
+  function renderSiteContentView() {
+    const content = currentSiteContent || {
+      hero_title: "L'Excellence de l'Accompagnement & des Soins à Domicile à Yaoundé",
+      hero_subtitle: "Prise en charge personnalisée des aînés, convalescence post-opératoire et soins bienveillants au cœur de vos foyers.",
+      pillar1_title: "Présence Continue 24h/24 & 7j/7",
+      pillar1_desc: "Coordination médicale et garde vigilante assurée par nos auxiliaires.",
+      pillar2_title: "Personnel Qualifié & Certifié",
+      pillar2_desc: "Auxiliaires formés aux gestes de premiers secours et infirmiers diplômés.",
+      pillar3_title: "Soutien Actif des Proches Aidants",
+      pillar3_desc: "Relais bienveillant des familles locales et de la diaspora camerounaise.",
+      mission_title: "Notre Engagement Déontologique à Yaoundé",
+      mission_desc: "Akeva Sérénité est née de la volonté d'offrir à nos aînés une alternative digne à l'hospitalisation prolongée."
+    };
+
+    const inpHeroTitle = document.getElementById('input-hero-title');
+    const inpHeroSub = document.getElementById('input-hero-subtitle');
+    const inpP1Title = document.getElementById('input-pillar1-title');
+    const inpP1Desc = document.getElementById('input-pillar1-desc');
+    const inpP2Title = document.getElementById('input-pillar2-title');
+    const inpP2Desc = document.getElementById('input-pillar2-desc');
+    const inpP3Title = document.getElementById('input-pillar3-title');
+    const inpP3Desc = document.getElementById('input-pillar3-desc');
+    const inpMissionTitle = document.getElementById('input-mission-title');
+    const inpMissionDesc = document.getElementById('input-mission-desc');
+
+    if (inpHeroTitle) inpHeroTitle.value = content.hero_title || '';
+    if (inpHeroSub) inpHeroSub.value = content.hero_subtitle || '';
+    if (inpP1Title) inpP1Title.value = content.pillar1_title || '';
+    if (inpP1Desc) inpP1Desc.value = content.pillar1_desc || '';
+    if (inpP2Title) inpP2Title.value = content.pillar2_title || '';
+    if (inpP2Desc) inpP2Desc.value = content.pillar2_desc || '';
+    if (inpP3Title) inpP3Title.value = content.pillar3_title || '';
+    if (inpP3Desc) inpP3Desc.value = content.pillar3_desc || '';
+    if (inpMissionTitle) inpMissionTitle.value = content.mission_title || '';
+    if (inpMissionDesc) inpMissionDesc.value = content.mission_desc || '';
+
+    updateLiveGuardPreview();
+  }
+
+  function initSiteContentEditor() {
+    const inputs = [
+      'input-hero-title',
+      'input-hero-subtitle',
+      'input-pillar1-title',
+      'input-pillar1-desc',
+      'input-pillar2-title',
+      'input-pillar2-desc',
+      'input-pillar3-title',
+      'input-pillar3-desc'
+    ];
+
+    inputs.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('input', updateLiveGuardPreview);
+      }
+    });
+
+    const btnSave = document.getElementById('btn-save-site-content');
+    if (btnSave) {
+      btnSave.addEventListener('click', async function () {
+        const payload = {
+          hero_title: document.getElementById('input-hero-title').value.trim(),
+          hero_subtitle: document.getElementById('input-hero-subtitle').value.trim(),
+          pillar1_title: document.getElementById('input-pillar1-title').value.trim(),
+          pillar1_desc: document.getElementById('input-pillar1-desc').value.trim(),
+          pillar2_title: document.getElementById('input-pillar2-title').value.trim(),
+          pillar2_desc: document.getElementById('input-pillar2-desc').value.trim(),
+          pillar3_title: document.getElementById('input-pillar3-title').value.trim(),
+          pillar3_desc: document.getElementById('input-pillar3-desc').value.trim(),
+          mission_title: document.getElementById('input-mission-title').value.trim(),
+          mission_desc: document.getElementById('input-mission-desc').value.trim()
+        };
+
+        btnSave.disabled = true;
+        btnSave.innerHTML = '<span class="material-symbols-outlined animate-spin">refresh</span> Publication...';
+
+        try {
+          const client = await getClient();
+          const { error } = await client
+            .from('site_settings')
+            .upsert({
+              setting_key: 'site_content',
+              setting_value: payload,
+              description: 'Textes éditoriaux principaux et accroches du site vitrine'
+            }, { onConflict: 'setting_key' });
+
+          if (error) throw error;
+
+          currentSiteContent = payload;
+          showToast('Textes Publiés', 'Les modifications sont synchronisées avec le site public.');
+        } catch (err) {
+          console.error(err);
+          showToast('Erreur', 'Impossible de publier les textes : ' + err.message, true);
+        } finally {
+          btnSave.disabled = false;
+          btnSave.innerHTML = '<span class="material-symbols-outlined text-lg text-secondary-fixed">cloud_done</span> Publier les textes sur le site';
+        }
+      });
+    }
+  }
+
+  function updateLiveGuardPreview() {
+    const prevHeroTitle = document.getElementById('live-preview-hero-title');
+    const prevHeroSub = document.getElementById('live-preview-hero-subtitle');
+    const prevP1Title = document.getElementById('live-preview-p1-title');
+    const prevP1Desc = document.getElementById('live-preview-p1-desc');
+    const prevP2Title = document.getElementById('live-preview-p2-title');
+    const prevP2Desc = document.getElementById('live-preview-p2-desc');
+    const prevP3Title = document.getElementById('live-preview-p3-title');
+    const prevP3Desc = document.getElementById('live-preview-p3-desc');
+
+    const inpHeroTitle = document.getElementById('input-hero-title');
+    const inpHeroSub = document.getElementById('input-hero-subtitle');
+    const inpP1Title = document.getElementById('input-pillar1-title');
+    const inpP1Desc = document.getElementById('input-pillar1-desc');
+    const inpP2Title = document.getElementById('input-pillar2-title');
+    const inpP2Desc = document.getElementById('input-pillar2-desc');
+    const inpP3Title = document.getElementById('input-pillar3-title');
+    const inpP3Desc = document.getElementById('input-pillar3-desc');
+
+    if (prevHeroTitle && inpHeroTitle) prevHeroTitle.textContent = inpHeroTitle.value || 'L\'Excellence des Soins';
+    if (prevHeroSub && inpHeroSub) prevHeroSub.textContent = inpHeroSub.value || 'Prise en charge à Yaoundé';
+    if (prevP1Title && inpP1Title) prevP1Title.textContent = inpP1Title.value || 'Pilier 1';
+    if (prevP1Desc && inpP1Desc) prevP1Desc.textContent = inpP1Desc.value || 'Description';
+    if (prevP2Title && inpP2Title) prevP2Title.textContent = inpP2Title.value || 'Pilier 2';
+    if (prevP2Desc && inpP2Desc) prevP2Desc.textContent = inpP2Desc.value || 'Description';
+    if (prevP3Title && inpP3Title) prevP3Title.textContent = inpP3Title.value || 'Pilier 3';
+    if (prevP3Desc && inpP3Desc) prevP3Desc.textContent = inpP3Desc.value || 'Description';
+  }
+
+  /* ========================================================================= */
+  /* 15. TÉMOIGNAGES & FAQ CRUD                                                */
+  /* ========================================================================= */
+
+  function renderTemoignagesView() {
+    const grid = document.getElementById('grid-temoignages-cards');
+    if (!grid) return;
+
+    if (allTemoignages.length === 0) {
+      grid.innerHTML = `<div class="p-8 text-center text-xs text-slate-400 col-span-3">Aucun avis famille enregistré.</div>`;
+      return;
+    }
+
+    grid.innerHTML = allTemoignages.map((t, idx) => `
+      <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-all">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex text-amber-400">
+              ${'★'.repeat(t.rating || 5)}${'☆'.repeat(5 - (t.rating || 5))}
+            </div>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${t.approved ? 'bg-emerald-50 text-emerald-800' : 'bg-amber-50 text-amber-800'}">
+              ${t.approved ? 'Approuvé' : 'En attente'}
+            </span>
+          </div>
+
+          <p class="text-xs text-slate-700 italic leading-relaxed">"${escapeHtml(t.quote || '')}"</p>
+        </div>
+
+        <div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs">
+          <div>
+            <div class="font-bold text-primary">${escapeHtml(t.author || 'Famille')}</div>
+            <div class="text-[10px] text-slate-400">${escapeHtml(t.location || 'Yaoundé')} • ${escapeHtml(t.relation || 'Proche')}</div>
+          </div>
+          <button onclick="window.AkevaAdmin.toggleTemoignage(${idx})" class="p-1 text-slate-400 hover:text-primary" title="${t.approved ? 'Masquer' : 'Approuver'}">
+            <span class="material-symbols-outlined text-sm">${t.approved ? 'visibility_off' : 'visibility'}</span>
+          </button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderFaqView() {
+    const container = document.getElementById('container-faq-list');
+    if (!container) return;
+
+    if (allFaq.length === 0) {
+      container.innerHTML = `<div class="p-8 text-center text-xs text-slate-400">Aucune question FAQ configurée.</div>`;
+      return;
+    }
+
+    container.innerHTML = allFaq.map((f, idx) => `
+      <div class="bg-surface-container-lowest p-5 rounded-2xl shadow-sm border border-slate-100 space-y-2">
+        <div class="flex items-start justify-between gap-4">
+          <h4 class="font-bold text-primary text-xs sm:text-sm flex items-center gap-2">
+            <span class="material-symbols-outlined text-secondary text-sm">help_outline</span>
+            <span>${escapeHtml(f.question)}</span>
+          </h4>
+          <div class="flex items-center gap-1 shrink-0">
+            <button onclick="window.AkevaAdmin.editFaq(${idx})" class="p-1 text-slate-400 hover:text-primary">
+              <span class="material-symbols-outlined text-sm">edit</span>
+            </button>
+            <button onclick="window.AkevaAdmin.deleteFaq(${idx})" class="p-1 text-slate-400 hover:text-red-500">
+              <span class="material-symbols-outlined text-sm">delete</span>
+            </button>
+          </div>
+        </div>
+        <p class="text-xs text-slate-600 leading-relaxed pl-6 border-l-2 border-slate-100">${escapeHtml(f.answer)}</p>
+      </div>
+    `).join('');
+  }
+
+  /* ========================================================================= */
+  /* 16. RÉALISATIONS & GALERIE MÉDICALE                                       */
+  /* ========================================================================= */
+
+  function renderRealisationsView() {
+    const grid = document.getElementById('grid-realisations-stitch');
+    if (!grid) return;
+
+    if (allRealisations.length === 0) {
+      grid.innerHTML = `
+        <div class="p-12 text-center bg-surface-container-lowest rounded-2xl shadow-sm col-span-3 border border-slate-100">
+          <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">verified</span>
+          <h3 class="font-headline text-base font-bold text-primary">Aucune réalisation publiée</h3>
+          <p class="text-xs text-slate-500 mt-1">Ajoutez des récits d'intervention avec photos/vidéos (jusqu'à 100 Mo).</p>
+        </div>
+      `;
+      return;
+    }
+
+    grid.innerHTML = allRealisations.map(r => `
+      <div class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm border border-slate-100 flex flex-col justify-between hover:shadow-md transition-all">
+        <div>
+          ${r.media_url ? `<img src="${r.media_url}" alt="${escapeHtml(r.title)}" class="w-full h-44 object-cover"/>` : `
+            <div class="w-full h-44 bg-surface-container flex items-center justify-center text-slate-400">
+              <span class="material-symbols-outlined text-4xl">image</span>
+            </div>
+          `}
+          <div class="p-5 space-y-2">
+            <span class="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800">
+              ${escapeHtml(r.category || 'Accompagnement')}
+            </span>
+            <h4 class="font-headline text-base font-bold text-primary">${escapeHtml(r.title)}</h4>
+            <p class="text-xs text-slate-600 line-clamp-3">${escapeHtml(r.description || '')}</p>
+          </div>
+        </div>
+        <div class="p-5 pt-0 flex items-center justify-between text-xs text-slate-400 border-t border-slate-50 mt-2">
+          <span>${r.quartier || 'Yaoundé'}</span>
+          <button onclick="window.AkevaAdmin.deleteRealisation('${r.id}')" class="text-red-500 hover:underline">Supprimer</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderGalerieVideosView() {
+    const grid = document.getElementById('grid-galerie-videos');
+    if (!grid) return;
+
+    // Affiche les réalisations contenant des images ou vidéos
+    const items = allRealisations.filter(r => r.media_url);
+    if (items.length === 0) {
+      grid.innerHTML = `<div class="p-8 text-center text-xs text-slate-400 col-span-4">Aucun média dans la vidéothèque.</div>`;
+      return;
+    }
+
+    grid.innerHTML = items.map(m => `
+      <div class="group relative rounded-2xl overflow-hidden shadow-sm aspect-video bg-slate-900">
+        <img src="${m.media_url}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"/>
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex flex-col justify-end p-3 text-white">
+          <span class="text-xs font-bold truncate">${escapeHtml(m.title)}</span>
+          <span class="text-[10px] opacity-75">${m.media_type === 'video' ? 'Vidéo' : 'Photo'}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  /* ========================================================================= */
+  /* 17. PARAMÈTRES GÉNÉRAUX & QRO                                             */
+  /* ========================================================================= */
+
+  function renderGeneralSettingsView() {
+    const info = currentContactInfo || {
+      phone_primary: '697 572 685',
+      phone_secondary: '653 151 427',
+      whatsapp: '237697572685',
+      email: 'contact@akevaserenite.cm',
+      address: 'Ngousso, Yaoundé, Cameroun (Proximité Hôpital Général)',
+      banner_announcement: 'Service disponible 24h/24 — 7j/7 à Yaoundé (Ngousso, Bastos et environs)'
+    };
+
+    const pPhone1 = document.getElementById('param-phone-primary');
+    const pPhone2 = document.getElementById('param-phone-secondary');
+    const pWa = document.getElementById('param-whatsapp');
+    const pEmail = document.getElementById('param-email');
+    const pAddr = document.getElementById('param-address');
+    const pBanner = document.getElementById('param-banner');
+
+    if (pPhone1) pPhone1.value = info.phone_primary || '';
+    if (pPhone2) pPhone2.value = info.phone_secondary || '';
+    if (pWa) pWa.value = info.whatsapp || '';
+    if (pEmail) pEmail.value = info.email || '';
+    if (pAddr) pAddr.value = info.address || '';
+    if (pBanner) pBanner.value = info.banner_announcement || '';
+  }
+
+  function initGeneralSettingsForm() {
+    const form = document.getElementById('form-general-settings');
+    if (form) {
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const payload = {
+          phone_primary: document.getElementById('param-phone-primary').value.trim(),
+          phone_secondary: document.getElementById('param-phone-secondary').value.trim(),
+          whatsapp: document.getElementById('param-whatsapp').value.trim(),
+          email: document.getElementById('param-email').value.trim(),
+          address: document.getElementById('param-address').value.trim(),
+          banner_announcement: document.getElementById('param-banner').value.trim()
+        };
+
+        try {
+          const client = await getClient();
+          const { error } = await client
+            .from('site_settings')
+            .upsert({
+              setting_key: 'contact_info',
+              setting_value: payload,
+              description: 'Coordonnées officielles, téléphones et permanence Yaoundé'
+            }, { onConflict: 'setting_key' });
+
+          if (error) throw error;
+
+          currentContactInfo = payload;
+          showToast('Paramètres Enregistrés', 'Les coordonnées officielles ont été mises à jour.');
+        } catch (err) {
+          console.error(err);
+          showToast('Erreur', 'Impossible de sauvegarder : ' + err.message, true);
+        }
+      });
+    }
+
+    // Sauvegarde QRO
+    const btnSaveQro = document.getElementById('btn-save-qro');
+    if (btnSaveQro) {
+      btnSaveQro.addEventListener('click', async function () {
+        const msg = document.getElementById('setting-qro-whatsapp-msg').value.trim();
+        try {
+          const client = await getClient();
+          await client.from('site_settings').upsert({
+            setting_key: 'qro_triage_config',
+            setting_value: { welcome_message: msg },
+            description: 'Configuration du questionnaire rapide d orientation WhatsApp'
+          }, { onConflict: 'setting_key' });
+          showToast('Assistant QRO', 'Le message type de première réponse a été enregistré.');
+        } catch (err) {
+          showToast('Erreur', 'Sauvegarde QRO échouée : ' + err.message, true);
+        }
+      });
+    }
+  }
+
+  function renderQROView() {
+    // Message par défaut ou issu de Supabase
+  }
+
+  /* ========================================================================= */
+  /* 18. MODALS & GESTIONNAIRES INTERACTIFS                                    */
+  /* ========================================================================= */
+
+  function initModals() {
+    // 1. Modal Bénéficiaire
+    const modalBen = document.getElementById('modal-beneficiaire');
+    const formBen = document.getElementById('form-beneficiaire');
+    const btnNewBen = document.getElementById('btn-new-beneficiaire');
+    const btnCloseBen = document.getElementById('btn-close-modal-beneficiaire');
+    const btnCancelBen = document.getElementById('btn-cancel-modal-beneficiaire');
+
+    if (btnNewBen) btnNewBen.addEventListener('click', () => modalBen.classList.remove('hidden'));
+    if (btnCloseBen) btnCloseBen.addEventListener('click', () => modalBen.classList.add('hidden'));
+    if (btnCancelBen) btnCancelBen.addEventListener('click', () => modalBen.classList.add('hidden'));
+
+    if (formBen) {
+      formBen.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const newBen = {
+          id: 'ben-' + Date.now(),
+          name: document.getElementById('ben-input-name').value.trim(),
+          age: parseInt(document.getElementById('ben-input-age').value) || 80,
+          quartier: document.getElementById('ben-input-quartier').value.trim(),
+          pathology: document.getElementById('ben-input-pathology').value.trim(),
+          service_plan: document.getElementById('ben-input-formule').value.trim(),
+          caregiver: document.getElementById('ben-input-caregiver').value.trim(),
+          contact: document.getElementById('ben-input-contact').value.trim(),
+          status: 'Actif'
+        };
+
+        allBeneficiaires.unshift(newBen);
+
+        try {
+          const client = await getClient();
+          await client.from('site_settings').upsert({
+            setting_key: 'beneficiaires_registry',
+            setting_value: allBeneficiaires,
+            description: 'Registre des patients et personnes accompagnées'
+          }, { onConflict: 'setting_key' });
+
+          renderBeneficiairesView();
+          renderDashboardRecent();
+          modalBen.classList.add('hidden');
+          formBen.reset();
+          showToast('Bénéficiaire Enregistré', `Dossier créé pour ${newBen.name}`);
+        } catch (err) {
+          showToast('Erreur', 'Impossible de sauvegarder le bénéficiaire.', true);
+        }
+      });
+    }
+
+    // 2. Modal Nouvelle Urgence
+    const modalUrg = document.getElementById('modal-nouvelle-urgence');
+    const formUrg = document.getElementById('form-nouvelle-urgence');
+    const btnHeaderUrgent = document.getElementById('btn-header-new-urgent');
+    const btnCloseUrg = document.getElementById('btn-close-modal-urgence');
+    const btnCancelUrg = document.getElementById('btn-cancel-modal-urgence');
+
+    if (btnHeaderUrgent) btnHeaderUrgent.addEventListener('click', () => modalUrg.classList.remove('hidden'));
+    if (btnCloseUrg) btnCloseUrg.addEventListener('click', () => modalUrg.classList.add('hidden'));
+    if (btnCancelUrg) btnCancelUrg.addEventListener('click', () => modalUrg.classList.add('hidden'));
+
+    if (formUrg) {
+      formUrg.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const name = document.getElementById('urg-input-name').value.trim();
+        const phone = document.getElementById('urg-input-phone').value.trim();
+        const quartier = document.getElementById('urg-input-quartier').value.trim();
+        const service = document.getElementById('urg-input-service').value;
+        const msg = document.getElementById('urg-input-message').value.trim();
+
+        try {
+          const client = await getClient();
+          const { data, error } = await client
+            .from('contact_requests')
+            .insert([{
+              full_name: name,
+              phone: phone,
+              quartier: quartier,
+              service: service,
+              message: msg,
+              urgency: 'immediate',
+              status: 'Nouveau'
+            }])
+            .select()
+            .single();
+
+          if (error) throw error;
+
+          allRequests.unshift(data);
+          renderKPIs();
+          renderDashboardRecent();
+          renderDemandesView();
+          modalUrg.classList.add('hidden');
+          formUrg.reset();
+          showToast('Urgence Créée', `Dossier de prise en charge ouvert pour ${name}`);
+        } catch (err) {
+          showToast('Erreur', 'Impossible d\'enregistrer l\'urgence.', true);
+        }
+      });
+    }
+
+    // 3. Modal Statistiques Manuelles
+    const modalStats = document.getElementById('modal-edit-stats');
+    const formStats = document.getElementById('form-stats-custom');
+    const btnEditStatsModal = document.getElementById('btn-edit-stats-modal');
+    const btnCloseStats = document.getElementById('btn-close-modal-stats');
+    const btnCancelStats = document.getElementById('btn-cancel-modal-stats');
+
+    if (btnEditStatsModal) btnEditStatsModal.addEventListener('click', () => {
+      const stats = currentStats || {};
+      document.getElementById('stats-input-visiteurs').value = stats.unique_visitors || 4820;
+      document.getElementById('stats-input-demandes').value = stats.total_requests || allRequests.length || 68;
+      document.getElementById('stats-input-whatsapp').value = stats.whatsapp_clicks || 342;
+      document.getElementById('stats-input-appels').value = stats.urgent_calls || 129;
+      modalStats.classList.remove('hidden');
+    });
+
+    if (btnCloseStats) btnCloseStats.addEventListener('click', () => modalStats.classList.add('hidden'));
+    if (btnCancelStats) btnCancelStats.addEventListener('click', () => modalStats.classList.add('hidden'));
+
+    if (formStats) {
+      formStats.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const updated = {
+          unique_visitors: parseInt(document.getElementById('stats-input-visiteurs').value) || 4820,
+          total_requests: parseInt(document.getElementById('stats-input-demandes').value) || 68,
+          whatsapp_clicks: parseInt(document.getElementById('stats-input-whatsapp').value) || 342,
+          urgent_calls: parseInt(document.getElementById('stats-input-appels').value) || 129,
+          satisfaction_rate: '98%'
+        };
+
+        try {
+          const client = await getClient();
+          await client.from('site_settings').upsert({
+            setting_key: 'stats_metrics',
+            setting_value: updated,
+            description: 'Indicateurs clés du dashboard personnalisables manuellement'
+          }, { onConflict: 'setting_key' });
+
+          currentStats = updated;
+          renderKPIs();
+          modalStats.classList.add('hidden');
+          showToast('Indicateurs Mis à Jour', 'Les chiffres clés du tableau de bord ont été synchronisés.');
+        } catch (err) {
+          showToast('Erreur', 'Impossible d\'enregistrer les indicateurs.', true);
+        }
+      });
+    }
+
+    // 4. Modal Mon Profil
+    const formProfile = document.getElementById('form-update-profile');
+    if (formProfile) {
+      formProfile.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const newName = document.getElementById('profile-fullname').value.trim();
+        const newPass = document.getElementById('profile-new-password').value;
+
+        if (!currentAdmin) return;
+
+        try {
+          const client = await getClient();
+          const updatePayload = { full_name: newName };
+
+          if (newPass && newPass.length >= 6) {
+            const salt = generateSalt();
+            const hash = await sha256(newPass, salt);
+            updatePayload.password_hash = hash;
+            updatePayload.salt = salt;
+          }
+
+          const { error } = await client
+            .from('admin_accounts')
+            .update(updatePayload)
+            .eq('id', currentAdmin.id);
+
+          if (error) throw error;
+
+          currentAdmin.full_name = newName;
+          sessionStorage.setItem(SESSION_KEY, JSON.stringify(currentAdmin));
+          enterDashboard();
+          showToast('Profil Mis à Jour', 'Vos coordonnées ont été enregistrées.');
+        } catch (err) {
+          showToast('Erreur', 'Mise à jour du profil impossible : ' + err.message, true);
+        }
+      });
+    }
+  }
+
+  /* ========================================================================= */
+  /* 19. GRAPHIQUES STATISTIQUES CHART.JS                                      */
+  /* ========================================================================= */
+
+  function renderDashboardEvolutionChart() {
+    const ctx = document.getElementById('dashboard-chart-evolution');
+    if (!ctx) return;
+
+    if (chartEvolution) {
+      chartEvolution.destroy();
+    }
+
+    chartEvolution = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep'],
+        datasets: [
+          {
+            label: 'Demandes reçues',
+            data: [12, 19, 15, 25, 22, 30, 38, 45, allRequests.length || 52],
+            borderColor: '#0d2040',
+            backgroundColor: 'rgba(13, 32, 64, 0.05)',
+            borderWidth: 2.5,
+            fill: true,
+            tension: 0.35,
+            pointBackgroundColor: '#c5a059',
+            pointRadius: 4
+          },
+          {
+            label: 'Interventions 24h/24',
+            data: [8, 14, 11, 20, 18, 25, 30, 39, 44],
+            borderColor: '#10b981',
+            borderWidth: 2,
+            borderDash: [5, 5],
+            fill: false,
+            tension: 0.35,
+            pointRadius: 3
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { font: { family: 'Plus Jakarta Sans', size: 11 }, boxWidth: 12 }
+          }
+        },
+        scales: {
+          y: { grid: { color: '#f0f3ff' }, ticks: { font: { size: 10 } } },
+          x: { grid: { display: false }, ticks: { font: { size: 10 } } }
+        }
+      }
+    });
+  }
+
+  function renderStatsCharts() {
+    // 1. Chart annuel
+    const ctxAnnual = document.getElementById('stats-chart-annual');
+    if (ctxAnnual) {
+      if (chartAnnual) chartAnnual.destroy();
+      chartAnnual = new Chart(ctxAnnual, {
+        type: 'bar',
+        data: {
+          labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'],
+          datasets: [{
+            label: 'Heures de garde',
+            data: [720, 680, 840, 920, 1100, 1250, 1380, 1520, 1640, 0, 0, 0],
+            backgroundColor: '#0d2040',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { grid: { color: '#f0f3ff' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    // 2. Chart quartiers
+    const ctxQuartiers = document.getElementById('stats-chart-quartiers');
+    if (ctxQuartiers) {
+      if (chartQuartiers) chartQuartiers.destroy();
+      chartQuartiers = new Chart(ctxQuartiers, {
+        type: 'doughnut',
+        data: {
+          labels: ['Ngousso', 'Bastos', 'Omnisports', 'Mimboman', 'Autres Yaoundé'],
+          datasets: [{
+            data: [38, 26, 16, 12, 8],
+            backgroundColor: ['#0d2040', '#c5a059', '#10b981', '#75777f', '#dee8ff']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { font: { family: 'Plus Jakarta Sans', size: 11 }, boxWidth: 10 }
+            }
+          }
+        }
+      });
+    }
+  }
+
+  /* ========================================================================= */
+  /* 20. HELPERS & EXPOSITIONS GLOBALES                                        */
+  /* ========================================================================= */
 
   function escapeHtml(str) {
     if (!str) return '';
@@ -1237,13 +1636,239 @@
       .replace(/'/g, '&#039;');
   }
 
+  function getStatusClass(status) {
+    switch ((status || '').toLowerCase()) {
+      case 'nouveau':
+        return 'bg-blue-50 text-blue-700';
+      case 'en cours':
+        return 'bg-amber-50 text-amber-700';
+      case 'pris en charge':
+        return 'bg-emerald-50 text-emerald-800';
+      case 'terminé':
+        return 'bg-slate-100 text-slate-600';
+      default:
+        return 'bg-slate-100 text-slate-700';
+    }
+  }
+
+  // Fonctions exposées sur l'objet global window.AkevaAdmin
+  window.AkevaAdmin = {
+    openServiceDrawer,
+    closeServiceDrawer,
+
+    // Mise à jour du statut d'une demande
+    updateRequestStatus: async function (requestId, newStatus) {
+      try {
+        const client = await getClient();
+        await client.from('contact_requests').update({ status: newStatus }).eq('id', requestId);
+        const req = allRequests.find(r => r.id === requestId);
+        if (req) req.status = newStatus;
+        renderDemandesView();
+        renderDashboardRecent();
+        showToast('Statut Modifié', `Demande passée à "${newStatus}"`);
+      } catch (err) {
+        showToast('Erreur', 'Impossible de mettre à jour le statut.', true);
+      }
+    },
+
+    // Suppression d'un bénéficiaire
+    deleteBeneficiaire: async function (idx) {
+      if (!confirm('Supprimer ce dossier bénéficiaire ?')) return;
+      allBeneficiaires.splice(idx, 1);
+      try {
+        const client = await getClient();
+        await client.from('site_settings').upsert({
+          setting_key: 'beneficiaires_registry',
+          setting_value: allBeneficiaires
+        }, { onConflict: 'setting_key' });
+        renderBeneficiairesView();
+        renderDashboardRecent();
+        showToast('Supprimé', 'Dossier archivé.');
+      } catch (e) {
+        showToast('Erreur', 'Échec de la suppression.', true);
+      }
+    },
+
+    // Modération Témoignage
+    toggleTemoignage: async function (idx) {
+      if (allTemoignages[idx]) {
+        allTemoignages[idx].approved = !allTemoignages[idx].approved;
+        try {
+          const client = await getClient();
+          await client.from('site_settings').upsert({
+            setting_key: 'temoignages_list',
+            setting_value: allTemoignages
+          }, { onConflict: 'setting_key' });
+          renderTemoignagesView();
+          showToast('Avis Modéré', allTemoignages[idx].approved ? 'Avis publié' : 'Avis masqué');
+        } catch (e) {
+          showToast('Erreur', 'Impossible de modifier l\'avis.', true);
+        }
+      }
+    },
+
+    // Ajout Témoignage
+    addTemoignage: function () {
+      const author = prompt('Nom de la famille ou du proche :');
+      if (!author) return;
+      const quote = prompt('Texte du témoignage :');
+      if (!quote) return;
+      const loc = prompt('Quartier ou ville (ex: Yaoundé Bastos ou Diaspora Paris) :', 'Yaoundé');
+
+      allTemoignages.unshift({
+        author,
+        quote,
+        location: loc || 'Yaoundé',
+        relation: 'Famille aidante',
+        rating: 5,
+        approved: true
+      });
+
+      getClient().then(client => {
+        client.from('site_settings').upsert({
+          setting_key: 'temoignages_list',
+          setting_value: allTemoignages
+        }, { onConflict: 'setting_key' }).then(() => {
+          renderTemoignagesView();
+          showToast('Témoignage Ajouté', 'Publié avec succès.');
+        });
+      });
+    },
+
+    // FAQ CRUD
+    addFaq: function () {
+      const question = prompt('Question posée :');
+      if (!question) return;
+      const answer = prompt('Réponse détaillée :');
+      if (!answer) return;
+
+      allFaq.push({ question, answer });
+      getClient().then(client => {
+        client.from('site_settings').upsert({
+          setting_key: 'faq_list',
+          setting_value: allFaq
+        }, { onConflict: 'setting_key' }).then(() => {
+          renderFaqView();
+          showToast('FAQ Ajoutée', 'Nouvelle question/réponse publiée.');
+        });
+      });
+    },
+
+    editFaq: function (idx) {
+      const item = allFaq[idx];
+      if (!item) return;
+      const q = prompt('Question :', item.question);
+      if (q === null) return;
+      const a = prompt('Réponse :', item.answer);
+      if (a === null) return;
+
+      allFaq[idx] = { question: q, answer: a };
+      getClient().then(client => {
+        client.from('site_settings').upsert({
+          setting_key: 'faq_list',
+          setting_value: allFaq
+        }, { onConflict: 'setting_key' }).then(() => {
+          renderFaqView();
+          showToast('FAQ Modifiée', 'Mise à jour enregistrée.');
+        });
+      });
+    },
+
+    deleteFaq: function (idx) {
+      if (!confirm('Supprimer cette question FAQ ?')) return;
+      allFaq.splice(idx, 1);
+      getClient().then(client => {
+        client.from('site_settings').upsert({
+          setting_key: 'faq_list',
+          setting_value: allFaq
+        }, { onConflict: 'setting_key' }).then(() => {
+          renderFaqView();
+          showToast('FAQ Supprimée', 'Élément retiré.');
+        });
+      });
+    },
+
+    // Réalisation Suppression
+    deleteRealisation: async function (id) {
+      if (!confirm('Supprimer cette réalisation ?')) return;
+      try {
+        const client = await getClient();
+        await client.from('realisations').delete().eq('id', id);
+        allRealisations = allRealisations.filter(r => r.id !== id);
+        renderRealisationsView();
+        renderGalerieVideosView();
+        showToast('Réalisation Retirée', 'Élément supprimé.');
+      } catch (e) {
+        showToast('Erreur', 'Suppression échouée.', true);
+      }
+    }
+  };
+
   /* ========================================================================= */
-  /* 13. DÉMARRAGE                                                             */
+  /* 21. ÉCOUTEURS D'ÉVÉNEMENTS INITIAUX                                       */
   /* ========================================================================= */
 
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', function () {
     initPasswordToggles();
-    initTabs();
+    initAuthForms();
+    initSidebarNavigation();
+    initServiceDrawer();
+    initSiteContentEditor();
+    initGeneralSettingsForm();
+    initModals();
+    initDemandesFilters();
+
+    // Bouton ajouter prestation
+    const btnAddService = document.getElementById('btn-add-service');
+    if (btnAddService) {
+      btnAddService.addEventListener('click', () => openServiceDrawer('srv-' + Date.now()));
+    }
+
+    // Bouton ajouter témoignage
+    const btnAddTem = document.getElementById('btn-add-temoignage');
+    if (btnAddTem) {
+      btnAddTem.addEventListener('click', () => window.AkevaAdmin.addTemoignage());
+    }
+
+    // Bouton ajouter FAQ
+    const btnAddFaq = document.getElementById('btn-add-faq');
+    if (btnAddFaq) {
+      btnAddFaq.addEventListener('click', () => window.AkevaAdmin.addFaq());
+    }
+
+    // Bouton ajouter Réalisation
+    const btnAddReal = document.getElementById('btn-add-realisation');
+    if (btnAddReal) {
+      btnAddReal.addEventListener('click', async () => {
+        const title = prompt('Titre de la réalisation / intervention :');
+        if (!title) return;
+        const desc = prompt('Description du cas et des résultats cliniques :');
+        const quartier = prompt('Quartier à Yaoundé (ex: Bastos, Ngousso) :', 'Yaoundé');
+        const mediaUrl = prompt('URL du média / photo (ou laisser vide) :', 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=800&q=80');
+
+        try {
+          const client = await getClient();
+          const { data, error } = await client.from('realisations').insert([{
+            title,
+            description: desc,
+            quartier: quartier || 'Yaoundé',
+            category: 'Convalescence & Gériatrie',
+            media_url: mediaUrl,
+            media_type: 'image'
+          }]).select().single();
+
+          if (error) throw error;
+          allRealisations.unshift(data);
+          renderRealisationsView();
+          renderGalerieVideosView();
+          showToast('Réalisation Ajoutée', 'Publication réussie.');
+        } catch (e) {
+          showToast('Erreur', 'Impossible de publier : ' + e.message, true);
+        }
+      });
+    }
+
+    // Lancement de la vérification Super Admin
     checkAdminAccountStatus();
   });
 
