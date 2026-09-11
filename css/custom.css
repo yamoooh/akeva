@@ -1,0 +1,58 @@
+/* Styles personnalisés pour Akeva Sérénité — Typographie Moderne & Épurée */
+
+/* Typographie Ultra-Professionnelle : Plus Jakarta Sans & Inter */
+body {
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6, .font-headline, .font-playfair {
+  font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
+  letter-spacing: -0.025em;
+}
+
+/* Espacement pour la barre mobile fixe */
+@media (max-width: 1023px) {
+  body {
+    padding-bottom: 74px;
+  }
+}
+
+/* Animations Widget Akeva */
+@keyframes pulseGentle {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 20px rgba(13, 32, 64, 0.25);
+  }
+  50% {
+    transform: scale(1.03);
+    box-shadow: 0 8px 30px rgba(197, 160, 89, 0.4);
+  }
+}
+
+.animate-pulse-gentle {
+  animation: pulseGentle 3s infinite ease-in-out;
+}
+
+/* Modal Widget */
+.widget-modal-backdrop {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f0f3ff;
+}
+::-webkit-scrollbar-thumb {
+  background: #0d2040;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #775a19;
+}
