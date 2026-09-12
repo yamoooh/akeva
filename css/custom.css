@@ -1,87 +1,145 @@
-/* Styles personnalisés pour Akeva Sérénité — Typographie Moderne & Épurée */
+/* Styles personnalisés pour Akeva Sérénité — Design System Navy & Or */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
 
-/* Import Polices Luxueuses & Professionnelles */
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,500;1,600;1,700&display=swap');
+:root {
+  --color-navy: #0d2040;
+  --color-navy-dark: #07152b;
+  --color-gold: #c5a059;
+  --color-gold-light: #e5cd98;
+  --color-gold-dark: #a17d36;
+  --color-cream: #FAF8F5;
+  --color-text: #1e293b;
+  --color-muted: #64748b;
+}
 
-/* Typographie Ultra-Professionnelle : Plus Jakarta Sans, Inter & Cormorant Garamond */
 body {
   font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--color-text);
+  background-color: #ffffff;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3, h4, h5, h6, .font-headline, .font-playfair {
-  font-family: 'Inter', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
-  letter-spacing: -0.025em;
+h1, h2, h3, h4, h5, h6, .font-headline {
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  letter-spacing: -0.02em;
 }
 
 .font-accent-serif {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: 'Playfair Display', Georgia, serif;
   font-style: italic;
 }
 
-/* Forme courbée inférieure du Header */
+/* Color Utilities */
+.bg-navy { background-color: var(--color-navy); }
+.bg-navy-dark { background-color: var(--color-navy-dark); }
+.bg-cream { background-color: var(--color-cream); }
+.text-gold { color: var(--color-gold); }
+.text-gold-light { color: var(--color-gold-light); }
+.border-gold { border-color: var(--color-gold); }
+
+/* Curved Header Bottom Wave */
 .header-curved-bottom {
-  border-bottom-left-radius: 50% 12px;
-  border-bottom-right-radius: 50% 12px;
+  position: relative;
+}
+.header-curved-bottom::after {
+  content: "";
+  position: absolute;
+  bottom: -24px;
+  left: 0;
+  width: 100%;
+  height: 25px;
+  background-color: var(--color-navy);
+  clip-path: ellipse(55% 100% at 50% 0%);
+  z-index: 10;
 }
 
-/* Espacement pour la barre mobile fixe */
+/* Gold Gradient Buttons */
+.btn-gold {
+  background: linear-gradient(135deg, #d4af37 0%, #c5a059 50%, #a88438 100%);
+  color: #ffffff;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(197, 160, 89, 0.35);
+  transition: all 0.25s ease;
+}
+.btn-gold:hover {
+  background: linear-gradient(135deg, #e5be48 0%, #d4af37 50%, #b89344 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(197, 160, 89, 0.5);
+}
+
+.btn-navy {
+  background-color: var(--color-navy);
+  color: #ffffff;
+  font-weight: 600;
+  transition: all 0.25s ease;
+}
+.btn-navy:hover {
+  background-color: var(--color-navy-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(13, 32, 64, 0.3);
+}
+
+.btn-outline-navy {
+  border: 1.5px solid var(--color-navy);
+  color: var(--color-navy);
+  font-weight: 600;
+  transition: all 0.25s ease;
+}
+.btn-outline-navy:hover {
+  background-color: var(--color-navy);
+  color: #ffffff;
+  transform: translateY(-2px);
+}
+
+/* Card Styling */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card-hover:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 32px rgba(13, 32, 64, 0.08);
+}
+
+/* Featured Offer Card */
+.card-featured {
+  background: linear-gradient(145deg, #0d2040 0%, #07152b 100%);
+  border: 2px solid var(--color-gold);
+  box-shadow: 0 20px 40px rgba(13, 32, 64, 0.25);
+}
+
+/* Mobile Fixed Action Bar */
 @media (max-width: 1023px) {
   body {
     padding-bottom: 74px;
   }
 }
 
-/* Animations Widget Akeva */
-@keyframes pulseGentle {
-  0%, 100% {
-    transform: scale(1);
-    box-shadow: 0 4px 20px rgba(13, 32, 64, 0.25);
-  }
-  50% {
-    transform: scale(1.03);
-    box-shadow: 0 8px 30px rgba(197, 160, 89, 0.4);
-  }
-}
-
-.animate-pulse-gentle {
-  animation: pulseGentle 3s infinite ease-in-out;
-}
-
-/* Modal Widget */
-.widget-modal-backdrop {
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-/* Gold Gradient Effects & Glows */
-.gold-gradient-bg {
-  background: linear-gradient(135deg, #e8c67b 0%, #c59b3b 50%, #a57a22 100%);
-}
-
-.gold-gradient-btn {
-  background: linear-gradient(135deg, #d9a838 0%, #c59b3b 60%, #9e6e14 100%);
-  transition: all 0.3s ease;
-}
-
-.gold-gradient-btn:hover {
-  background: linear-gradient(135deg, #e5be6c 0%, #d9a838 60%, #a57a22 100%);
-  box-shadow: 0 6px 20px rgba(197, 155, 59, 0.35);
-}
-
-/* Custom scrollbar */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #f0f3ff;
+  background: #FAF8F5;
 }
 ::-webkit-scrollbar-thumb {
-  background: #0d2040;
+  background: var(--color-navy);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #775a19;
+  background: var(--color-gold);
+}
+
+/* Pulse animation for CTA badge */
+@keyframes pulseGold {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(197, 160, 89, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(197, 160, 89, 0);
+  }
+}
+.pulse-gold {
+  animation: pulseGold 2.5s infinite;
 }
