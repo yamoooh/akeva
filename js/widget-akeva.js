@@ -347,4 +347,13 @@
     goToStep(1);
   });
 
+  // 3. Navigation Header Mobile Menu Toggle (Transversal)
+  var navMenuBtn = document.getElementById('mobile-menu-btn');
+  var navMobileMenu = document.getElementById('mobile-menu');
+  if (navMenuBtn && navMobileMenu) {
+    navMenuBtn.addEventListener('click', function () {
+      navMobileMenu.classList.toggle('hidden');
+    });
+  }
+
 })();
