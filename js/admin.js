@@ -228,7 +228,7 @@
       relation: "Diaspora France (Lyon) — Accompagnement à distance",
       city: "Yaoundé / Bastos",
       rating: 5,
-      comment: "Vivant à Lyon, je m'inquiétais constamment pour mon père seul à Bastos. Akeva Sérénité me transmet un suivi régulier et les auxiliaires sont adorables. Un véritable soulagement.",
+      comment: "Vivant à Lyon, je m'inquiétais constantly pour mon père seul à Bastos. Akeva Sérénité assure la garde de jour et m'envoie des rapports réguliers. Un véritable soulagement pour la diaspora.",
       date: "04 Septembre 2026",
       avatar: "",
       published: true
@@ -1824,8 +1824,13 @@
         }]).select();
 
         if (error) {
+          console.error('Erreur ajout admin:', error);
           if (errAddAdmin) {
-            errAddAdmin.textContent = 'Cet email est déjà utilisé ou une erreur est survenue.';
+            if (error.code === '23505') {
+              errAddAdmin.textContent = 'Cet e-mail est déjà utilisé par un autre administrateur.';
+            } else {
+              errAddAdmin.textContent = error.message || 'Une erreur est survenue lors de la création du compte.';
+            }
             errAddAdmin.classList.remove('hidden');
           }
           return;
