@@ -798,7 +798,6 @@
           </div>
 
           <div id="container-faq-list" class="space-y-4 max-w-4xl">
-
             <!-- Dynamique -->
           </div>
         </div>
@@ -1136,7 +1135,7 @@
 
       <div class="pt-4 flex items-center justify-end gap-3">
         <button type="button" id="btn-cancel-service-drawer" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 font-bold">Annuler</button>
-        <button type="submit" class="px-5 py-2 rounded-xl bg-primary-container text-white font-bold">Enregistrer les modifications</button>
+        <button type="submit" class="px-5 py-2 rounded-xl bg-primary-container text-white font-bold shadow-md">Enregistrer les modifications</button>
       </div>
     </form>
   </div>
@@ -1570,9 +1569,124 @@
         </div>
         <div class="pt-3 flex justify-end gap-2">
           <button type="button" id="btn-cancel-modal-stats" class="px-4 py-2 rounded-xl bg-slate-100 font-bold">Annuler</button>
-          <button type="submit" class="px-5 py-2 rounded-xl bg-primary-container text-white font-bold">Enregistrer</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-primary-container text-white font-bold">Enregistrer Chiffres</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL : DÉTAILS COMPLETS DE LA DEMANDE                                   -->
+  <!-- ========================================================================= -->
+  <div id="modal-request-details" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 hidden backdrop-blur-xs">
+    <div class="bg-white rounded-3xl p-6 md:p-8 max-w-2xl w-full shadow-2xl overflow-y-auto max-h-[90vh]">
+      
+      <!-- En-tête -->
+      <div class="flex items-start justify-between pb-4 mb-6 border-b border-slate-100">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#0d2040]/10 text-[#0d2040]" id="req-modal-ref">REF-001</span>
+            <span class="text-xs text-slate-400" id="req-modal-date">12 sept. 2026 à 09:21</span>
+          </div>
+          <h3 class="font-headline text-xl font-bold text-primary" id="req-modal-title">Demande d'Accompagnement</h3>
+        </div>
+        <button id="btn-close-modal-request-details" class="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors">
+          <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+      </div>
+
+      <!-- Contenu -->
+      <div class="space-y-6 text-xs">
+        
+        <!-- Fiche Demandeur -->
+        <div class="bg-[#f0f3ff] p-4 md:p-5 rounded-2xl border border-[#e7eeff]">
+          <h4 class="text-[11px] font-bold uppercase tracking-wider text-[#775a19] mb-3 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px]">person</span>
+            Informations du Demandeur
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-bold block">Nom & Prénom</span>
+              <span class="font-bold text-sm text-[#00091e]" id="req-modal-nom">—</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-bold block">Téléphone / Contact</span>
+              <div class="flex items-center gap-2 mt-0.5">
+                <a id="req-modal-phone-link" href="#" class="font-bold text-sm text-[#0d2040] hover:text-[#775a19] underline">
+                  <span id="req-modal-phone">—</span>
+                </a>
+              </div>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-bold block">Quartier / Ville (Yaoundé)</span>
+              <span class="font-bold text-slate-700 text-xs" id="req-modal-ville">—</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-bold block">Date de démarrage souhaitée</span>
+              <span class="font-bold text-slate-700 text-xs" id="req-modal-date-souhaitee">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Situation & Prestation -->
+        <div class="bg-surface-container-lowest p-4 md:p-5 rounded-2xl border border-slate-200">
+          <h4 class="text-[11px] font-bold uppercase tracking-wider text-[#0d2040] mb-3 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px]">medical_services</span>
+            Prestation & Détails Saisis par l'Utilisateur
+          </h4>
+          <div class="space-y-3">
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Prestation / Formule Souhaitée</span>
+              <span class="inline-block px-3 py-1 rounded-xl bg-amber-50 text-[#775a19] font-bold text-xs border border-amber-200" id="req-modal-service">
+                —
+              </span>
+            </div>
+            <div>
+              <span class="text-[10px] text-slate-400 uppercase font-bold block mb-1">Message / Précisions Complètes</span>
+              <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200 font-body text-xs text-slate-800 leading-relaxed whitespace-pre-wrap min-h-[80px]" id="req-modal-message">
+                —
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action & Traitement -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <span class="font-bold text-slate-700 text-xs">Statut actuel :</span>
+            <select id="req-modal-status-select" class="px-3 py-1.5 rounded-xl border border-slate-300 font-bold text-xs bg-slate-50 focus:bg-white">
+              <option value="nouveau">Nouveau</option>
+              <option value="en_cours">Évaluation</option>
+              <option value="confirme">Active</option>
+              <option value="termine">Terminée</option>
+            </select>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+            <a id="req-modal-btn-call" href="#" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition-colors">
+              <span class="material-symbols-outlined text-[16px] text-[#0d2040]">call</span>
+              <span>Appeler</span>
+            </a>
+            <a id="req-modal-btn-wa" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#25D366] hover:bg-[#1ebd59] text-white font-bold text-xs shadow-sm transition-transform hover:scale-105">
+              <img src="/assets/whatsapp.svg" alt="WhatsApp" class="w-4 h-4 object-contain" />
+              <span>Répondre sur WhatsApp</span>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Pied de Modal -->
+      <div class="pt-6 mt-6 border-t border-slate-100 flex items-center justify-between">
+        <button id="req-modal-btn-print" type="button" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-slate-500 hover:text-slate-800 text-xs font-semibold hover:bg-slate-100">
+          <span class="material-symbols-outlined text-[16px]">print</span>
+          <span>Imprimer la fiche</span>
+        </button>
+        <button id="btn-close-modal-request-details-bottom" type="button" class="px-5 py-2 rounded-xl bg-[#0d2040] text-white font-bold text-xs hover:bg-[#1a365d]">
+          Fermer
+        </button>
+      </div>
+
     </div>
   </div>
 
