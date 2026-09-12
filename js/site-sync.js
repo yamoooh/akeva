@@ -154,14 +154,234 @@
     }
   }
 
+  /**
+   * 3. Charger et afficher les témoignages publiés + Gestion de la modération publique
+   */
+  async function syncTemoignages() {
+    const grid = document.getElementById('public-temoignages-grid');
+    if (!grid) return;
+
+    try {
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/site_settings?key=eq.temoignages_list&select=value`, {
+        headers: REST_HEADERS
+      });
+
+      if (!response.ok) return;
+      const data = await response.json();
+      if (!data || !data[0] || !data[0].value) return;
+
+      const list = data[0].value;
+      const publishedList = list.filter(t => t.published !== false);
+
+      if (publishedList.length === 0) return;
+
+      const cardCtaHTML = `
+        <div class="bg-[#f0f3ff] rounded-3xl p-8 border-2 border-dashed border-[#775a19]/30 flex flex-col items-center justify-center text-center">
+          <div class="w-12 h-12 rounded-full bg-secondary-fixed/50 text-secondary flex items-center justify-center mb-4">
+            <span class="material-symbols-outlined text-[24px]">add_comment</span>
+          </div>
+          <h4 class="font-headline-sm text-headline-sm text-primary font-semibold mb-2">
+            Votre avis compte
+          </h4>
+          <p class="text-xs text-on-surface-variant mb-6 max-w-xs">
+            Vous bénéficiez de l'accompagnement d'Akeva Sérénité ? Partagez votre retour d'expérience avec notre coordination.
+          </p>
+          <button type="button" id="btn-open-submit-temoignage" class="px-5 py-2.5 rounded-xl bg-primary text-on-primary text-xs font-semibold hover:bg-primary-container transition-colors cursor-pointer shadow-xs">
+            Transmettre un témoignage
+          </button>
+        </div>
+      `;
+
+      grid.innerHTML = publishedList.map(tem => {
+        const rating = parseInt(tem.rating) || 5;
+        const starsHTML = Array.from({ length: 5 }, (_, i) => `
+          <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' ${i < rating ? 1 : 0};">star</span>
+        `).join('');
+
+        return `
+          <div class="bg-white rounded-3xl p-8 shadow-sm flex flex-col justify-between border border-[#e7eeff] hover:shadow-md transition-shadow">
+            <div>
+              <div class="flex text-secondary mb-3">
+                ${starsHTML}
+              </div>
+              <p class="text-sm text-on-surface-variant italic leading-relaxed mb-6">
+                « ${escapeHtml(tem.comment || '')} »
+              </p>
+            </div>
+            <div class="border-t border-[#e7eeff] pt-4">
+              <div class="font-bold text-primary text-sm">${escapeHtml(tem.author || 'Famille')}</div>
+              <div class="text-xs text-on-surface-variant">${escapeHtml(tem.relation || 'Accompagnement')} — ${escapeHtml(tem.city || 'Yaoundé')}</div>
+            </div>
+          </div>
+        `;
+      }).join('') + cardCtaHTML;
+
+      // Re-lier l'événement après remplacement innerHTML
+      initTemoignageModal();
+    } catch (e) {
+      console.debug('Akeva Sync: Témoignages par défaut.');
+    }
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function initTemoignageModal() {
+    const modal = document.getElementById('modal-submit-temoignage');
+    const btnOpen = document.getElementById('btn-open-submit-temoignage');
+    const btnClose = document.getElementById('btn-close-modal-temoignage-public');
+    const btnCancel = document.getElementById('btn-cancel-modal-temoignage-public');
+    const form = document.getElementById('form-submit-temoignage-public');
+    const alertBox = document.getElementById('temoignage-alert');
+    const starPicker = document.getElementById('star-rating-picker');
+
+    if (!modal) return;
+
+    function closeModal() {
+      modal.classList.add('hidden');
+      if (alertBox) alertBox.classList.add('hidden');
+    }
+
+    if (btnOpen) {
+      btnOpen.onclick = () => {
+        if (form) form.reset();
+        if (alertBox) alertBox.classList.add('hidden');
+        setStarRating(5);
+        modal.classList.remove('hidden');
+      };
+    }
+    if (btnClose) btnClose.onclick = closeModal;
+    if (btnCancel) btnCancel.onclick = closeModal;
+
+    // Sélection d'étoiles
+    function setStarRating(val) {
+      const input = document.getElementById('pub-tem-rating');
+      if (input) input.value = val;
+      if (starPicker) {
+        starPicker.querySelectorAll('.star-btn').forEach(btn => {
+          const starVal = parseInt(btn.getAttribute('data-value'));
+          btn.style.fontVariationSettings = starVal <= val ? "'FILL' 1" : "'FILL' 0";
+        });
+      }
+    }
+
+    if (starPicker) {
+      starPicker.querySelectorAll('.star-btn').forEach(btn => {
+        btn.onclick = function () {
+          const val = parseInt(this.getAttribute('data-value'));
+          setStarRating(val);
+        };
+      });
+    }
+
+    // Soumission du formulaire
+    if (form) {
+      form.onsubmit = async function (e) {
+        e.preventDefault();
+        const author = document.getElementById('pub-tem-author').value.trim();
+        const city = document.getElementById('pub-tem-city').value.trim();
+        const relation = document.getElementById('pub-tem-relation').value.trim();
+        const comment = document.getElementById('pub-tem-comment').value.trim();
+        const rating = parseInt(document.getElementById('pub-tem-rating').value) || 5;
+
+        if (!author || !city || !relation || !comment) return;
+
+        const btnSubmit = document.getElementById('btn-submit-temoignage-btn');
+        if (btnSubmit) {
+          btnSubmit.disabled = true;
+          btnSubmit.textContent = 'Envoi en cours...';
+        }
+
+        try {
+          // Récupérer la liste actuelle
+          const res = await fetch(`${SUPABASE_URL}/rest/v1/site_settings?key=eq.temoignages_list&select=value`, {
+            headers: REST_HEADERS
+          });
+
+          let currentList = [];
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data[0] && data[0].value) {
+              currentList = data[0].value;
+            }
+          }
+
+          const newTemoignage = {
+            id: 'tem-' + Date.now(),
+            author,
+            city,
+            relation,
+            rating,
+            comment,
+            date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }),
+            published: false // MODÉRATION : N'apparaît pas tant que non validé !
+          };
+
+          currentList.unshift(newTemoignage);
+
+          // Sauvegarde dans site_settings
+          const saveRes = await fetch(`${SUPABASE_URL}/rest/v1/site_settings`, {
+            method: 'POST',
+            headers: {
+              ...REST_HEADERS,
+              'Content-Type': 'application/json',
+              'Prefer': 'resolution=merge-duplicates'
+            },
+            body: JSON.stringify({
+              key: 'temoignages_list',
+              value: currentList
+            })
+          });
+
+          if (alertBox) {
+            alertBox.className = 'p-4 rounded-2xl text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200';
+            alertBox.textContent = '✓ Merci ! Votre témoignage a été transmis à notre coordination. Il sera vérifié et publié par l\'administrateur.';
+            alertBox.classList.remove('hidden');
+          }
+
+          setTimeout(() => {
+            closeModal();
+            if (btnSubmit) {
+              btnSubmit.disabled = false;
+              btnSubmit.textContent = 'Envoyer pour Modération';
+            }
+          }, 2800);
+
+        } catch (err) {
+          console.error('Erreur transmission témoignage:', err);
+          if (alertBox) {
+            alertBox.className = 'p-4 rounded-2xl text-xs font-semibold bg-red-50 text-red-800 border border-red-200';
+            alertBox.textContent = 'Une erreur est survenue lors de l\'envoi. Veuillez réespérer.';
+            alertBox.classList.remove('hidden');
+          }
+          if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = 'Envoyer pour Modération';
+          }
+        }
+      };
+    }
+  }
+
   // Initialisation dès que le DOM est prêt
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
       syncSiteSettings();
       syncRealisations();
+      syncTemoignages();
+      initTemoignageModal();
     });
   } else {
     syncSiteSettings();
     syncRealisations();
+    syncTemoignages();
+    initTemoignageModal();
   }
 })();
