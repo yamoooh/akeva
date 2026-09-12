@@ -31,14 +31,14 @@
         <!-- Appeler -->
         <a href="tel:${TEL_1}"
            class="flex flex-col items-center justify-center py-1 px-2 rounded-lg bg-[#111c2d] text-[#ffdea5] hover:bg-[#1e293b] transition-all active:scale-95">
-          <span class="material-symbols-outlined text-[20px]">call</span>
+          <i class="fas fa-phone text-[18px]"></i>
           <span class="text-[11px] font-bold mt-0.5 tracking-tight">Appeler</span>
         </a>
         
         <!-- Demander un accompagnement -->
         <a href="${rootPath}contact.html"
            class="flex flex-col items-center justify-center py-1 px-2 rounded-lg bg-[#fed488] text-[#261900] font-bold hover:bg-[#ffdea5] transition-all active:scale-95 shadow-sm">
-          <span class="material-symbols-outlined text-[20px]">assignment</span>
+          <i class="fas fa-clipboard-list text-[18px]"></i>
           <span class="text-[11px] font-bold mt-0.5 leading-tight text-center">Accompagner</span>
         </a>
       </div>
@@ -53,7 +53,7 @@
           <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#4edea3] opacity-75"></span>
           <span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-[#10b981]"></span>
         </span>
-        <span class="material-symbols-outlined text-[#ffdea5] text-[22px]">support_agent</span>
+        <i class="fas fa-headset text-[#ffdea5] text-[20px]"></i>
         <span class="text-[14px] font-bold tracking-tight pr-1 hidden sm:inline">Besoin d'aide ? Parlez à Akeva</span>
         <span class="text-[13px] font-bold tracking-tight pr-1 sm:hidden">Aide Akeva</span>
       </button>
@@ -78,7 +78,7 @@
             </div>
           </div>
           <button id="akeva-modal-close" type="button" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors">
-            <span class="material-symbols-outlined text-[20px]">close</span>
+            <i class="fas fa-times text-[18px]"></i>
           </button>
         </div>
 
@@ -94,57 +94,57 @@
             <div class="space-y-2.5">
               <button type="button" class="guide-btn w-full text-left p-3.5 rounded-xl border border-[#e7eeff] bg-[#f9f9ff] hover:bg-[#e7eeff] hover:border-[#775a19] text-[#111c2d] transition-all flex items-center justify-between group" data-situation="Accompagnement d'un parent âgé">
                 <div class="flex items-center gap-3">
-                  <span class="material-symbols-outlined text-[#775a19] group-hover:scale-110 transition-transform">elderly</span>
+                  <i class="fas fa-user-clock text-[#775a19] text-[18px] group-hover:scale-110 transition-transform"></i>
                   <div>
                     <div class="font-bold text-[14px]">Personne âgée</div>
                     <div class="text-[12px] text-[#44474e]">Présence quotidienne, surveillance et aide aux actes de la vie</div>
                   </div>
                 </div>
-                <span class="material-symbols-outlined text-[#775a19] text-[18px]">chevron_right</span>
+                <i class="fas fa-chevron-right text-[#775a19] text-[14px]"></i>
               </button>
 
               <button type="button" class="guide-btn w-full text-left p-3.5 rounded-xl border border-[#e7eeff] bg-[#f9f9ff] hover:bg-[#e7eeff] hover:border-[#775a19] text-[#111c2d] transition-all flex items-center justify-between group" data-situation="Accompagnement à domicile">
                 <div class="flex items-center gap-3">
-                  <span class="material-symbols-outlined text-[#775a19] group-hover:scale-110 transition-transform">home_health</span>
+                  <i class="fas fa-house-user text-[#775a19] text-[18px] group-hover:scale-110 transition-transform"></i>
                   <div>
                     <div class="font-bold text-[14px]">Maintien à domicile</div>
                     <div class="text-[12px] text-[#44474e]">Intervention directe d'auxiliaires formés au domicile</div>
                   </div>
                 </div>
-                <span class="material-symbols-outlined text-[#775a19] text-[18px]">chevron_right</span>
+                <i class="fas fa-chevron-right text-[#775a19] text-[14px]"></i>
               </button>
 
               <button type="button" class="guide-btn w-full text-left p-3.5 rounded-xl border border-[#e7eeff] bg-[#f9f9ff] hover:bg-[#e7eeff] hover:border-[#775a19] text-[#111c2d] transition-all flex items-center justify-between group" data-situation="Accompagnement hospitalier">
                 <div class="flex items-center gap-3">
-                  <span class="material-symbols-outlined text-[#775a19] group-hover:scale-110 transition-transform">local_hospital</span>
+                  <i class="fas fa-hospital text-[#775a19] text-[18px] group-hover:scale-110 transition-transform"></i>
                   <div>
                     <div class="font-bold text-[14px]">Accompagnement hospitalier</div>
                     <div class="text-[12px] text-[#44474e]">Présence et soutien au chevet en complément médical</div>
                   </div>
                 </div>
-                <span class="material-symbols-outlined text-[#775a19] text-[18px]">chevron_right</span>
+                <i class="fas fa-chevron-right text-[#775a19] text-[14px]"></i>
               </button>
 
               <button type="button" class="guide-btn w-full text-left p-3.5 rounded-xl border border-[#e7eeff] bg-[#f9f9ff] hover:bg-[#e7eeff] hover:border-[#775a19] text-[#111c2d] transition-all flex items-center justify-between group" data-situation="Accompagnement spécialisé">
                 <div class="flex items-center gap-3">
-                  <span class="material-symbols-outlined text-[#775a19] group-hover:scale-110 transition-transform">personal_injury</span>
+                  <i class="fas fa-hand-holding-medical text-[#775a19] text-[18px] group-hover:scale-110 transition-transform"></i>
                   <div>
                     <div class="font-bold text-[14px]">Accompagnement spécialisé</div>
                     <div class="text-[12px] text-[#44474e]">Besoins particuliers nécessitant une attention renforcée</div>
                   </div>
                 </div>
-                <span class="material-symbols-outlined text-[#775a19] text-[18px]">chevron_right</span>
+                <i class="fas fa-chevron-right text-[#775a19] text-[14px]"></i>
               </button>
 
               <button type="button" class="guide-btn w-full text-left p-3.5 rounded-xl border border-[#e7eeff] bg-[#f9f9ff] hover:bg-[#e7eeff] hover:border-[#775a19] text-[#111c2d] transition-all flex items-center justify-between group" data-situation="Solutions pour la diaspora">
                 <div class="flex items-center gap-3">
-                  <span class="material-symbols-outlined text-[#775a19] group-hover:scale-110 transition-transform">public</span>
+                  <i class="fas fa-globe text-[#775a19] text-[18px] group-hover:scale-110 transition-transform"></i>
                   <div>
                     <div class="font-bold text-[14px]">Solutions pour la Diaspora</div>
                     <div class="text-[12px] text-[#44474e]">Organisation et suivi régulier à distance pour un parent au Cameroun</div>
                   </div>
                 </div>
-                <span class="material-symbols-outlined text-[#775a19] text-[18px]">chevron_right</span>
+                <i class="fas fa-chevron-right text-[#775a19] text-[14px]"></i>
               </button>
             </div>
           </div>
@@ -154,7 +154,7 @@
             <div class="flex items-center justify-between mb-2">
               <span class="text-[11px] font-bold uppercase tracking-wider text-[#775a19]">Étape 2 sur 3 • Modalité</span>
               <button id="akeva-back-to-step-1" type="button" class="text-[12px] text-[#775a19] hover:underline flex items-center gap-1 font-semibold">
-                <span class="material-symbols-outlined text-[14px]">arrow_back</span> Modifier situation
+                <i class="fas fa-arrow-left text-[12px]"></i> Modifier situation
               </button>
             </div>
             <h4 class="text-[18px] font-bold text-[#00091e] mb-2 font-headline">Quelle formule d'intervention ?</h4>
@@ -163,46 +163,46 @@
             <div class="space-y-2.5">
               <button type="button" class="modality-btn w-full text-left p-3.5 rounded-xl border border-[#e7eeff] bg-[#f9f9ff] hover:bg-[#e7eeff] hover:border-[#775a19] text-[#111c2d] transition-all flex items-center justify-between group" data-modality="Garde de jour (activités quotidiennes)">
                 <div class="flex items-center gap-3">
-                  <span class="material-symbols-outlined text-[#775a19]">wb_sunny</span>
+                  <i class="fas fa-sun text-[#775a19] text-[18px]"></i>
                   <div>
                     <div class="font-bold text-[14px]">1. Garde de jour</div>
                     <div class="text-[12px] text-[#44474e]">Assistance quotidienne, aide aux repas, mobilité et stimulation</div>
                   </div>
                 </div>
-                <span class="material-symbols-outlined text-[#775a19] text-[18px]">chevron_right</span>
+                <i class="fas fa-chevron-right text-[#775a19] text-[14px]"></i>
               </button>
 
               <button type="button" class="modality-btn w-full text-left p-3.5 rounded-xl border border-[#e7eeff] bg-[#f9f9ff] hover:bg-[#e7eeff] hover:border-[#775a19] text-[#111c2d] transition-all flex items-center justify-between group" data-modality="Garde de nuit (surveillance nocturne)">
                 <div class="flex items-center gap-3">
-                  <span class="material-symbols-outlined text-[#775a19]">bedtime</span>
+                  <i class="fas fa-moon text-[#775a19] text-[18px]"></i>
                   <div>
                     <div class="font-bold text-[14px]">2. Garde de nuit</div>
                     <div class="text-[12px] text-[#44474e]">Veille bienveillante, nuits paisibles et sécurité continue</div>
                   </div>
                 </div>
-                <span class="material-symbols-outlined text-[#775a19] text-[18px]">chevron_right</span>
+                <i class="fas fa-chevron-right text-[#775a19] text-[14px]"></i>
               </button>
 
               <button type="button" class="modality-btn w-full text-left p-3.5 rounded-xl border border-[#e7eeff] bg-[#f9f9ff] hover:bg-[#e7eeff] hover:border-[#775a19] text-[#111c2d] transition-all flex items-center justify-between group" data-modality="Garde 24h/24 continue">
                 <div class="flex items-center gap-3">
-                  <span class="material-symbols-outlined text-[#775a19]">all_inclusive</span>
+                  <i class="fas fa-infinity text-[#775a19] text-[18px]"></i>
                   <div>
                     <div class="font-bold text-[14px]">3. Garde 24h/24 continue</div>
                     <div class="text-[12px] text-[#44474e]">Prise en charge intégrale ininterrompue jour et nuit</div>
                   </div>
                 </div>
-                <span class="material-symbols-outlined text-[#775a19] text-[18px]">chevron_right</span>
+                <i class="fas fa-chevron-right text-[#775a19] text-[14px]"></i>
               </button>
 
               <button type="button" class="modality-btn w-full text-left p-3.5 rounded-xl border border-[#e7eeff] bg-[#f9f9ff] hover:bg-[#e7eeff] hover:border-[#775a19] text-[#111c2d] transition-all flex items-center justify-between group" data-modality="Accompagnement moral & soutien">
                 <div class="flex items-center gap-3">
-                  <span class="material-symbols-outlined text-[#775a19]">favorite</span>
+                  <i class="fas fa-heart text-[#775a19] text-[18px]"></i>
                   <div>
                     <div class="font-bold text-[14px]">4. Accompagnement moral</div>
                     <div class="text-[12px] text-[#44474e]">Soutien moral, compagnie, écoute et bienveillance humaine</div>
                   </div>
                 </div>
-                <span class="material-symbols-outlined text-[#775a19] text-[18px]">chevron_right</span>
+                <i class="fas fa-chevron-right text-[#775a19] text-[14px]"></i>
               </button>
             </div>
           </div>
@@ -217,11 +217,11 @@
             <div class="bg-[#f0f3ff] rounded-2xl p-4 mb-5 border border-[#d8e3fb]">
               <div class="text-[12px] text-[#44474e] font-semibold uppercase tracking-wider mb-1">Récapitulatif de votre besoin :</div>
               <div class="font-bold text-[#0d2040] text-[15px] flex items-center gap-2 mb-1">
-                <span class="material-symbols-outlined text-[#775a19] text-[18px]">verified</span>
+                <i class="fas fa-check-circle text-[#775a19] text-[16px]"></i>
                 <span id="recap-situation">-</span>
               </div>
               <div class="text-[13px] text-[#111c2d] flex items-center gap-2">
-                <span class="material-symbols-outlined text-[#775a19] text-[16px]">schedule</span>
+                <i class="fas fa-clock text-[#775a19] text-[14px]"></i>
                 <span id="recap-modality">-</span>
               </div>
             </div>
@@ -236,7 +236,7 @@
             <!-- Bouton formulaire contact ou retour -->
             <div class="flex items-center justify-between pt-2">
               <button id="akeva-restart-guide" type="button" class="text-[12px] text-[#775a19] hover:underline flex items-center gap-1 font-semibold">
-                <span class="material-symbols-outlined text-[14px]">refresh</span> Recommencer le guide
+                <i class="fas fa-redo text-[12px]"></i> Recommencer le guide
               </button>
               <a href="${rootPath}contact.html" class="text-[12px] text-[#0d2040] hover:underline font-semibold">
                 Remplir formulaire à la place
