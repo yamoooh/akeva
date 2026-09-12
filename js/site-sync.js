@@ -195,13 +195,13 @@
       grid.innerHTML = publishedList.map(tem => {
         const rating = parseInt(tem.rating) || 5;
         const starsHTML = Array.from({ length: 5 }, (_, i) => `
-          <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' ${i < rating ? 1 : 0};">star</span>
+          <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' ${i < rating ? 1 : 0}; color: ${i < rating ? '#c5a059' : '#cbd5e1'};">star</span>
         `).join('');
 
         return `
           <div class="bg-white rounded-3xl p-8 shadow-sm flex flex-col justify-between border border-[#e7eeff] hover:shadow-md transition-shadow">
             <div>
-              <div class="flex text-secondary mb-3">
+              <div class="flex mb-3">
                 ${starsHTML}
               </div>
               <p class="text-sm text-on-surface-variant italic leading-relaxed mb-6">
@@ -260,20 +260,44 @@
     if (btnClose) btnClose.onclick = closeModal;
     if (btnCancel) btnCancel.onclick = closeModal;
 
-    // Sélection d'étoiles
+    // Sélection d'étoiles dynamique (survol et clic)
     function setStarRating(val) {
       const input = document.getElementById('pub-tem-rating');
       if (input) input.value = val;
       if (starPicker) {
         starPicker.querySelectorAll('.star-btn').forEach(btn => {
           const starVal = parseInt(btn.getAttribute('data-value'));
-          btn.style.fontVariationSettings = starVal <= val ? "'FILL' 1" : "'FILL' 0";
+          if (starVal <= val) {
+            btn.style.fontVariationSettings = "'FILL' 1";
+            btn.style.color = '#c5a059';
+          } else {
+            btn.style.fontVariationSettings = "'FILL' 0";
+            btn.style.color = '#cbd5e1';
+          }
         });
       }
     }
 
     if (starPicker) {
-      starPicker.querySelectorAll('.star-btn').forEach(btn => {
+      const starBtns = starPicker.querySelectorAll('.star-btn');
+      starBtns.forEach(btn => {
+        btn.onmouseenter = function () {
+          const hoverVal = parseInt(this.getAttribute('data-value'));
+          starBtns.forEach(b => {
+            const v = parseInt(b.getAttribute('data-value'));
+            if (v <= hoverVal) {
+              b.style.fontVariationSettings = "'FILL' 1";
+              b.style.color = '#c5a059';
+            } else {
+              b.style.fontVariationSettings = "'FILL' 0";
+              b.style.color = '#cbd5e1';
+            }
+          });
+        };
+        btn.onmouseleave = function () {
+          const currentVal = parseInt(document.getElementById('pub-tem-rating')?.value || 5);
+          setStarRating(currentVal);
+        };
         btn.onclick = function () {
           const val = parseInt(this.getAttribute('data-value'));
           setStarRating(val);
