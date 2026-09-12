@@ -228,7 +228,7 @@
       relation: "Diaspora France (Lyon) — Accompagnement à distance",
       city: "Yaoundé / Bastos",
       rating: 5,
-      comment: "Vivant à Lyon, je m'inquiétais constantly pour mon père seul à Bastos. Akeva Sérénité assure la garde de jour et m'envoie des rapports réguliers. Un véritable soulagement pour la diaspora.",
+      comment: "Vivant à Lyon, je m'inquiétais constamment pour mon père seul à Bastos. Akeva Sérénité assure la garde de jour et m'envoie des rapports réguliers. Un véritable soulagement pour la diaspora.",
       date: "04 Septembre 2026",
       avatar: "",
       published: true
@@ -1050,43 +1050,147 @@
     });
   }
 
-  /* 7.6 Témoignages */
+  /* 7.6 Témoignages & Modération */
   function renderTemoignagesGrid() {
-    const grid = document.getElementById('grid-temoignages-cards');
-    if (!grid) return;
+    const gridPublished = document.getElementById('grid-temoignages-cards');
+    const gridPending = document.getElementById('grid-pending-temoignages-cards');
+    const sectionPending = document.getElementById('section-pending-temoignages');
+    const countPending = document.getElementById('count-pending-temoignages');
+    const badgeSidebar = document.getElementById('badge-pending-temoignages');
 
-    grid.innerHTML = allTemoignages.map(tem => `
-      <div class="bg-surface-container-lowest p-6 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-all flex flex-col justify-between">
-        <div>
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex text-amber-400">
-              ${'★'.repeat(tem.rating || 5)}${'☆'.repeat(5 - (tem.rating || 5))}
-            </div>
-            <span class="text-[10px] text-slate-400 font-mono">${escapeHtml(tem.date || '')}</span>
+    if (!gridPublished) return;
+
+    const pendingList = allTemoignages.filter(t => t.published === false);
+    const publishedList = allTemoignages.filter(t => t.published !== false);
+
+    // Badges & Compteurs
+    if (countPending) countPending.textContent = pendingList.length;
+    if (badgeSidebar) {
+      if (pendingList.length > 0) {
+        badgeSidebar.textContent = `${pendingList.length} en attente`;
+        badgeSidebar.classList.remove('hidden');
+      } else {
+        badgeSidebar.classList.add('hidden');
+      }
+    }
+
+    // 1. Rendu des témoignages en attente de modération
+    if (gridPending) {
+      if (pendingList.length === 0) {
+        gridPending.innerHTML = `
+          <div class="col-span-1 md:col-span-2 lg:col-span-3 py-6 text-center text-slate-400 text-xs italic">
+            Aucun témoignage en attente de modération. Les nouveaux avis soumis par les visiteurs apparaîtront ici.
           </div>
-          <blockquote class="text-xs text-slate-700 italic leading-relaxed mb-4">
-            « ${escapeHtml(tem.comment)} »
-          </blockquote>
-        </div>
-
-        <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
-          <div class="flex items-center gap-2.5">
-            ${tem.avatar ? `<img src="${tem.avatar}" class="w-8 h-8 rounded-full object-cover border" alt="Avatar"/>` : `<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-xs">${escapeHtml((tem.author || 'F')[0])}</div>`}
+        `;
+      } else {
+        gridPending.innerHTML = pendingList.map(tem => `
+          <div class="bg-white p-6 rounded-3xl shadow-sm border border-amber-200 hover:shadow-md transition-all flex flex-col justify-between">
             <div>
-              <div class="font-bold text-primary text-xs">${escapeHtml(tem.author)}</div>
-              <div class="text-[10px] text-slate-400">${escapeHtml(tem.city || 'Yaoundé')}</div>
+              <div class="flex items-center justify-between mb-3">
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 uppercase flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> En Attente
+                </span>
+                <span class="text-[10px] text-slate-400 font-mono">${escapeHtml(tem.date || '')}</span>
+              </div>
+
+              <div class="flex text-amber-400 mb-2">
+                ${'★'.repeat(tem.rating || 5)}${'☆'.repeat(5 - (tem.rating || 5))}
+              </div>
+
+              <blockquote class="text-xs text-slate-700 italic leading-relaxed mb-4 bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                « ${escapeHtml(tem.comment)} »
+              </blockquote>
+
+              <div class="text-xs text-slate-600 mb-4 space-y-0.5">
+                <div><strong>Auteur :</strong> ${escapeHtml(tem.author)}</div>
+                <div><strong>Accompagnement :</strong> ${escapeHtml(tem.relation || '—')}</div>
+                <div><strong>Ville / Quartier :</strong> ${escapeHtml(tem.city || '—')}</div>
+              </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+              <button class="btn-reject-temoignage text-xs text-red-600 hover:bg-red-50 px-3 py-1.5 rounded-xl font-bold transition-colors" data-id="${tem.id}">
+                ❌ Refuser
+              </button>
+              <button class="btn-approve-temoignage text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-1.5 rounded-xl font-bold transition-all shadow-xs flex items-center gap-1" data-id="${tem.id}">
+                <span>✓ Valider & Publier</span>
+              </button>
             </div>
           </div>
-          <button class="btn-delete-temoignage text-xs text-red-500 hover:underline font-semibold" data-id="${tem.id}">
-            Supprimer
-          </button>
-        </div>
-      </div>
-    `).join('');
+        `).join('');
+      }
+    }
 
-    grid.querySelectorAll('.btn-delete-temoignage').forEach(btn => {
+    // 2. Rendu des témoignages publiés en ligne
+    if (publishedList.length === 0) {
+      gridPublished.innerHTML = `
+        <div class="col-span-1 md:col-span-2 lg:col-span-3 py-8 text-center text-slate-400 text-xs">
+          Aucun témoignage publié sur le site pour le moment.
+        </div>
+      `;
+    } else {
+      gridPublished.innerHTML = publishedList.map(tem => `
+        <div class="bg-surface-container-lowest p-6 rounded-3xl shadow-sm border border-slate-100 hover:shadow-md transition-all flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex text-amber-400">
+                ${'★'.repeat(tem.rating || 5)}${'☆'.repeat(5 - (tem.rating || 5))}
+              </div>
+              <span class="text-[10px] text-slate-400 font-mono">${escapeHtml(tem.date || '')}</span>
+            </div>
+            <blockquote class="text-xs text-slate-700 italic leading-relaxed mb-4">
+              « ${escapeHtml(tem.comment)} »
+            </blockquote>
+          </div>
+
+          <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              ${tem.avatar ? `<img src="${tem.avatar}" class="w-8 h-8 rounded-full object-cover border" alt="Avatar"/>` : `<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-xs">${escapeHtml((tem.author || 'F')[0])}</div>`}
+              <div>
+                <div class="font-bold text-primary text-xs">${escapeHtml(tem.author)}</div>
+                <div class="text-[10px] text-slate-400">${escapeHtml(tem.city || 'Yaoundé')}</div>
+              </div>
+            </div>
+            <button class="btn-delete-temoignage text-xs text-red-500 hover:underline font-semibold" data-id="${tem.id}">
+              Supprimer
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Handlers Valider & Publier
+    document.querySelectorAll('.btn-approve-temoignage').forEach(btn => {
       btn.addEventListener('click', async function () {
-        if (!confirm('Supprimer ce témoignage ?')) return;
+        const id = this.getAttribute('data-id');
+        const target = allTemoignages.find(t => t.id === id);
+        if (target) {
+          target.published = true;
+          await saveSettingKey('temoignages_list', allTemoignages);
+          showToast('Témoignage validé !', `L'avis de ${target.author} est désormais publié sur le site public.`);
+          renderTemoignagesGrid();
+        }
+      });
+    });
+
+    // Handlers Refuser
+    document.querySelectorAll('.btn-reject-temoignage').forEach(btn => {
+      btn.addEventListener('click', async function () {
+        const id = this.getAttribute('data-id');
+        const target = allTemoignages.find(t => t.id === id);
+        if (!confirm(`Refuser et supprimer le témoignage de ${target ? target.author : 'cet utilisateur'} ?`)) return;
+
+        allTemoignages = allTemoignages.filter(t => t.id !== id);
+        await saveSettingKey('temoignages_list', allTemoignages);
+        showToast('Témoignage refusé', 'L\'avis a été supprimé.');
+        renderTemoignagesGrid();
+      });
+    });
+
+    // Handlers Supprimer (Publiés)
+    document.querySelectorAll('.btn-delete-temoignage').forEach(btn => {
+      btn.addEventListener('click', async function () {
+        if (!confirm('Supprimer définitivement ce témoignage du site public ?')) return;
         const id = this.getAttribute('data-id');
         allTemoignages = allTemoignages.filter(t => t.id !== id);
         await saveSettingKey('temoignages_list', allTemoignages);
