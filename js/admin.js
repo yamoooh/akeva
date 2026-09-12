@@ -228,7 +228,7 @@
       relation: "Diaspora France (Lyon) — Accompagnement à distance",
       city: "Yaoundé / Bastos",
       rating: 5,
-      comment: "Vivant à Lyon, je m'inquiétais constamment pour mon père seul à Bastos. Akeva Sérénité assure la garde de jour et m'envoie des rapports réguliers. Un véritable soulagement pour la diaspora.",
+      comment: "Vivant à Lyon, je m'inquiétais constamment pour mon père seul à Bastos. Akeva Sérénité me transmet un suivi régulier et les auxiliaires sont adorables. Un véritable soulagement.",
       date: "04 Septembre 2026",
       avatar: "",
       published: true
@@ -657,35 +657,121 @@
     if (activesEl) activesEl.textContent = `${active} active${active > 1 ? 's' : ''}`;
   }
 
+  /* 7.1.1 Modal Détails de la Demande */
+  let currentDetailReqId = null;
+
+  function openRequestDetailsModal(reqId) {
+    const req = allRequests.find(r => r.id === reqId);
+    if (!req) return;
+
+    currentDetailReqId = reqId;
+
+    const modal = document.getElementById('modal-request-details');
+    if (!modal) return;
+
+    const name = req.nom || req.name || 'Famille sans nom';
+    const phone = req.telephone || req.phone || '—';
+    const quartier = req.ville || req.quartier || 'Yaoundé';
+    const service = req.type_besoin || req.service || 'Accompagnement général';
+    const dateSouhaitee = req.date_souhaitee || 'Non précisée';
+    const message = req.message || 'Aucune précision supplémentaire saisie par l\'utilisateur.';
+    const dateRaw = req.created_at || req.date_reception;
+    const dateStr = dateRaw ? new Date(dateRaw).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Date récente';
+    const cleanPhone = phone.replace(/\D/g, '');
+
+    const elRef = document.getElementById('req-modal-ref');
+    const elDate = document.getElementById('req-modal-date');
+    const elTitle = document.getElementById('req-modal-title');
+    const elNom = document.getElementById('req-modal-nom');
+    const elPhone = document.getElementById('req-modal-phone');
+    const elPhoneLink = document.getElementById('req-modal-phone-link');
+    const elVille = document.getElementById('req-modal-ville');
+    const elDateSouhaitee = document.getElementById('req-modal-date-souhaitee');
+    const elService = document.getElementById('req-modal-service');
+    const elMessage = document.getElementById('req-modal-message');
+    const elStatusSelect = document.getElementById('req-modal-status-select');
+    const elBtnCall = document.getElementById('req-modal-btn-call');
+    const elBtnWa = document.getElementById('req-modal-btn-wa');
+
+    if (elRef) elRef.textContent = `DOSSIER #${req.id ? req.id.toString().slice(-6) : 'REC'}`;
+    if (elDate) elDate.textContent = `Reçu le ${dateStr}`;
+    if (elTitle) elTitle.textContent = `Demande d'accompagnement : ${name}`;
+    if (elNom) elNom.textContent = name;
+    if (elPhone) elPhone.textContent = phone;
+    if (elPhoneLink) elPhoneLink.href = cleanPhone ? `tel:+237${cleanPhone}` : '#';
+    if (elVille) elVille.textContent = quartier;
+    if (elDateSouhaitee) elDateSouhaitee.textContent = dateSouhaitee;
+    if (elService) elService.textContent = service;
+    if (elMessage) elMessage.textContent = message;
+    if (elStatusSelect) elStatusSelect.value = req.status || 'nouveau';
+
+    if (elBtnCall) elBtnCall.href = cleanPhone ? `tel:+237${cleanPhone}` : '#';
+    if (elBtnWa) {
+      const waMsg = encodeURIComponent(`Bonjour ${name}, suite à votre demande d'accompagnement sur Akeva Sérénité concernant "${service}", la coordination de Yaoundé est à votre entière disposition.`);
+      elBtnWa.href = cleanPhone ? `https://wa.me/237${cleanPhone}?text=${waMsg}` : `https://wa.me/237697572685?text=${waMsg}`;
+    }
+
+    modal.classList.remove('hidden');
+  }
+
+  function closeRequestDetailsModal() {
+    const modal = document.getElementById('modal-request-details');
+    if (modal) modal.classList.add('hidden');
+  }
+
+  window.AkevaAdminOpenDetail = openRequestDetailsModal;
+
   function renderRecentRequestsDashboard() {
     const tbody = document.getElementById('dashboard-recent-requests-body');
     if (!tbody) return;
 
     const list = (allRequests.length > 0) ? allRequests.slice(0, 5) : [
-      { id: '1', created_at: new Date().toISOString(), name: 'Mme Fouda', phone: '699 12 45 88', quartier: 'Ngousso', service: 'Garde Continue 24h/24', status: 'nouveau' },
-      { id: '2', created_at: new Date(Date.now() - 3600000).toISOString(), name: 'Dr. Patrick T. (Diaspora)', phone: '653 15 14 27', quartier: 'Bastos', service: 'Garde de Nuit Sécurisée', status: 'en_cours' },
-      { id: '3', created_at: new Date(Date.now() - 7200000).toISOString(), name: 'Famille Mbarga', phone: '677 88 99 00', quartier: 'Omnisports', service: 'Accompagnement Personnes Âgées', status: 'confirme' }
+      { id: '1', created_at: new Date().toISOString(), nom: 'Mme Fouda', telephone: '699 12 45 88', ville: 'Ngousso', type_besoin: 'Garde Continue 24h/24', message: 'Besoin urgent de présence 24h/24', status: 'nouveau' },
+      { id: '2', created_at: new Date(Date.now() - 3600000).toISOString(), nom: 'Dr. Patrick T. (Diaspora)', telephone: '653 15 14 27', ville: 'Bastos', type_besoin: 'Garde de Nuit Sécurisée', message: 'Maman alitée, besoin de suivi nocturnal.', status: 'en_cours' },
+      { id: '3', created_at: new Date(Date.now() - 7200000).toISOString(), nom: 'Famille Mbarga', telephone: '677 88 99 00', ville: 'Omnisports', type_besoin: 'Accompagnement Personnes Âgées', message: 'Aide à la toilette et repas.', status: 'confirme' }
     ];
 
     tbody.innerHTML = list.map(req => {
-      const dateStr = req.created_at ? new Date(req.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Aujourd\'hui';
+      const name = req.nom || req.name || 'Famille';
+      const phone = req.telephone || req.phone || '—';
+      const quartier = req.ville || req.quartier || 'Yaoundé';
+      const service = req.type_besoin || req.service || 'Soins à domicile';
+      const dateRaw = req.created_at || req.date_reception;
+      const dateStr = dateRaw ? new Date(dateRaw).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Aujourd\'hui';
       const statusBadge = getStatusBadge(req.status);
+      const cleanPhone = phone.replace(/\D/g, '');
+
       return `
-        <tr class="hover:bg-surface-container-low transition-colors">
+        <tr class="hover:bg-surface-container-low transition-colors cursor-pointer" onclick="AkevaAdminOpenDetail('${req.id}')">
           <td class="py-3 px-4 font-mono text-[11px] text-slate-500">${dateStr}</td>
-          <td class="py-3 px-4 font-bold text-primary">${escapeHtml(req.name || 'Famille')}</td>
-          <td class="py-3 px-4 text-slate-600">${escapeHtml(req.phone || '—')}</td>
-          <td class="py-3 px-4 text-slate-600">${escapeHtml(req.quartier || 'Yaoundé')}</td>
-          <td class="py-3 px-4 font-semibold text-secondary">${escapeHtml(req.service || 'Soins à domicile')}</td>
+          <td class="py-3 px-4">
+            <div class="font-bold text-primary">${escapeHtml(name)}</div>
+            <div class="text-[10px] text-slate-400 truncate max-w-xs">${escapeHtml(req.message || '')}</div>
+          </td>
+          <td class="py-3 px-4 text-slate-600 font-semibold">${escapeHtml(phone)}</td>
+          <td class="py-3 px-4 text-slate-600">${escapeHtml(quartier)}</td>
+          <td class="py-3 px-4 font-semibold text-secondary">${escapeHtml(service)}</td>
           <td class="py-3 px-4">${statusBadge}</td>
-          <td class="py-3 px-4 text-right">
-            <a href="https://wa.me/237${(req.phone || '').replace(/\D/g, '')}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-[#25D366] text-white text-[10px] font-bold">
+          <td class="py-3 px-4 text-right space-x-1" onclick="event.stopPropagation()">
+            <button class="btn-view-request-details px-2.5 py-1 rounded bg-[#0d2040] hover:bg-[#1a365d] text-white text-[11px] font-bold inline-flex items-center gap-1 transition-all" data-id="${req.id}">
+              <span class="material-symbols-outlined text-[13px]">visibility</span>
+              <span>Détails</span>
+            </button>
+            <a href="https://wa.me/237${cleanPhone}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-[#25D366] text-white text-[10px] font-bold">
               <span class="material-symbols-outlined text-[12px]">chat</span> WhatsApp
             </a>
           </td>
         </tr>
       `;
     }).join('');
+
+    tbody.querySelectorAll('.btn-view-request-details').forEach(btn => {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const id = this.getAttribute('data-id');
+        openRequestDetailsModal(id);
+      });
+    });
   }
 
   function getStatusBadge(st) {
@@ -748,7 +834,6 @@
 
   /* 7.3 Demandes Full */
   function renderDemandesTable() {
-
     const tbody = document.getElementById('table-demandes-full-body');
     if (!tbody) return;
 
@@ -777,21 +862,31 @@
     }
 
     tbody.innerHTML = filtered.map(req => {
-      const dateStr = req.created_at ? new Date(req.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
-      const cleanPhone = (req.phone || '').replace(/\D/g, '');
+      const name = req.nom || req.name || 'Famille';
+      const phone = req.telephone || req.phone || '—';
+      const quartier = req.ville || req.quartier || 'Yaoundé';
+      const service = req.type_besoin || req.service || 'Soins';
+      const dateRaw = req.created_at || req.date_reception;
+      const dateStr = dateRaw ? new Date(dateRaw).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
+      const cleanPhone = phone.replace(/\D/g, '');
+
       return `
-        <tr class="hover:bg-surface-container-low transition-colors">
+        <tr class="hover:bg-surface-container-low transition-colors cursor-pointer row-demande-item" data-id="${req.id}">
           <td class="py-3 px-4 font-mono text-[11px] text-slate-500">${dateStr}</td>
           <td class="py-3 px-4">
-            <div class="font-bold text-primary">${escapeHtml(req.name || 'Famille')}</div>
-            <div class="text-[10px] text-slate-400">${escapeHtml(req.message || '')}</div>
+            <div class="font-bold text-primary">${escapeHtml(name)}</div>
+            <div class="text-[10px] text-slate-400 truncate max-w-xs">${escapeHtml(req.message || '')}</div>
           </td>
-          <td class="py-3 px-4 text-slate-700 font-semibold">${escapeHtml(req.phone || '—')}</td>
-          <td class="py-3 px-4 text-slate-600">${escapeHtml(req.quartier || 'Yaoundé')}</td>
-          <td class="py-3 px-4 font-semibold text-secondary">${escapeHtml(req.service || 'Soins')}</td>
+          <td class="py-3 px-4 text-slate-700 font-semibold">${escapeHtml(phone)}</td>
+          <td class="py-3 px-4 text-slate-600">${escapeHtml(quartier)}</td>
+          <td class="py-3 px-4 font-semibold text-secondary">${escapeHtml(service)}</td>
           <td class="py-3 px-4">${getStatusBadge(req.status)}</td>
-          <td class="py-3 px-6 text-right space-x-1">
-            <a href="https://wa.me/237${cleanPhone}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#25D366] text-white text-[11px] font-bold">
+          <td class="py-3 px-6 text-right space-x-1.5" onclick="event.stopPropagation()">
+            <button class="btn-view-request-details px-2.5 py-1 rounded-lg bg-[#0d2040] hover:bg-[#1a365d] text-white text-[11px] font-bold inline-flex items-center gap-1 transition-all shadow-xs" data-id="${req.id}">
+              <span class="material-symbols-outlined text-[13px]">visibility</span>
+              <span>Détails</span>
+            </button>
+            <a href="https://wa.me/237${cleanPhone}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#25D366] text-white text-[11px] font-bold" title="WhatsApp">
               <span class="material-symbols-outlined text-[13px]">chat</span>
             </a>
             <select class="select-change-status text-[11px] font-bold border border-slate-200 rounded-lg p-1 bg-white" data-id="${req.id}">
@@ -805,9 +900,26 @@
       `;
     }).join('');
 
+    tbody.querySelectorAll('.row-demande-item').forEach(tr => {
+      tr.addEventListener('click', function (e) {
+        if (e.target.closest('select') || e.target.closest('a') || e.target.closest('button')) return;
+        const id = this.getAttribute('data-id');
+        openRequestDetailsModal(id);
+      });
+    });
+
+    tbody.querySelectorAll('.btn-view-request-details').forEach(btn => {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const id = this.getAttribute('data-id');
+        openRequestDetailsModal(id);
+      });
+    });
+
     // Listener sur changement de statut
     tbody.querySelectorAll('.select-change-status').forEach(sel => {
-      sel.addEventListener('change', async function () {
+      sel.addEventListener('change', async function (e) {
+        e.stopPropagation();
         const id = this.getAttribute('data-id');
         const newStatus = this.value;
         const target = allRequests.find(r => r.id === id);
@@ -1499,7 +1611,6 @@
       btnOpenTem.addEventListener('click', () => {
         if (formTem) formTem.reset();
         if (modalTem) modalTem.classList.remove('hidden');
-
       });
     }
 
@@ -1857,6 +1968,107 @@
         currentContactInfo = { phone_primary, phone_secondary, whatsapp, email, address };
         await saveSettingKey('contact_info', currentContactInfo);
         showToast('Coordonnées enregistrées', 'Mises à jour sur tout le site public.');
+      });
+    }
+
+    // 16. Modal Détails Demande & Recherche
+    const btnCloseReqDetails = document.getElementById('btn-close-modal-request-details');
+    const btnCloseReqDetailsBottom = document.getElementById('btn-close-modal-request-details-bottom');
+    const statusSelectModal = document.getElementById('req-modal-status-select');
+    const btnPrintReqModal = document.getElementById('req-modal-btn-print');
+    const inputSearchDemandes = document.getElementById('input-search-demandes');
+
+    if (btnCloseReqDetails) btnCloseReqDetails.addEventListener('click', closeRequestDetailsModal);
+    if (btnCloseReqDetailsBottom) btnCloseReqDetailsBottom.addEventListener('click', closeRequestDetailsModal);
+
+    if (statusSelectModal) {
+      statusSelectModal.addEventListener('change', async function () {
+        if (!currentDetailReqId) return;
+        const newStatus = this.value;
+        const target = allRequests.find(r => r.id === currentDetailReqId);
+        if (target) target.status = newStatus;
+
+        const sb = await getClient();
+        if (sb && currentDetailReqId) {
+          await sb.from('contact_requests').update({ status: newStatus }).eq('id', currentDetailReqId);
+        }
+        showToast('Statut mis à jour', `Dossier passé à : ${newStatus}`);
+        renderKPIs();
+        renderRecentRequestsDashboard();
+        renderDemandesTable();
+      });
+    }
+
+    if (btnPrintReqModal) {
+      btnPrintReqModal.addEventListener('click', function () {
+        window.print();
+      });
+    }
+
+    if (inputSearchDemandes) {
+      inputSearchDemandes.addEventListener('input', function () {
+        const query = this.value.trim().toLowerCase();
+        if (!query) {
+          renderDemandesTable();
+          return;
+        }
+        const filtered = allRequests.filter(r => {
+          const name = (r.nom || r.name || '').toLowerCase();
+          const phone = (r.telephone || r.phone || '').toLowerCase();
+          const ville = (r.ville || r.quartier || '').toLowerCase();
+          const service = (r.type_besoin || r.service || '').toLowerCase();
+          const msg = (r.message || '').toLowerCase();
+          return name.includes(query) || phone.includes(query) || ville.includes(query) || service.includes(query) || msg.includes(query);
+        });
+
+        const tbody = document.getElementById('table-demandes-full-body');
+        if (!tbody) return;
+
+        if (filtered.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400 text-xs">Aucun résultat trouvé pour "${escapeHtml(query)}"</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = filtered.map(req => {
+          const name = req.nom || req.name || 'Famille';
+          const phone = req.telephone || req.phone || '—';
+          const quartier = req.ville || req.quartier || 'Yaoundé';
+          const service = req.type_besoin || req.service || 'Soins';
+          const dateRaw = req.created_at || req.date_reception;
+          const dateStr = dateRaw ? new Date(dateRaw).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '—';
+          const cleanPhone = phone.replace(/\D/g, '');
+
+          return `
+            <tr class="hover:bg-surface-container-low transition-colors cursor-pointer row-demande-item" data-id="${req.id}">
+              <td class="py-3 px-4 font-mono text-[11px] text-slate-500">${dateStr}</td>
+              <td class="py-3 px-4">
+                <div class="font-bold text-primary">${escapeHtml(name)}</div>
+                <div class="text-[10px] text-slate-400 truncate max-w-xs">${escapeHtml(req.message || '')}</div>
+              </td>
+              <td class="py-3 px-4 text-slate-700 font-semibold">${escapeHtml(phone)}</td>
+              <td class="py-3 px-4 text-slate-600">${escapeHtml(quartier)}</td>
+              <td class="py-3 px-4 font-semibold text-secondary">${escapeHtml(service)}</td>
+              <td class="py-3 px-4">${getStatusBadge(req.status)}</td>
+              <td class="py-3 px-6 text-right space-x-1.5" onclick="event.stopPropagation()">
+                <button class="btn-view-request-details px-2.5 py-1 rounded-lg bg-[#0d2040] hover:bg-[#1a365d] text-white text-[11px] font-bold inline-flex items-center gap-1 transition-all shadow-xs" data-id="${req.id}">
+                  <span class="material-symbols-outlined text-[13px]">visibility</span>
+                  <span>Détails</span>
+                </button>
+                <a href="https://wa.me/237${cleanPhone}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#25D366] text-white text-[11px] font-bold" title="WhatsApp">
+                  <span class="material-symbols-outlined text-[13px]">chat</span>
+                </a>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+        tbody.querySelectorAll('.btn-view-request-details').forEach(btn => {
+          btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const id = this.getAttribute('data-id');
+            openRequestDetailsModal(id);
+          });
+        });
       });
     }
   }
