@@ -76,6 +76,15 @@
       transition: opacity 700ms ease, transform 700ms ease;
     }
 
+    /* Ultra-HD 4K Photographic Background Rendering */
+    .hero-slide img {
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: high-quality;
+      transform: translate3d(0, 0, 0);
+      backface-visibility: hidden;
+      will-change: opacity;
+    }
+
     /* Asymmetric Hero Gradient: Midnight Navy at left -> 0% opacity at right */
     .hero-gradient-overlay {
       background: linear-gradient(
@@ -175,22 +184,56 @@
 
 <main>
   <!-- BEGIN: HeroCarouselSection -->
-  <section class="group relative min-h-[600px] lg:min-h-[680px] flex items-center overflow-hidden py-14 lg:py-20 bg-[#081729]" id="hero-carousel">
-    <!-- Slide 1 -->
-    <div class="hero-slide absolute inset-0 z-0 transition-opacity duration-1000 opacity-0 pointer-events-none" data-slide-index="0">
-      <img alt="Auxiliaire de santé bienveillante avec un aîné à domicile à Yaoundé - Akeva Sérénité" class="w-full h-full object-cover object-[right_center] transition-transform duration-[6000ms] ease-out" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBVAHYZUboCkT4mMJtT-tOuT0iZ0vNMEP-iNMnI7jOXyFZSUyuc8DeT_m3AgRiE4OshyOeKpEVLDWQwMqk3Ho9VVeiJkLFTxfwb6s3573z82cnvnslwOsRiyMOcfGlO7P7vOSkKzubaXRObuW3_2958eNo1mcYo7E8se03XMiqln_l9BLttKIG9_wsHgNhwvqpQeK0xyU8IuqKEJSClMRvCJTTyO6iuh1kq8gqnrDeGedu5RPE1Jn_q"/>
+  <section class="group relative min-h-[600px] lg:min-h-[700px] xl:min-h-[760px] 2xl:min-h-[820px] flex items-center overflow-hidden py-14 lg:py-24 bg-[#081729]" id="hero-carousel">
+    <!-- Slide 1 (Active 4K Master) -->
+    <div class="hero-slide absolute inset-0 z-0 transition-opacity duration-1000 opacity-100" data-slide-index="0">
+      <img alt="Auxiliaire de santé bienveillante avec un aîné à domicile à Yaoundé - Akeva Sérénité"
+           class="w-full h-full object-cover object-[right_center] transition-transform duration-[6000ms] ease-out select-none"
+           src="https://lh3.googleusercontent.com/aida-public/AB6AXuBVAHYZUboCkT4mMJtT-tOuT0iZ0vNMEP-iNMnI7jOXyFZSUyuc8DeT_m3AgRiE4OshyOeKpEVLDWQwMqk3Ho9VVeiJkLFTxfwb6s3573z82cnvnslwOsRiyMOcfGlO7P7vOSkKzubaXRObuW3_2958eNo1mcYo7E8se03XMiqln_l9BLttKIG9_wsHgNhwvqpQeK0xyU8IuqKEJSClMRvCJTTyO6iuh1kq8gqnrDeGedu5RPE1Jn_q=s0"
+           srcset="
+             https://lh3.googleusercontent.com/aida-public/AB6AXuBVAHYZUboCkT4mMJtT-tOuT0iZ0vNMEP-iNMnI7jOXyFZSUyuc8DeT_m3AgRiE4OshyOeKpEVLDWQwMqk3Ho9VVeiJkLFTxfwb6s3573z82cnvnslwOsRiyMOcfGlO7P7vOSkKzubaXRObuW3_2958eNo1mcYo7E8se03XMiqln_l9BLttKIG9_wsHgNhwvqpQeK0xyU8IuqKEJSClMRvCJTTyO6iuh1kq8gqnrDeGedu5RPE1Jn_q=w1920 1920w,
+             https://lh3.googleusercontent.com/aida-public/AB6AXuBVAHYZUboCkT4mMJtT-tOuT0iZ0vNMEP-iNMnI7jOXyFZSUyuc8DeT_m3AgRiE4OshyOeKpEVLDWQwMqk3Ho9VVeiJkLFTxfwb6s3573z82cnvnslwOsRiyMOcfGlO7P7vOSkKzubaXRObuW3_2958eNo1mcYo7E8se03XMiqln_l9BLttKIG9_wsHgNhwvqpQeK0xyU8IuqKEJSClMRvCJTTyO6iuh1kq8gqnrDeGedu5RPE1Jn_q=w2560 2560w,
+             https://lh3.googleusercontent.com/aida-public/AB6AXuBVAHYZUboCkT4mMJtT-tOuT0iZ0vNMEP-iNMnI7jOXyFZSUyuc8DeT_m3AgRiE4OshyOeKpEVLDWQwMqk3Ho9VVeiJkLFTxfwb6s3573z82cnvnslwOsRiyMOcfGlO7P7vOSkKzubaXRObuW3_2958eNo1mcYo7E8se03XMiqln_l9BLttKIG9_wsHgNhwvqpQeK0xyU8IuqKEJSClMRvCJTTyO6iuh1kq8gqnrDeGedu5RPE1Jn_q=w3840 3840w,
+             https://lh3.googleusercontent.com/aida-public/AB6AXuBVAHYZUboCkT4mMJtT-tOuT0iZ0vNMEP-iNMnI7jOXyFZSUyuc8DeT_m3AgRiE4OshyOeKpEVLDWQwMqk3Ho9VVeiJkLFTxfwb6s3573z82cnvnslwOsRiyMOcfGlO7P7vOSkKzubaXRObuW3_2958eNo1mcYo7E8se03XMiqln_l9BLttKIG9_wsHgNhwvqpQeK0xyU8IuqKEJSClMRvCJTTyO6iuh1kq8gqnrDeGedu5RPE1Jn_q=s0 4096w
+           "
+           sizes="100vw"
+           loading="eager"
+           fetchpriority="high"
+           decoding="async"/>
       <!-- Asymmetric progressive gradient: 98% dark navy at left -> 0% opacity at right (no overlay at right) -->
       <div class="hero-gradient-overlay absolute inset-0 pointer-events-none"></div>
     </div>
-    <!-- Slide 2 -->
-    <div class="hero-slide absolute inset-0 z-0 transition-opacity duration-1000 opacity-100" data-slide-index="1">
-      <img alt="Auxiliaire masculin aidant une personne âgée avec douceur - Akeva Sérénité" class="w-full h-full object-cover object-[right_center] transition-transform duration-[6000ms] ease-out" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBu1uzmMNyb_hlPD4e_VEtbJFKm1iSt3x8P7cAMWV02EDSWyifdpGm7_JiAx6Eldd0p_D2EwskOVCq3NZcjSC7kgg4X6459ubWzo0QWeFYfKSLnTl3AzQgecfsCAJoYJtkNnwOyKQ13FF3PTtCRjF3YuP9NIG_Gy_3DaZgWYU5TO-F4iKX5c9_K9fCzNQHNvq5mcDFoOWcHUGXTdF3sNF1y1g3EVkOwgakKCX6-w-M668qY2_qtq6Pf"/>
+    <!-- Slide 2 (4K Master) -->
+    <div class="hero-slide absolute inset-0 z-0 transition-opacity duration-1000 opacity-0 pointer-events-none" data-slide-index="1">
+      <img alt="Auxiliaire masculin aidant une personne âgée avec douceur - Akeva Sérénité"
+           class="w-full h-full object-cover object-[right_center] transition-transform duration-[6000ms] ease-out select-none"
+           src="https://lh3.googleusercontent.com/aida-public/AB6AXuBu1uzmMNyb_hlPD4e_VEtbJFKm1iSt3x8P7cAMWV02EDSWyifdpGm7_JiAx6Eldd0p_D2EwskOVCq3NZcjSC7kgg4X6459ubWzo0QWeFYfKSLnTl3AzQgecfsCAJoYJtkNnwOyKQ13FF3PTtCRjF3YuP9NIG_Gy_3DaZgWYU5TO-F4iKX5c9_K9fCzNQHNvq5mcDFoOWcHUGXTdF3sNF1y1g3EVkOwgakKCX6-w-M668qY2_qtq6Pf=s0"
+           srcset="
+             https://lh3.googleusercontent.com/aida-public/AB6AXuBu1uzmMNyb_hlPD4e_VEtbJFKm1iSt3x8P7cAMWV02EDSWyifdpGm7_JiAx6Eldd0p_D2EwskOVCq3NZcjSC7kgg4X6459ubWzo0QWeFYfKSLnTl3AzQgecfsCAJoYJtkNnwOyKQ13FF3PTtCRjF3YuP9NIG_Gy_3DaZgWYU5TO-F4iKX5c9_K9fCzNQHNvq5mcDFoOWcHUGXTdF3sNF1y1g3EVkOwgakKCX6-w-M668qY2_qtq6Pf=w1920 1920w,
+             https://lh3.googleusercontent.com/aida-public/AB6AXuBu1uzmMNyb_hlPD4e_VEtbJFKm1iSt3x8P7cAMWV02EDSWyifdpGm7_JiAx6Eldd0p_D2EwskOVCq3NZcjSC7kgg4X6459ubWzo0QWeFYfKSLnTl3AzQgecfsCAJoYJtkNnwOyKQ13FF3PTtCRjF3YuP9NIG_Gy_3DaZgWYU5TO-F4iKX5c9_K9fCzNQHNvq5mcDFoOWcHUGXTdF3sNF1y1g3EVkOwgakKCX6-w-M668qY2_qtq6Pf=w2560 2560w,
+             https://lh3.googleusercontent.com/aida-public/AB6AXuBu1uzmMNyb_hlPD4e_VEtbJFKm1iSt3x8P7cAMWV02EDSWyifdpGm7_JiAx6Eldd0p_D2EwskOVCq3NZcjSC7kgg4X6459ubWzo0QWeFYfKSLnTl3AzQgecfsCAJoYJtkNnwOyKQ13FF3PTtCRjF3YuP9NIG_Gy_3DaZgWYU5TO-F4iKX5c9_K9fCzNQHNvq5mcDFoOWcHUGXTdF3sNF1y1g3EVkOwgakKCX6-w-M668qY2_qtq6Pf=w3840 3840w,
+             https://lh3.googleusercontent.com/aida-public/AB6AXuBu1uzmMNyb_hlPD4e_VEtbJFKm1iSt3x8P7cAMWV02EDSWyifdpGm7_JiAx6Eldd0p_D2EwskOVCq3NZcjSC7kgg4X6459ubWzo0QWeFYfKSLnTl3AzQgecfsCAJoYJtkNnwOyKQ13FF3PTtCRjF3YuP9NIG_Gy_3DaZgWYU5TO-F4iKX5c9_K9fCzNQHNvq5mcDFoOWcHUGXTdF3sNF1y1g3EVkOwgakKCX6-w-M668qY2_qtq6Pf=s0 4096w
+           "
+           sizes="100vw"
+           loading="lazy"
+           decoding="async"/>
       <!-- Asymmetric progressive gradient: 98% dark navy at left -> 0% opacity at right (no overlay at right) -->
       <div class="hero-gradient-overlay absolute inset-0 pointer-events-none"></div>
     </div>
-    <!-- Slide 3 -->
+    <!-- Slide 3 (4K Master) -->
     <div class="hero-slide absolute inset-0 z-0 transition-opacity duration-1000 opacity-0 pointer-events-none" data-slide-index="2">
-      <img alt="Auxiliaire attentive et bienveillante - Akeva Sérénité" class="w-full h-full object-cover object-[right_center] transition-transform duration-[6000ms] ease-out" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvPLs8PaWXTQVEfQ7tZ8PO0UGDFWGUvngxke6p8M8-xYKckzMOx-uw-3oGnXnwpyqYx_3-RZAGEWYeb0iBWQIU30nFvI6SR1AbE-kH0Ji8uaF1_ejtssGZm6OpT0aA7NgMJyXTYaQIIXgE97VGIzP2siZyJ4JdKFFNn27n3n2SS7GnoyyzMrDRMGPJJOSPQeUm7eZo9FHU1mmmHtFyYMw55ItcelhkzoxZyJkGCrL9ylyfJkH2UP47"/>
+      <img alt="Auxiliaire attentive et bienveillante - Akeva Sérénité"
+           class="w-full h-full object-cover object-[right_center] transition-transform duration-[6000ms] ease-out select-none"
+           src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvPLs8PaWXTQVEfQ7tZ8PO0UGDFWGUvngxke6p8M8-xYKckzMOx-uw-3oGnXnwpyqYx_3-RZAGEWYeb0iBWQIU30nFvI6SR1AbE-kH0Ji8uaF1_ejtssGZm6OpT0aA7NgMJyXTYaQIIXgE97VGIzP2siZyJ4JdKFFNn27n3n2SS7GnoyyzMrDRMGPJJOSPQeUm7eZo9FHU1mmmHtFyYMw55ItcelhkzoxZyJkGCrL9ylyfJkH2UP47=s0"
+           srcset="
+             https://lh3.googleusercontent.com/aida-public/AB6AXuBvPLs8PaWXTQVEfQ7tZ8PO0UGDFWGUvngxke6p8M8-xYKckzMOx-uw-3oGnXnwpyqYx_3-RZAGEWYeb0iBWQIU30nFvI6SR1AbE-kH0Ji8uaF1_ejtssGZm6OpT0aA7NgMJyXTYaQIIXgE97VGIzP2siZyJ4JdKFFNn27n3n2SS7GnoyyzMrDRMGPJJOSPQeUm7eZo9FHU1mmmHtFyYMw55ItcelhkzoxZyJkGCrL9ylyfJkH2UP47=w1920 1920w,
+             https://lh3.googleusercontent.com/aida-public/AB6AXuBvPLs8PaWXTQVEfQ7tZ8PO0UGDFWGUvngxke6p8M8-xYKckzMOx-uw-3oGnXnwpyqYx_3-RZAGEWYeb0iBWQIU30nFvI6SR1AbE-kH0Ji8uaF1_ejtssGZm6OpT0aA7NgMJyXTYaQIIXgE97VGIzP2siZyJ4JdKFFNn27n3n2SS7GnoyyzMrDRMGPJJOSPQeUm7eZo9FHU1mmmHtFyYMw55ItcelhkzoxZyJkGCrL9ylyfJkH2UP47=w2560 2560w,
+             https://lh3.googleusercontent.com/aida-public/AB6AXuBvPLs8PaWXTQVEfQ7tZ8PO0UGDFWGUvngxke6p8M8-xYKckzMOx-uw-3oGnXnwpyqYx_3-RZAGEWYeb0iBWQIU30nFvI6SR1AbE-kH0Ji8uaF1_ejtssGZm6OpT0aA7NgMJyXTYaQIIXgE97VGIzP2siZyJ4JdKFFNn27n3n2SS7GnoyyzMrDRMGPJJOSPQeUm7eZo9FHU1mmmHtFyYMw55ItcelhkzoxZyJkGCrL9ylyfJkH2UP47=w3840 3840w,
+             https://lh3.googleusercontent.com/aida-public/AB6AXuBvPLs8PaWXTQVEfQ7tZ8PO0UGDFWGUvngxke6p8M8-xYKckzMOx-uw-3oGnXnwpyqYx_3-RZAGEWYeb0iBWQIU30nFvI6SR1AbE-kH0Ji8uaF1_ejtssGZm6OpT0aA7NgMJyXTYaQIIXgE97VGIzP2siZyJ4JdKFFNn27n3n2SS7GnoyyzMrDRMGPJJOSPQeUm7eZo9FHU1mmmHtFyYMw55ItcelhkzoxZyJkGCrL9ylyfJkH2UP47=s0 4096w
+           "
+           sizes="100vw"
+           loading="lazy"
+           decoding="async"/>
       <!-- Asymmetric progressive gradient: 98% dark navy at left -> 0% opacity at right (no overlay at right) -->
       <div class="hero-gradient-overlay absolute inset-0 pointer-events-none"></div>
     </div>
@@ -215,9 +258,9 @@
             La présence qui rassure, <br/><span class="italic font-normal text-[#dfb778]">l'accompagnement</span> qui honore.
           </h1>
           <div class="relative min-h-[44px]">
-            <p class="font-serif italic text-lg sm:text-xl text-[#f5dfb8] font-medium tracking-wide transition-all duration-500" id="hero-subquote" style="opacity: 1;">« Une présence continue, humaine et digne au quotidien »</p>
+            <p class="font-serif italic text-lg sm:text-xl text-[#f5dfb8] font-medium tracking-wide transition-all duration-500" id="hero-subquote" style="opacity: 1;">« Votre proche entre de bonnes mains »</p>
           </div>
-          <p class="text-slate-200 text-sm sm:text-[15px] leading-relaxed max-w-xl font-normal transition-all duration-500" id="hero-description" style="opacity: 1;">Garde bienveillante de jour, de nuit ou 24h/24 assurée par des auxiliaires dévoués et formés avec rigueur. Un soutien attentif respectant le rythme et les habitudes de votre proche.</p>
+          <p class="text-slate-200 text-sm sm:text-[15px] leading-relaxed max-w-xl font-normal transition-all duration-500" id="hero-description" style="opacity: 1;">Partenaire de confiance pour l'accompagnement et l'assistance non médicale à domicile et en milieu hospitalier des personnes vulnérables, aînées et convalescentes. Un relais dévoué pour les familles et la diaspora.</p>
           
           <!-- CTAs -->
           <div class="pt-2 flex flex-wrap gap-4 items-center">
@@ -256,8 +299,8 @@
 
     <!-- Carousel Dots -->
     <div class="absolute bottom-6 left-1/2 -translate-x-1/2 lg:left-8 lg:translate-x-0 z-20 flex items-center space-x-2.5 bg-black/40 px-4 py-2 rounded-full backdrop-blur-md border border-white/10">
-      <button aria-label="Slide 1" class="hero-dot h-2 rounded-full transition-all duration-300 focus:outline-none w-2.5 bg-white/40" data-slide-target="0"></button>
-      <button aria-label="Slide 2" class="hero-dot h-2 rounded-full hover:bg-white/75 transition-all duration-300 focus:outline-none w-8 bg-[#c99856]" data-slide-target="1"></button>
+      <button aria-label="Slide 1" class="hero-dot h-2 rounded-full transition-all duration-300 focus:outline-none w-8 bg-[#c99856]" data-slide-target="0"></button>
+      <button aria-label="Slide 2" class="hero-dot h-2 rounded-full hover:bg-white/75 transition-all duration-300 focus:outline-none w-2.5 bg-white/40" data-slide-target="1"></button>
       <button aria-label="Slide 3" class="hero-dot h-2 rounded-full hover:bg-white/75 transition-all duration-300 focus:outline-none w-2.5 bg-white/40" data-slide-target="2"></button>
     </div>
   </section>
