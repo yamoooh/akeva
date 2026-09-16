@@ -219,7 +219,7 @@
       rating: 5,
       comment: "Grâce à Akeva Sérénité, ma mère est entre de bonnes mains. Je peux travailler l'esprit tranquille, elle est épanouie et en sécurité.",
       date: "10 Septembre 2026",
-      avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuDHz9hfsmwME0in-VDBg2U2NO-1if3noxemRzYuXVxZSLoJNttmZPOsmTrBVQrH0TAjMRVt4n1gtZec2t32AJ33cqUR8rBF4W3xX6LvHbXltjGGYqUCGqCVPUMGU5CLLSwJwMtCCCK0j5_rA8bghFlylc7wS1aNVSMTTrUqrmRpgtSr4m1uE8b7e35O67kM1uZIOsvr_Z2trbJIy0FYyFBW6nYexbc34e1jFVjtPaPzBOItt8OIhBIq",
+      avatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuDHz9hfsmwME0in-VDBg2U2NO-1if3noxemRzYuXVxZSLoJNttmZPOsmTrBVQrH0TAjMRVt4n1gtZec2t32AJ33cqUR8rBF4W3xX6LvHbXltjGGYqUCGqCVPUMGU5CLLSwJwMtCCCK0j5_rA8bghFlylc7wS1aNVSMTTrUqrmRpgtSr4m1uE8b7e35O67kM1uZIOsvr_Z2trbJIy0FYyFBW6nYexbc34e1jFVjtPaPzBOItt8OIhBIq=s0",
       published: true
     },
     {
@@ -380,7 +380,7 @@
       id: "gal-1",
       title: "Aide et présence bienveillante auprès d'une aînée",
       media_type: "image",
-      media_url: "https://lh3.googleusercontent.com/aida-public/AB6AXuDHz9hfsmwME0in-VDBg2U2NO-1if3noxemRzYuXVxZSLoJNttmZPOsmTrBVQrH0TAjMRVt4n1gtZec2t32AJ33cqUR8rBF4W3xX6LvHbXltjGGYqUCGqCVPUMGU5CLLSwJwMtCCCK0j5_rA8bghFlylc7wS1aNVSMTTrUqrmRpgtSr4m1uE8b7e35O67kM1uZIOsvr_Z2trbJIy0FYyFBW6nYexbc34e1jFVjtPaPzBOItt8OIhBIq",
+      media_url: "https://lh3.googleusercontent.com/aida-public/AB6AXuDHz9hfsmwME0in-VDBg2U2NO-1if3noxemRzYuXVxZSLoJNttmZPOsmTrBVQrH0TAjMRVt4n1gtZec2t32AJ33cqUR8rBF4W3xX6LvHbXltjGGYqUCGqCVPUMGU5CLLSwJwMtCCCK0j5_rA8bghFlylc7wS1aNVSMTTrUqrmRpgtSr4m1uE8b7e35O67kM1uZIOsvr_Z2trbJIy0FYyFBW6nYexbc34e1jFVjtPaPzBOItt8OIhBIq=s0",
       category: "Accompagnement",
       caption: "Soutien émotionnel et moments d'échange chaleureux à domicile à Yaoundé."
     },
@@ -388,7 +388,7 @@
       id: "gal-2",
       title: "Soins et assistance à la mobilisation",
       media_type: "image",
-      media_url: "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=800&q=80",
+      media_url: "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=2560&q=90",
       category: "Soins",
       caption: "Gestes sécurisés et accompagnement des transferts par notre équipe formée."
     },
@@ -396,7 +396,7 @@
       id: "gal-3",
       title: "Suivi des constantes et carnet de santé",
       media_type: "image",
-      media_url: "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=800&q=80",
+      media_url: "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=2560&q=90",
       category: "Coordination",
       caption: "Relevé quotidien des constantes et surveillance médicale continue."
     },
@@ -404,7 +404,7 @@
       id: "gal-4",
       title: "Préparation de repas équilibrés",
       media_type: "image",
-      media_url: "https://images.unsplash.com/photo-1581056771107-24ca5f033842?auto=format&fit=crop&w=800&q=80",
+      media_url: "https://images.unsplash.com/photo-1581056771107-24ca5f033842?auto=format&fit=crop&w=2560&q=90",
       category: "Nutrition",
       caption: "Alimentation saine et respect des régimes spécifiques prescrits."
     }
@@ -415,7 +415,7 @@
       id: "rea-1",
       title: "Retour d'hospitalisation réussi après chirurgie orthopédique",
       quartier: "Ngousso (Proximité Hôpital Général)",
-      image_url: "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=800&q=80",
+      image_url: "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=2560&q=90",
       desc: "Prise en charge post-opératoire immédiate d'un aîné de 78 ans. Mobilisation progressive, surveillance des constantes et coordination avec l'équipe chirurgicale.",
       result: "Autonomie de marche retrouvée en 3 semaines, famille apaisée."
     },
@@ -423,7 +423,7 @@
       id: "rea-2",
       title: "Maintien à domicile d'une aînée avec soutien Diaspora",
       quartier: "Bastos",
-      image_url: "https://lh3.googleusercontent.com/aida-public/AB6AXuDHz9hfsmwME0in-VDBg2U2NO-1if3noxemRzYuXVxZSLoJNttmZPOsmTrBVQrH0TAjMRVt4n1gtZec2t32AJ33cqUR8rBF4W3xX6LvHbXltjGGYqUCGqCVPUMGU5CLLSwJwMtCCCK0j5_rA8bghFlylc7wS1aNVSMTTrUqrmRpgtSr4m1uE8b7e35O67kM1uZIOsvr_Z2trbJIy0FYyFBW6nYexbc34e1jFVjtPaPzBOItt8OIhBIq",
+      image_url: "https://lh3.googleusercontent.com/aida-public/AB6AXuDHz9hfsmwME0in-VDBg2U2NO-1if3noxemRzYuXVxZSLoJNttmZPOsmTrBVQrH0TAjMRVt4n1gtZec2t32AJ33cqUR8rBF4W3xX6LvHbXltjGGYqUCGqCVPUMGU5CLLSwJwMtCCCK0j5_rA8bghFlylc7wS1aNVSMTTrUqrmRpgtSr4m1uE8b7e35O67kM1uZIOsvr_Z2trbJIy0FYyFBW6nYexbc34e1jFVjtPaPzBOItt8OIhBIq=s0",
       desc: "Mise en place d'une garde continue 24h/24 avec relève soignée pour une dame de 84 ans dont les enfants résident en France et au Canada.",
       result: "Rapports WhatsApp hebdomadaires, 0 chute enregistrée depuis 6 mois."
     },
@@ -431,7 +431,7 @@
       id: "rea-3",
       title: "Veille nocturne sécurisée et apaisement des angoisses",
       quartier: "Omnisports",
-      image_url: "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=800&q=80",
+      image_url: "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=2560&q=90",
       desc: "Présence vigilante d'un auxiliaire chaque nuit de 20h à 6h pour un patient atteint de troubles cognitifs modérés.",
       result: "Nuits réparatrices, soulagement complet des aidants familiaux le jour."
     }
@@ -1636,7 +1636,7 @@
         const caption = document.getElementById('gal-input-caption').value.trim();
         const fileInput = document.getElementById('gal-input-file');
 
-        let media_url = urlInput || 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=800&q=80';
+        let media_url = urlInput || 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=2560&q=90';
         if (fileInput && fileInput.files && fileInput.files[0]) {
           media_url = await readFileAsDataURL(fileInput.files[0]);
         }
@@ -1682,7 +1682,7 @@
         const urlInput = document.getElementById('rea-input-url').value.trim();
         const fileInput = document.getElementById('rea-input-file');
 
-        let image_url = urlInput || 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=800&q=80';
+        let image_url = urlInput || 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=2560&q=90';
         if (fileInput && fileInput.files && fileInput.files[0]) {
           image_url = await readFileAsDataURL(fileInput.files[0]);
         }
