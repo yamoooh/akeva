@@ -102,7 +102,7 @@
     .custom-scrollbar::-webkit-scrollbar-track { background: #f0f3ff; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #c5c6cf; border-radius: 4px; }
     .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #75777f; }
-      img {
+    img {
       image-rendering: -webkit-optimize-contrast;
       image-rendering: high-quality;
     }
@@ -151,7 +151,7 @@
 
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">Adresse Email Super Admin</label>
-          <input type="email" id="setup-email" required placeholder="contact@akeva.online"
+          <input type="email" id="setup-email" required placeholder="contact@akevaserenite.online"
             class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-[#0d2040] focus:outline-none"/>
         </div>
 
@@ -204,7 +204,7 @@
       <form id="form-login" class="space-y-4">
         <div>
           <label class="block text-xs font-bold text-slate-700 mb-1">Email Administrateur</label>
-          <input type="email" id="login-email" required placeholder="contact@akeva.online"
+          <input type="email" id="login-email" required placeholder="contact@akevaserenite.online"
             class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-[#0d2040] focus:outline-none"/>
         </div>
 
@@ -257,7 +257,7 @@
         </div>
         <div class="flex items-center gap-2 font-bold text-primary">
           <span class="material-symbols-outlined text-base text-secondary">mail</span>
-          <span>Support Direction : contact@akevaserenite.cm</span>
+          <span>Support Direction : contact@akevaserenite.online</span>
         </div>
       </div>
       <div class="flex gap-2 justify-center pt-2">
@@ -706,20 +706,50 @@
               <p class="text-xs text-slate-500 mt-1">Suivi individualisé des personnes vulnérables accompagnées à domicile à Yaoundé, familles et soignants délégués.</p>
             </div>
             <div class="flex flex-wrap items-center gap-3">
-              <button id="btn-add-beneficiaire-modal" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary-container text-on-primary hover:bg-primary text-xs font-bold shadow-md transition-all">
+              <button id="btn-export-beneficiaires-csv" class="flex items-center gap-2 px-3.5 py-2.5 rounded-lg bg-surface-container hover:bg-surface-variant text-on-surface text-xs font-bold transition-all shadow-sm">
+                <span class="material-symbols-outlined text-base">download</span>
+                <span>Exporter CSV</span>
+              </button>
+              <button id="btn-open-add-beneficiaire" class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary-container text-on-primary hover:bg-primary text-xs font-bold shadow-md transition-all">
                 <span class="material-symbols-outlined text-base text-secondary-fixed">person_add</span>
-                <span>+ Enregistrer un Bénéficiaire</span>
+                <span>+ Nouveau Bénéficiaire</span>
               </button>
             </div>
           </div>
 
-          <div id="grid-beneficiaires-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Dynamique -->
+          <div class="bg-surface-container-lowest p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3 w-full sm:w-80">
+              <span class="material-symbols-outlined text-slate-400 text-lg">search</span>
+              <input id="search-beneficiaires" type="text" placeholder="Rechercher bénéficiaire, quartier, pathologie..."
+                class="w-full text-xs bg-transparent border-none outline-none text-primary"/>
+            </div>
+            <span class="text-xs text-slate-500 font-mono" id="label-total-beneficiaires">0 bénéficiaires enregistrés</span>
+          </div>
+
+          <div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-surface-container-low text-on-surface-variant text-[11px] uppercase tracking-wider font-bold">
+                  <tr>
+                    <th class="py-3.5 px-4">Bénéficiaire / Âge</th>
+                    <th class="py-3.5 px-4">Quartier (Yaoundé)</th>
+                    <th class="py-3.5 px-4">Pathologie / Besoin</th>
+                    <th class="py-3.5 px-4">Formule Attribuée</th>
+                    <th class="py-3.5 px-4">Soignant Responsable</th>
+                    <th class="py-3.5 px-4">Contact Référent</th>
+                    <th class="py-3.5 px-6 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="table-beneficiaires-body" class="divide-y divide-slate-100">
+                  <!-- Dynamique -->
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
         <!-- =================================================================== -->
-        <!-- VUE 4 : GESTION DES SERVICES                                        -->
+        <!-- VUE 4 : GESTION DES SERVICES / PRESTATIONS                          -->
         <!-- =================================================================== -->
         <div id="view-services" class="stitch-view hidden flex flex-col w-full space-y-6 pb-12">
           <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
@@ -727,14 +757,14 @@
               <div class="flex items-center gap-2 text-xs text-slate-500 mb-1">
                 <span>Gestion Opérationnelle</span>
                 <span class="material-symbols-outlined text-xs">chevron_right</span>
-                <span class="text-primary font-bold">Services & Tarification</span>
+                <span class="text-primary font-bold">Formules de Garde</span>
               </div>
-              <h1 class="font-headline text-2xl sm:text-3xl font-bold text-primary">Catalogue & Tarification des Services</h1>
-              <p class="text-xs text-slate-500 mt-1">Modifiez les intitulés, horaires, descriptions et tarifs affichés sur le site public.</p>
+              <h1 class="font-headline text-2xl sm:text-3xl font-bold text-primary">Gestion des Services & Formules de Soins</h1>
+              <p class="text-xs text-slate-500 mt-1">Configurez les formules présentées sur la page publique (`services.html`) et leurs descriptifs.</p>
             </div>
-            <button id="btn-add-service" class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary-container text-on-primary hover:bg-primary text-xs font-bold shadow-md">
+            <button id="btn-new-service-modal" class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary-container text-on-primary hover:bg-primary text-xs font-bold shadow-md">
               <span class="material-symbols-outlined text-lg text-secondary-fixed">add_circle</span>
-              <span>+ Créer un Nouveau Service</span>
+              <span>+ Créer une Formule de Soin</span>
             </button>
           </div>
 
@@ -744,46 +774,44 @@
         </div>
 
         <!-- =================================================================== -->
-        <!-- VUE 5 : TÉMOIGNAGES & MODÉRATION                                    -->
+        <!-- VUE 5 : GESTION DES TÉMOIGNAGES (MODÉRATION & AJOUT)                -->
         <!-- =================================================================== -->
-        <div id="view-temoignages" class="stitch-view hidden flex flex-col w-full space-y-8 pb-12">
+        <div id="view-temoignages" class="stitch-view hidden flex flex-col w-full space-y-6 pb-12">
           <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
             <div>
               <div class="flex items-center gap-2 text-xs text-slate-500 mb-1">
                 <span>Contenus & Médias</span>
                 <span class="material-symbols-outlined text-xs">chevron_right</span>
-                <span class="text-primary font-bold">Modération & Témoignages</span>
+                <span class="text-primary font-bold">Témoignages & Avis</span>
               </div>
-              <h1 class="font-headline text-2xl sm:text-3xl font-bold text-primary">Gestion & Modération des Témoignages</h1>
-              <p class="text-xs text-slate-500 mt-1">Validez les avis soumis par les visiteurs du site public ou ajoutez les témoignages reçus directement.</p>
+              <h1 class="font-headline text-2xl sm:text-3xl font-bold text-primary">Modération & Gestion des Avis Familles</h1>
+              <p class="text-xs text-slate-500 mt-1">Validez les avis soumis par les familles ou ajoutez de nouveaux retours d'expérience.</p>
             </div>
-            <button id="btn-add-temoignage" class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary-container text-on-primary hover:bg-primary text-xs font-bold shadow-md">
-              <span class="material-symbols-outlined text-lg text-secondary-fixed">rate_review</span>
-              <span>+ Ajouter un Témoignage Manuellement</span>
+            <button id="btn-open-add-temoignage" class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary-container text-on-primary hover:bg-primary text-xs font-bold shadow-md">
+              <span class="material-symbols-outlined text-lg text-secondary-fixed">add_comment</span>
+              <span>+ Ajouter un Témoignage</span>
             </button>
           </div>
 
-          <!-- Section 1 : Témoignages en Attente de Modération -->
-          <div id="section-pending-temoignages" class="bg-amber-50/60 p-6 rounded-3xl border border-amber-200/80 space-y-4">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="w-3 h-3 rounded-full bg-amber-500 animate-pulse"></span>
-                <h3 class="font-headline text-base font-bold text-amber-950">Avis Soumis en Attente de Modération</h3>
-                <span id="count-pending-temoignages" class="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-200 text-amber-900">0</span>
-              </div>
-              <span class="text-xs text-amber-800 font-medium">Les témoignages validés apparaîtront automatiquement sur le site public.</span>
+          <!-- Section En Attente de Validation -->
+          <div id="section-pending-temoignages" class="hidden bg-amber-50/80 border border-amber-200/80 p-6 rounded-3xl space-y-4">
+            <div class="flex items-center gap-2 text-amber-900 font-bold text-sm">
+              <span class="material-symbols-outlined text-amber-700">pending_actions</span>
+              <span>Avis Déposés en Ligne — En Attente de Validation</span>
             </div>
-
-            <div id="grid-pending-temoignages-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <!-- Dynamique -->
+            <div id="grid-pending-temoignages" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <!-- Dynamique (En attente) -->
             </div>
           </div>
 
-          <!-- Section 2 : Témoignages Publiés sur le Site Public -->
+          <!-- Section Témoignages Publiés -->
           <div class="space-y-4">
-            <h3 class="font-headline text-lg font-bold text-primary">Témoignages Actuellement Publiés sur le Site Public</h3>
+            <h3 class="font-headline text-base font-bold text-primary flex items-center gap-2">
+              <span class="material-symbols-outlined text-secondary text-lg">verified</span>
+              <span>Témoignages Officiellement Publiés sur le Site</span>
+            </h3>
             <div id="grid-temoignages-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <!-- Dynamique -->
+              <!-- Dynamique (Publiés) -->
             </div>
           </div>
         </div>
@@ -916,7 +944,7 @@
                 </div>
                 <div>
                   <label class="block text-xs font-bold text-slate-700 mb-1">Email Officiel</label>
-                  <input type="email" id="param-email" class="w-full px-4 py-2.5 rounded-xl bg-surface-container-low text-xs font-semibold border border-slate-200" value="contact@akevaserenite.cm"/>
+                  <input type="email" id="param-email" class="w-full px-4 py-2.5 rounded-xl bg-surface-container-low text-xs font-semibold border border-slate-200" value="contact@akevaserenite.online"/>
                 </div>
               </div>
 
@@ -1469,130 +1497,131 @@
       <form id="form-add-admin" class="space-y-3 text-xs">
         <div>
           <label class="block font-bold text-slate-700 mb-1">Nom Complet</label>
-          <input type="text" id="new-admin-fullname" required placeholder="Ex: Dr. Carine Mbarga" class="w-full px-3 py-2 rounded-xl border border-slate-200"/>
+          <input type="text" id="new-admin-fullname" required placeholder="Ex: Dr. Martin Eba" class="w-full px-3 py-2 rounded-xl border border-slate-200"/>
         </div>
         <div>
-          <label class="block font-bold text-slate-700 mb-1">Adresse Email Administrateur</label>
-          <input type="email" id="new-admin-email" required placeholder="admin2@akeva.online" class="w-full px-3 py-2 rounded-xl border border-slate-200"/>
+          <label class="block font-bold text-slate-700 mb-1">Adresse Email</label>
+          <input type="email" id="new-admin-email" required placeholder="martin@akeva.online" class="w-full px-3 py-2 rounded-xl border border-slate-200"/>
         </div>
         <div>
           <label class="block font-bold text-slate-700 mb-1">Rôle Attribué</label>
-          <select id="new-admin-role" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold text-primary">
-            <option value="Administrateur Adjoint">Administrateur Adjoint (Gestion Opérationnelle)</option>
-            <option value="Coordinateur Médical">Coordinateur Médical (Suivi Bénéficiaires)</option>
-            <option value="Opérateur Saisie">Opérateur Saisie (Demandes & Médias)</option>
-            <option value="Super Admin">Super Admin (Tous droits)</option>
+          <select id="new-admin-role" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-semibold">
+            <option value="Coordinateur Médical">Coordinateur Médical</option>
+            <option value="Opérateur de Permanence">Opérateur de Permanence</option>
+            <option value="Super Admin">Super Admin</option>
           </select>
         </div>
         <div>
-          <label class="block font-bold text-slate-700 mb-1">Mot de Passe Initial (min 6 caractères)</label>
+          <label class="block font-bold text-slate-700 mb-1">Mot de Passe Initial</label>
           <div class="relative flex items-center">
-            <input type="password" id="new-admin-password" required minlength="6" placeholder="Mot de passe temporaire" class="w-full px-3 py-2 pr-8 rounded-xl border border-slate-200"/>
-            <button type="button" class="btn-toggle-password absolute right-2.5 text-slate-400" data-target="new-admin-password">
+            <input type="password" id="new-admin-password" required minlength="6" placeholder="Min 6 caractères" class="w-full px-3 py-2 pr-10 rounded-xl border border-slate-200"/>
+            <button type="button" class="btn-toggle-password absolute right-3 text-slate-400" data-target="new-admin-password">
               <span class="material-symbols-outlined text-base">visibility</span>
             </button>
           </div>
         </div>
         <div class="pt-3 flex justify-end gap-2">
           <button type="button" id="btn-cancel-modal-add-admin" class="px-4 py-2 rounded-xl bg-slate-100 font-bold">Annuler</button>
-          <button type="submit" class="px-5 py-2 rounded-xl bg-primary-container text-white font-bold">Créer le Compte</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-primary-container text-white font-bold">Créer le compte</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- ========================================================================= -->
-  <!-- MODAL : ENREGISTRER UNE URGENCE (FORMULAIRE MANUEL)                      -->
+  <!-- MODAL : ENREGISTRER UNE URGENCE MANUELLE (DEMANDE)                         -->
   <!-- ========================================================================= -->
   <div id="modal-nouvelle-urgence" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 hidden backdrop-blur-xs">
     <div class="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl">
       <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
-        <h3 class="font-headline text-lg font-bold text-primary flex items-center gap-2">
-          <span class="material-symbols-outlined text-secondary">emergency</span>
-          Enregistrer une Urgence / Appel Direct
-        </h3>
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-red-600">emergency</span>
+          <h3 class="font-headline text-lg font-bold text-primary">Enregistrer une Demande / Urgence</h3>
+        </div>
         <button id="btn-close-modal-urgence" class="p-1 text-slate-400 hover:text-slate-600">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
       <form id="form-nouvelle-urgence" class="space-y-3 text-xs">
         <div>
-          <label class="block font-bold text-slate-700 mb-1">Nom du Demandeur / Famille</label>
-          <input type="text" id="urg-input-name" required placeholder="Ex: Famille Nguema" class="w-full px-3 py-2 rounded-xl border border-slate-200"/>
+          <label class="block font-bold text-slate-700 mb-1">Nom du Demandeur & Famille</label>
+          <input type="text" id="urg-input-name" required class="w-full px-3 py-2 rounded-xl border border-slate-200" placeholder="Ex: Mme Fouda"/>
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block font-bold text-slate-700 mb-1">Téléphone de Contact</label>
-            <input type="text" id="urg-input-phone" required placeholder="Ex: 699 12 45 88" class="w-full px-3 py-2 rounded-xl border border-slate-200"/>
+            <label class="block font-bold text-slate-700 mb-1">Numéro Téléphone</label>
+            <input type="text" id="urg-input-phone" required class="w-full px-3 py-2 rounded-xl border border-slate-200" placeholder="Ex: 699 12 45 88"/>
           </div>
           <div>
-            <label class="block font-bold text-slate-700 mb-1">Quartier à Yaoundé</label>
-            <input type="text" id="urg-input-quartier" required placeholder="Ex: Ngousso" class="w-full px-3 py-2 rounded-xl border border-slate-200"/>
+            <label class="block font-bold text-slate-700 mb-1">Quartier (Yaoundé)</label>
+            <input type="text" id="urg-input-quartier" required class="w-full px-3 py-2 rounded-xl border border-slate-200" placeholder="Ex: Ngousso"/>
           </div>
         </div>
         <div>
-          <label class="block font-bold text-slate-700 mb-1">Prestation Souhaitée</label>
+          <label class="block font-bold text-slate-700 mb-1">Type de Prestation</label>
           <select id="urg-input-service" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-semibold">
-            <option value="Garde Continue 24h/24">Garde Continue 24h/24 (Urgence)</option>
+            <option value="Garde Continue 24h/24 & Grande Dépendance">Garde Continue 24h/24 & Grande Dépendance</option>
             <option value="Garde & Veille de Nuit Sécurisée">Garde & Veille de Nuit Sécurisée</option>
-            <option value="Accompagnement des Personnes Âgées">Accompagnement des Personnes Âgées (Jour)</option>
+            <option value="Accompagnement des Personnes Âgées">Accompagnement des Personnes Âgées</option>
             <option value="Convalescence & Retour d'Hospitalisation">Convalescence & Retour d'Hospitalisation</option>
             <option value="Programme Familles de la Diaspora">Programme Familles de la Diaspora</option>
           </select>
         </div>
         <div>
-          <label class="block font-bold text-slate-700 mb-1">Remarques / Besoins Spécifiques</label>
-          <textarea id="urg-input-message" rows="3" placeholder="Description de la situation..." class="w-full p-3 rounded-xl border border-slate-200"></textarea>
+          <label class="block font-bold text-slate-700 mb-1">Précisions sur la situation</label>
+          <textarea id="urg-input-message" rows="3" class="w-full p-3 rounded-xl border border-slate-200" placeholder="Degré d'urgence, antécédents, besoins particuliers..."></textarea>
         </div>
         <div class="pt-3 flex justify-end gap-2">
           <button type="button" id="btn-cancel-modal-urgence" class="px-4 py-2 rounded-xl bg-slate-100 font-bold">Annuler</button>
-          <button type="submit" class="px-5 py-2 rounded-xl bg-primary-container text-white font-bold">Créer la Fiche Urgente</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-primary-container text-white font-bold">Créer le dossier</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- ========================================================================= -->
-  <!-- MODAL : AJUSTEMENT DES INDICATEURS CLÉS (KPIS)                           -->
+  <!-- MODAL : AJUSTER LES INDICATEURS CLÉS                                      -->
   <!-- ========================================================================= -->
   <div id="modal-edit-stats" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 hidden backdrop-blur-xs">
-    <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl">
+    <div class="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl">
       <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
-        <h3 class="font-headline text-lg font-bold text-primary">Ajuster les Indicateurs Clés</h3>
+        <h3 class="font-headline text-lg font-bold text-primary">Ajuster les Indicateurs du Dashboard</h3>
         <button id="btn-close-modal-stats" class="p-1 text-slate-400 hover:text-slate-600">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
       <form id="form-stats-custom" class="space-y-3 text-xs">
-        <div>
-          <label class="block font-bold text-slate-700 mb-1">Visiteurs Uniques (Total)</label>
-          <input type="number" id="stats-input-visiteurs" value="4820" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold"/>
-        </div>
-        <div>
-          <label class="block font-bold text-slate-700 mb-1">Demandes de Soins</label>
-          <input type="number" id="stats-input-demandes" value="68" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold"/>
-        </div>
-        <div>
-          <label class="block font-bold text-slate-700 mb-1">Clics WhatsApp</label>
-          <input type="number" id="stats-input-whatsapp" value="342" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold"/>
-        </div>
-        <div>
-          <label class="block font-bold text-slate-700 mb-1">Appels d'Urgence</label>
-          <input type="number" id="stats-input-appels" value="129" class="w-full px-3 py-2 rounded-xl border border-slate-200 font-bold"/>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Visiteurs Uniques</label>
+            <input type="number" id="stats-input-visiteurs" class="w-full px-3 py-2 rounded-xl border border-slate-200" value="4820"/>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Total Dossiers</label>
+            <input type="number" id="stats-input-demandes" class="w-full px-3 py-2 rounded-xl border border-slate-200" value="68"/>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Clics WhatsApp</label>
+            <input type="number" id="stats-input-whatsapp" class="w-full px-3 py-2 rounded-xl border border-slate-200" value="342"/>
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Appels d'Urgence</label>
+            <input type="number" id="stats-input-appels" class="w-full px-3 py-2 rounded-xl border border-slate-200" value="129"/>
+          </div>
         </div>
         <div class="pt-3 flex justify-end gap-2">
           <button type="button" id="btn-cancel-modal-stats" class="px-4 py-2 rounded-xl bg-slate-100 font-bold">Annuler</button>
-          <button type="submit" class="px-5 py-2 rounded-xl bg-primary-container text-white font-bold">Enregistrer les Chiffres</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-primary-container text-white font-bold">Appliquer</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- ========================================================================= -->
-  <!-- MODAL : DÉTAILS COMPLETS D'UNE DEMANDE                                    -->
+  <!-- MODAL : DÉTAILS COMPLETS DE LA DEMANDE                                   -->
   <!-- ========================================================================= -->
-  <div id="modal-request-details" class="fixed inset-0 bg-slate-900/70 z-50 flex items-center justify-center p-4 hidden backdrop-blur-xs">
-    <div class="bg-white rounded-3xl p-6 md:p-8 max-w-2xl w-full shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
+  <div id="modal-request-details" class="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 hidden backdrop-blur-xs">
+    <div class="bg-white rounded-3xl p-6 md:p-8 max-w-2xl w-full shadow-2xl overflow-y-auto max-h-[90vh]">
       
       <!-- En-tête -->
       <div class="flex items-start justify-between pb-4 mb-6 border-b border-slate-100">
