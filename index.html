@@ -258,13 +258,16 @@
             <span class="w-2 h-2 rounded-full bg-[#c99856] animate-pulse"></span>
             <span class="text-[11px] sm:text-xs uppercase tracking-[0.22em] text-[#dfb778] font-semibold">AKEVA SÉRÉNITÉ • 24H/24 — 7J/7 • NGOUSSO, YAOUNDÉ</span>
           </div>
-          <h1 class="font-serif-title text-4xl sm:text-5xl lg:text-[52px] leading-[1.14] text-white font-bold tracking-tight drop-shadow-sm">
-            La présence qui rassure, <br/><span class="italic font-normal text-[#dfb778]">l'accompagnement</span> qui honore.
+          <h1 class="font-serif-title text-3xl sm:text-4xl lg:text-[46px] leading-[1.18] text-white font-bold tracking-tight drop-shadow-sm">
+            Votre proche a besoin de vous, <br/><span class="text-[#dfb778] italic font-normal">mais vous ne pouvez pas être présent&nbsp;?</span>
           </h1>
-          <div class="relative min-h-[44px]">
-            <p class="font-serif italic text-lg sm:text-xl text-[#f5dfb8] font-medium tracking-wide transition-all duration-500" id="hero-subquote" style="opacity: 1;">« Votre proche entre de bonnes mains »</p>
+          <div class="relative min-h-[40px]">
+            <p class="font-serif text-xl sm:text-2xl text-[#f5dfb8] font-bold tracking-wide transition-all duration-500 flex items-center gap-2.5" id="hero-subquote" style="opacity: 1;">
+              <span class="w-2.5 h-2.5 rounded-full bg-[#c99856] inline-block flex-shrink-0"></span>
+              <span>Akeva Sérénité est à ses côtés.</span>
+            </p>
           </div>
-          <p class="text-slate-200 text-sm sm:text-[15px] leading-relaxed max-w-xl font-normal transition-all duration-500" id="hero-description" style="opacity: 1;">Partenaire de confiance pour l'accompagnement et l'assistance non médicale à domicile et en milieu hospitalier des personnes vulnérables, aînées et convalescentes. Un relais dévoué pour les familles et la diaspora.</p>
+          <p class="text-slate-200 text-sm sm:text-[15px] leading-relaxed max-w-xl font-normal transition-all duration-500" id="hero-description" style="opacity: 1;">À l’hôpital comme à domicile, nos accompagnants assurent une présence humaine, attentive et professionnelle auprès de votre proche.<br class="my-1.5"/><span class="text-slate-300 font-medium">Vous restez informé et rassuré grâce à un suivi régulier, même lorsque vous êtes loin.</span></p>
           
           <!-- CTAs -->
           <div class="pt-2 flex flex-wrap gap-4 items-center">
@@ -982,15 +985,15 @@
 
     const slideContent = [
       {
-        quote: "« Votre proche entre de bonnes mains »",
-        desc: "Partenaire de confiance pour l'accompagnement et l'assistance non médicale à domicile et en milieu hospitalier des personnes vulnérables, aînées et convalescentes. Un relais dévoué pour les familles et la diaspora."
+        quote: "Akeva Sérénité est à ses côtés.",
+        desc: "À l’hôpital comme à domicile, nos accompagnants assurent une présence humaine, attentive et professionnelle auprès de votre proche. Vous restez informé et rassuré grâce à un suivi régulier, même lorsque vous êtes loin."
       },
       {
-        quote: "« Une présence continue, humaine et digne au quotidien »",
-        desc: "Garde bienveillante de jour, de nuit ou 24h/24 assurée par des auxiliaires dévoués et formés avec rigueur. Un soutien attentif respectant le rythme et les habitudes de votre proche."
+        quote: "Une présence humaine, bienveillante et continue.",
+        desc: "Garde de jour, de nuit ou 24h/24 assurée par des auxiliaires dévoués et formés avec rigueur. Un soutien attentif et digne respectant le rythme et les habitudes de votre proche."
       },
       {
-        quote: "« La tranquillité d'esprit pour vous et la diaspora »",
+        quote: "La tranquillité d'esprit pour vous et la diaspora.",
         desc: "Même à distance ou absorbé par vos obligations, restez connecté à la santé et au bien-être de vos parents grâce à nos comptes-rendus réguliers et notre coordination 7j/7."
       }
     ];
@@ -1020,7 +1023,7 @@
         subquote.style.opacity = '0';
         description.style.opacity = '0';
         setTimeout(() => {
-          subquote.textContent = slideContent[newIndex].quote;
+          subquote.innerHTML = '<span class="w-2.5 h-2.5 rounded-full bg-[#c99856] inline-block flex-shrink-0"></span><span>' + slideContent[newIndex].quote + '</span>';
           description.textContent = slideContent[newIndex].desc;
           subquote.style.opacity = '1';
           description.style.opacity = '1';
