@@ -1,13 +1,18 @@
 /**
- * Gestion du Formulaire de Contact Akeva Sérénité
+ * AKEVA SÉRÉNITÉ — Gestionnaire du Formulaire d'Évaluation & Demande d'Accompagnement
+ * Double transmission :
+ * 1. Enregistrement direct dans le Back-Office (Supabase DB + LocalStorage)
+ * 2. Envoi automatique et instantané par Email à contact@akevaserenite.online
  */
 
 document.addEventListener('DOMContentLoaded', function () {
   var contactForm = document.getElementById('akeva-contact-form');
   var formFeedback = document.getElementById('form-feedback');
+  var OFFICIAL_EMAIL = "contact@akevaserenite.online";
 
   if (!contactForm) return;
 
+  // Pré-sélection éventuelle du type de besoin depuis l'URL (?service=...)
   var urlParams = new URLSearchParams(window.location.search);
   var serviceParam = urlParams.get('service');
   if (serviceParam) {
@@ -23,6 +28,49 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+  /**
+   * Fonction d'envoi automatique de l'email à la coordination
+   */
+  async function sendAutomaticEmail(data) {
+    try {
+      var dateFormatted = new Date().toLocaleString('fr-FR', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      var payload = {
+        _subject: "🚨 [Demande d'Accompagnement Akeva] " + (data.nom || 'Famille') + " — " + (data.type_besoin || 'Général'),
+        _template: "table",
+        _captcha: "false",
+        "Nom et Prénom du demandeur": data.nom || 'Non spécifié',
+        "Numéro de Téléphone": data.telephone || 'Non spécifié',
+        "Ville / Quartier": data.ville || 'Non spécifié',
+        "Formule d'accompagnement souhaitée": data.type_besoin || 'Non spécifié',
+        "Date souhaitée de démarrage": data.date_souhaitee || 'Dès que possible',
+        "Précisions sur la situation du proche": data.message || 'Aucune précision complémentaire',
+        "Date et heure de transmission": dateFormatted,
+        "Statut Back-Office": "Dossier enregistré dans la base de données Supabase / Espace Admin"
+      };
+
+      var res = await fetch("https://formsubmit.co/ajax/" + encodeURIComponent(OFFICIAL_EMAIL), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      return res.ok;
+    } catch (err) {
+      console.warn("Notification email warning:", err);
+      return false;
+    }
+  }
+
   contactForm.addEventListener('submit', async function (e) {
     e.preventDefault();
 
@@ -30,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var originalBtnText = submitBtn ? submitBtn.innerHTML : '';
     if (submitBtn) {
       submitBtn.disabled = true;
-      submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span> Envoi en cours...';
+      submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span> Transmission en cours...';
     }
 
     var nom = (document.getElementById('nom') || {}).value || '';
@@ -49,18 +97,25 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
+    var requestPayload = {
+      nom: nom.trim(),
+      telephone: telephone.trim(),
+      ville: ville.trim(),
+      type_besoin: type_besoin.trim(),
+      date_souhaitee: date_souhaitee.trim(),
+      message: message.trim()
+    };
+
     try {
+      // 1. Enregistrement direct dans le Back-Office (Supabase + LocalStorage)
       if (window.AkevaDB) {
-        await AkevaDB.addRequest({
-          nom: nom,
-          telephone: telephone,
-          ville: ville,
-          type_besoin: type_besoin,
-          date_souhaitee: date_souhaitee,
-          message: message
-        });
+        await AkevaDB.addRequest(requestPayload);
       }
 
+      // 2. Envoi automatique et instantané par Email à contact@akevaserenite.online
+      await sendAutomaticEmail(requestPayload);
+
+      // 3. Affichage du feedback de succès
       if (formFeedback) {
         formFeedback.classList.remove('hidden');
         formFeedback.innerHTML = `
@@ -69,8 +124,11 @@ document.addEventListener('DOMContentLoaded', function () {
               <span class="material-symbols-outlined text-[28px]">verified</span>
               <h4 class="font-bold text-[18px]">Demande transmise avec succès !</h4>
             </div>
-            <p class="text-[14px] text-white/90 mb-4 leading-relaxed">
-              Merci <strong>${nom}</strong>. Notre équipe de coordination de Yaoundé a bien reçu votre demande pour <strong>${type_besoin || 'votre proche'}</strong> et vous contactera dans les plus brefs délais au <strong>${telephone}</strong>.
+            <p class="text-[14px] text-white/90 mb-3 leading-relaxed">
+              Merci <strong>${escapeHtml(nom)}</strong>. Votre dossier pour <strong>${escapeHtml(type_besoin || 'votre proche')}</strong> a bien été enregistré dans notre <strong>Back-Office</strong> et transmis par email à <strong>${OFFICIAL_EMAIL}</strong>.
+            </p>
+            <p class="text-[12.5px] text-emerald-200 mb-5">
+              Notre équipe de coordination de Yaoundé vous contactera dans les plus brefs délais au <strong>${escapeHtml(telephone)}</strong>.
             </p>
             <div class="flex flex-wrap gap-3">
               <a href="https://wa.me/237697572685?text=${encodeURIComponent("Bonjour Akeva Sérénité, je viens de vous soumettre une demande sur le site pour : " + nom + " (" + telephone + ") - " + type_besoin)}"
@@ -87,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function () {
         `;
         contactForm.style.display = 'none';
       } else {
-        alert("Votre demande a bien été enregistrée. L'équipe Akeva Sérénité vous contactera sous peu.");
+        alert("Votre demande a bien été enregistrée et transmise par email à la coordination Akeva Sérénité.");
         contactForm.reset();
       }
 
@@ -101,4 +159,14 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
   });
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
 });
