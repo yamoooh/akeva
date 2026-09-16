@@ -76,10 +76,12 @@
       transition: opacity 700ms ease, transform 700ms ease;
     }
 
-    /* Ultra-HD 4K Photographic Background Rendering */
-    .hero-slide img {
+    /* Ultra-HD 4K Photographic Rendering */
+    img {
       image-rendering: -webkit-optimize-contrast;
       image-rendering: high-quality;
+    }
+    .hero-slide img {
       transform: translate3d(0, 0, 0);
       backface-visibility: hidden;
       will-change: opacity;
@@ -356,19 +358,46 @@
             <div class="relative w-full h-64 rounded-2xl overflow-hidden mb-6 shadow-inner border border-white/10 group" id="solutions-carousel">
               <!-- Slide 1 -->
               <div class="solution-slide absolute inset-0 z-10 transition-opacity duration-700 opacity-100" data-sol-index="0">
-                <img alt="Accompagnement bienveillant et complice" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1XzB4MSYq6Nw3dq1B8Xh37xAkFy1xI-ULEeT6wu1q2iHYycExa8Spws3nsdFqQnoNdYhkard64qQdQubHnjAQ4qMjba45-CyixPtdCm_lXtaFE4oiZwGkGaaZeKq0-AEkNAMwi-TjksKtg1d0FWO-J7xNYtUY9ARbw6bwCVrHqxnac_8Rt0z5vwrPrVeb24AqO_25puMafDFkoFtbROJzi4d2P45Y_Hot-NpCiEwQ6pgzvYe3DPyUX7la4"/>
+                <img alt="Accompagnement bienveillant et complice" class="w-full h-full object-cover" 
+                     src="https://lh3.googleusercontent.com/aida/AEtjO1XzB4MSYq6Nw3dq1B8Xh37xAkFy1xI-ULEeT6wu1q2iHYycExa8Spws3nsdFqQnoNdYhkard64qQdQubHnjAQ4qMjba45-CyixPtdCm_lXtaFE4oiZwGkGaaZeKq0-AEkNAMwi-TjksKtg1d0FWO-J7xNYtUY9ARbw6bwCVrHqxnac_8Rt0z5vwrPrVeb24AqO_25puMafDFkoFtbROJzi4d2P45Y_Hot-NpCiEwQ6pgzvYe3DPyUX7la4=s0"
+                     srcset="
+                       https://lh3.googleusercontent.com/aida/AEtjO1XzB4MSYq6Nw3dq1B8Xh37xAkFy1xI-ULEeT6wu1q2iHYycExa8Spws3nsdFqQnoNdYhkard64qQdQubHnjAQ4qMjba45-CyixPtdCm_lXtaFE4oiZwGkGaaZeKq0-AEkNAMwi-TjksKtg1d0FWO-J7xNYtUY9ARbw6bwCVrHqxnac_8Rt0z5vwrPrVeb24AqO_25puMafDFkoFtbROJzi4d2P45Y_Hot-NpCiEwQ6pgzvYe3DPyUX7la4=w1200 1200w,
+                       https://lh3.googleusercontent.com/aida/AEtjO1XzB4MSYq6Nw3dq1B8Xh37xAkFy1xI-ULEeT6wu1q2iHYycExa8Spws3nsdFqQnoNdYhkard64qQdQubHnjAQ4qMjba45-CyixPtdCm_lXtaFE4oiZwGkGaaZeKq0-AEkNAMwi-TjksKtg1d0FWO-J7xNYtUY9ARbw6bwCVrHqxnac_8Rt0z5vwrPrVeb24AqO_25puMafDFkoFtbROJzi4d2P45Y_Hot-NpCiEwQ6pgzvYe3DPyUX7la4=w2560 2560w,
+                       https://lh3.googleusercontent.com/aida/AEtjO1XzB4MSYq6Nw3dq1B8Xh37xAkFy1xI-ULEeT6wu1q2iHYycExa8Spws3nsdFqQnoNdYhkard64qQdQubHnjAQ4qMjba45-CyixPtdCm_lXtaFE4oiZwGkGaaZeKq0-AEkNAMwi-TjksKtg1d0FWO-J7xNYtUY9ARbw6bwCVrHqxnac_8Rt0z5vwrPrVeb24AqO_25puMafDFkoFtbROJzi4d2P45Y_Hot-NpCiEwQ6pgzvYe3DPyUX7la4=s0 3840w
+                     "
+                     sizes="(max-width: 1024px) 100vw, 550px"
+                     loading="lazy"
+                     decoding="async"/>
                 <div class="absolute inset-0 bg-gradient-to-t from-[#0d2040]/90 via-[#0d2040]/25 to-transparent"></div>
                 <p class="absolute bottom-3 left-4 right-4 font-script-hand text-lg sm:text-xl text-[#f3d9a9] drop-shadow-md text-center">« Parce que chaque personne mérite d'être bien entourée ♡ »</p>
               </div>
               <!-- Slide 2 -->
               <div class="solution-slide absolute inset-0 z-10 transition-opacity duration-700 opacity-0 pointer-events-none" data-sol-index="1">
-                <img alt="Veille attentive et garde rassurante" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAz4RQVnagRhCa5fiXg0vVqyr6Mv3kVf-6FcNJGe5QNFB--Xmb4C5iE648zioy5bV6uraWSwbKbpzp9QmXjsa6L2t016BzEVrkuHHbracTA8FJheOkcM-cFr2lG2nkPTxXl7fKWb4iYzoRdIYnNScAfKqlk2A-Rs3wjMVll1UabtYfUc-eHY0IBBvqXYlQowAuLRgrUxfUiOUVV7sZ9R4S1pPmUB5j2huw_SuFB__AG47YClxrvpwec"/>
+                <img alt="Veille attentive et garde rassurante" class="w-full h-full object-cover" 
+                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuAz4RQVnagRhCa5fiXg0vVqyr6Mv3kVf-6FcNJGe5QNFB--Xmb4C5iE648zioy5bV6uraWSwbKbpzp9QmXjsa6L2t016BzEVrkuHHbracTA8FJheOkcM-cFr2lG2nkPTxXl7fKWb4iYzoRdIYnNScAfKqlk2A-Rs3wjMVll1UabtYfUc-eHY0IBBvqXYlQowAuLRgrUxfUiOUVV7sZ9R4S1pPmUB5j2huw_SuFB__AG47YClxrvpwec=s0"
+                     srcset="
+                       https://lh3.googleusercontent.com/aida-public/AB6AXuAz4RQVnagRhCa5fiXg0vVqyr6Mv3kVf-6FcNJGe5QNFB--Xmb4C5iE648zioy5bV6uraWSwbKbpzp9QmXjsa6L2t016BzEVrkuHHbracTA8FJheOkcM-cFr2lG2nkPTxXl7fKWb4iYzoRdIYnNScAfKqlk2A-Rs3wjMVll1UabtYfUc-eHY0IBBvqXYlQowAuLRgrUxfUiOUVV7sZ9R4S1pPmUB5j2huw_SuFB__AG47YClxrvpwec=w1200 1200w,
+                       https://lh3.googleusercontent.com/aida-public/AB6AXuAz4RQVnagRhCa5fiXg0vVqyr6Mv3kVf-6FcNJGe5QNFB--Xmb4C5iE648zioy5bV6uraWSwbKbpzp9QmXjsa6L2t016BzEVrkuHHbracTA8FJheOkcM-cFr2lG2nkPTxXl7fKWb4iYzoRdIYnNScAfKqlk2A-Rs3wjMVll1UabtYfUc-eHY0IBBvqXYlQowAuLRgrUxfUiOUVV7sZ9R4S1pPmUB5j2huw_SuFB__AG47YClxrvpwec=w2560 2560w,
+                       https://lh3.googleusercontent.com/aida-public/AB6AXuAz4RQVnagRhCa5fiXg0vVqyr6Mv3kVf-6FcNJGe5QNFB--Xmb4C5iE648zioy5bV6uraWSwbKbpzp9QmXjsa6L2t016BzEVrkuHHbracTA8FJheOkcM-cFr2lG2nkPTxXl7fKWb4iYzoRdIYnNScAfKqlk2A-Rs3wjMVll1UabtYfUc-eHY0IBBvqXYlQowAuLRgrUxfUiOUVV7sZ9R4S1pPmUB5j2huw_SuFB__AG47YClxrvpwec=s0 3840w
+                     "
+                     sizes="(max-width: 1024px) 100vw, 550px"
+                     loading="lazy"
+                     decoding="async"/>
                 <div class="absolute inset-0 bg-gradient-to-t from-[#0d2040]/90 via-[#0d2040]/25 to-transparent"></div>
                 <p class="absolute bottom-3 left-4 right-4 font-script-hand text-lg sm:text-xl text-[#f3d9a9] drop-shadow-md text-center">« Une présence rassurante jour, nuit &amp; 24h/24 ♡ »</p>
               </div>
               <!-- Slide 3 -->
               <div class="solution-slide absolute inset-0 z-10 transition-opacity duration-700 opacity-0 pointer-events-none" data-sol-index="2">
-                <img alt="Écoute et réconfort au quotidien" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDAf6YGGmq4Nuac4sonDx-YHF2tOHcwPE__Qu9bWfvUuiU6epw_yKQoBg0oD1Tu4pEIZq_XM4qSUvjZ37xh6XJb90xj4b1JxMD5YuaiuTY1tT42kVKEq3feFVFwMjCn5MtlkPfoAMcF4fp9x91sWPNUw2hiTX5MyLzmbjqsBYvr4PALjGAofkTA_flFOp6Eq2I-xmSBP7T80mrBq4sfzwQki2nZGu_VUQp535IxylYTQOXpuYL8Zko8"/>
+                <img alt="Écoute et réconfort au quotidien" class="w-full h-full object-cover" 
+                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuDAf6YGGmq4Nuac4sonDx-YHF2tOHcwPE__Qu9bWfvUuiU6epw_yKQoBg0oD1Tu4pEIZq_XM4qSUvjZ37xh6XJb90xj4b1JxMD5YuaiuTY1tT42kVKEq3feFVFwMjCn5MtlkPfoAMcF4fp9x91sWPNUw2hiTX5MyLzmbjqsBYvr4PALjGAofkTA_flFOp6Eq2I-xmSBP7T80mrBq4sfzwQki2nZGu_VUQp535IxylYTQOXpuYL8Zko8=s0"
+                     srcset="
+                       https://lh3.googleusercontent.com/aida-public/AB6AXuDAf6YGGmq4Nuac4sonDx-YHF2tOHcwPE__Qu9bWfvUuiU6epw_yKQoBg0oD1Tu4pEIZq_XM4qSUvjZ37xh6XJb90xj4b1JxMD5YuaiuTY1tT42kVKEq3feFVFwMjCn5MtlkPfoAMcF4fp9x91sWPNUw2hiTX5MyLzmbjqsBYvr4PALjGAofkTA_flFOp6Eq2I-xmSBP7T80mrBq4sfzwQki2nZGu_VUQp535IxylYTQOXpuYL8Zko8=w1200 1200w,
+                       https://lh3.googleusercontent.com/aida-public/AB6AXuDAf6YGGmq4Nuac4sonDx-YHF2tOHcwPE__Qu9bWfvUuiU6epw_yKQoBg0oD1Tu4pEIZq_XM4qSUvjZ37xh6XJb90xj4b1JxMD5YuaiuTY1tT42kVKEq3feFVFwMjCn5MtlkPfoAMcF4fp9x91sWPNUw2hiTX5MyLzmbjqsBYvr4PALjGAofkTA_flFOp6Eq2I-xmSBP7T80mrBq4sfzwQki2nZGu_VUQp535IxylYTQOXpuYL8Zko8=w2560 2560w,
+                       https://lh3.googleusercontent.com/aida-public/AB6AXuDAf6YGGmq4Nuac4sonDx-YHF2tOHcwPE__Qu9bWfvUuiU6epw_yKQoBg0oD1Tu4pEIZq_XM4qSUvjZ37xh6XJb90xj4b1JxMD5YuaiuTY1tT42kVKEq3feFVFwMjCn5MtlkPfoAMcF4fp9x91sWPNUw2hiTX5MyLzmbjqsBYvr4PALjGAofkTA_flFOp6Eq2I-xmSBP7T80mrBq4sfzwQki2nZGu_VUQp535IxylYTQOXpuYL8Zko8=s0 3840w
+                     "
+                     sizes="(max-width: 1024px) 100vw, 550px"
+                     loading="lazy"
+                     decoding="async"/>
                 <div class="absolute inset-0 bg-gradient-to-t from-[#0d2040]/90 via-[#0d2040]/25 to-transparent"></div>
                 <p class="absolute bottom-3 left-4 right-4 font-script-hand text-lg sm:text-xl text-[#f3d9a9] drop-shadow-md text-center">« L'attention bienveillante à chaque instant ♡ »</p>
               </div>
@@ -475,7 +504,16 @@
       <div class="bg-[#f9f5ed] border border-[#e8dcce] rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col lg:flex-row items-center justify-between gap-8">
         <div class="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-5 text-center sm:text-left max-w-lg">
           <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden flex-shrink-0 shadow-md border-2 border-white">
-            <img alt="Mains chaleureuses enlacées" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1U35-nZyTRezUNM0ha9eMX-j04o9GPU5CHWmKfIkdP9qbKknus4z4dlAV0XA6TymovREcsi-CCGgpgg16t8fsxyoQOnhQdiqmi-pdPeorrBrL1LljZyU8EVZOoJO9S1D32KAE5V7Cgnt18ecy_gBWBiqbDa2ornYUD__XUTZo8t0WX4vhwV14z86YFpPLq_4LaA-JQvfSAUUEuukEm-HZdYkdhkC3Drez2879HuBnPLL0-jFhr6-L8RVUI"/>
+            <img alt="Mains chaleureuses enlacées" class="w-full h-full object-cover" 
+                 src="https://lh3.googleusercontent.com/aida/AEtjO1U35-nZyTRezUNM0ha9eMX-j04o9GPU5CHWmKfIkdP9qbKknus4z4dlAV0XA6TymovREcsi-CCGgpgg16t8fsxyoQOnhQdiqmi-pdPeorrBrL1LljZyU8EVZOoJO9S1D32KAE5V7Cgnt18ecy_gBWBiqbDa2ornYUD__XUTZo8t0WX4vhwV14z86YFpPLq_4LaA-JQvfSAUUEuukEm-HZdYkdhkC3Drez2879HuBnPLL0-jFhr6-L8RVUI=s0"
+                 srcset="
+                   https://lh3.googleusercontent.com/aida/AEtjO1U35-nZyTRezUNM0ha9eMX-j04o9GPU5CHWmKfIkdP9qbKknus4z4dlAV0XA6TymovREcsi-CCGgpgg16t8fsxyoQOnhQdiqmi-pdPeorrBrL1LljZyU8EVZOoJO9S1D32KAE5V7Cgnt18ecy_gBWBiqbDa2ornYUD__XUTZo8t0WX4vhwV14z86YFpPLq_4LaA-JQvfSAUUEuukEm-HZdYkdhkC3Drez2879HuBnPLL0-jFhr6-L8RVUI=w800 800w,
+                   https://lh3.googleusercontent.com/aida/AEtjO1U35-nZyTRezUNM0ha9eMX-j04o9GPU5CHWmKfIkdP9qbKknus4z4dlAV0XA6TymovREcsi-CCGgpgg16t8fsxyoQOnhQdiqmi-pdPeorrBrL1LljZyU8EVZOoJO9S1D32KAE5V7Cgnt18ecy_gBWBiqbDa2ornYUD__XUTZo8t0WX4vhwV14z86YFpPLq_4LaA-JQvfSAUUEuukEm-HZdYkdhkC3Drez2879HuBnPLL0-jFhr6-L8RVUI=w1600 1600w,
+                   https://lh3.googleusercontent.com/aida/AEtjO1U35-nZyTRezUNM0ha9eMX-j04o9GPU5CHWmKfIkdP9qbKknus4z4dlAV0XA6TymovREcsi-CCGgpgg16t8fsxyoQOnhQdiqmi-pdPeorrBrL1LljZyU8EVZOoJO9S1D32KAE5V7Cgnt18ecy_gBWBiqbDa2ornYUD__XUTZo8t0WX4vhwV14z86YFpPLq_4LaA-JQvfSAUUEuukEm-HZdYkdhkC3Drez2879HuBnPLL0-jFhr6-L8RVUI=s0 2400w
+                 "
+                 sizes="(max-width: 640px) 100px, 200px"
+                 loading="lazy"
+                 decoding="async"/>
           </div>
           <div>
             <h3 class="font-serif-title text-xl sm:text-2xl font-bold text-[#081729]">Votre proche est accompagné. <br/><span class="italic font-normal text-[#c99856]">Vous aussi.</span></h3>
