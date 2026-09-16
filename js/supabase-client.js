@@ -188,7 +188,7 @@ var AkevaDB = (function () {
       }
 
       // Fallback sécurisé compte unique Super Admin pour Akeva
-      if (email === 'admin@akeva.cm' && password === 'akeva2026') {
+      if ((email === 'contact@akevaserenite.online' || email === 'admin@akeva.cm') && password === 'akeva2026') {
         var mockUser = { email: email, role: 'superadmin' };
         localStorage.setItem('akeva_admin_session', JSON.stringify(mockUser));
         return { success: true, user: mockUser };
