@@ -76,6 +76,45 @@
       transition: opacity 700ms ease, transform 700ms ease;
     }
 
+    /* Asymmetric Hero Gradient: Midnight Navy at left -> 0% opacity at right */
+    .hero-gradient-overlay {
+      background: linear-gradient(
+        90deg,
+        rgba(8, 23, 41, 0.98) 0%,
+        rgba(8, 23, 41, 0.94) 22%,
+        rgba(8, 23, 41, 0.72) 42%,
+        rgba(8, 23, 41, 0.35) 56%,
+        rgba(8, 23, 41, 0.08) 68%,
+        rgba(8, 23, 41, 0) 78%,
+        rgba(8, 23, 41, 0) 100%
+      );
+    }
+    @media (max-width: 1023px) {
+      .hero-gradient-overlay {
+        background: linear-gradient(
+          90deg,
+          rgba(8, 23, 41, 0.98) 0%,
+          rgba(8, 23, 41, 0.92) 38%,
+          rgba(8, 23, 41, 0.65) 62%,
+          rgba(8, 23, 41, 0.15) 78%,
+          rgba(8, 23, 41, 0) 88%,
+          rgba(8, 23, 41, 0) 100%
+        );
+      }
+    }
+    @media (max-width: 640px) {
+      .hero-gradient-overlay {
+        background: linear-gradient(
+          90deg,
+          rgba(8, 23, 41, 0.98) 0%,
+          rgba(8, 23, 41, 0.94) 55%,
+          rgba(8, 23, 41, 0.50) 80%,
+          rgba(8, 23, 41, 0) 95%,
+          rgba(8, 23, 41, 0) 100%
+        );
+      }
+    }
+
     /* Crossfade transitions for solutions card mini-carousel */
     .solution-slide {
       transition: opacity 800ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -139,21 +178,21 @@
   <section class="group relative min-h-[600px] lg:min-h-[680px] flex items-center overflow-hidden py-14 lg:py-20 bg-[#081729]" id="hero-carousel">
     <!-- Slide 1 -->
     <div class="hero-slide absolute inset-0 z-0 transition-opacity duration-1000 opacity-0 pointer-events-none" data-slide-index="0">
-      <img alt="Auxiliaire de santé bienveillante avec un aîné à domicile à Yaoundé - Akeva Sérénité" class="w-full h-full object-cover object-center scale-105 transition-transform duration-[6000ms] ease-out" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBVAHYZUboCkT4mMJtT-tOuT0iZ0vNMEP-iNMnI7jOXyFZSUyuc8DeT_m3AgRiE4OshyOeKpEVLDWQwMqk3Ho9VVeiJkLFTxfwb6s3573z82cnvnslwOsRiyMOcfGlO7P7vOSkKzubaXRObuW3_2958eNo1mcYo7E8se03XMiqln_l9BLttKIG9_wsHgNhwvqpQeK0xyU8IuqKEJSClMRvCJTTyO6iuh1kq8gqnrDeGedu5RPE1Jn_q"/>
-      <div class="absolute inset-0 bg-gradient-to-r from-[#081729]/95 via-[#081729]/80 to-[#081729]/40 lg:via-[#081729]/75 lg:to-transparent"></div>
-      <div class="absolute inset-0 bg-gradient-to-t from-[#081729]/90 via-transparent to-black/20"></div>
+      <img alt="Auxiliaire de santé bienveillante avec un aîné à domicile à Yaoundé - Akeva Sérénité" class="w-full h-full object-cover object-[right_center] transition-transform duration-[6000ms] ease-out" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBVAHYZUboCkT4mMJtT-tOuT0iZ0vNMEP-iNMnI7jOXyFZSUyuc8DeT_m3AgRiE4OshyOeKpEVLDWQwMqk3Ho9VVeiJkLFTxfwb6s3573z82cnvnslwOsRiyMOcfGlO7P7vOSkKzubaXRObuW3_2958eNo1mcYo7E8se03XMiqln_l9BLttKIG9_wsHgNhwvqpQeK0xyU8IuqKEJSClMRvCJTTyO6iuh1kq8gqnrDeGedu5RPE1Jn_q"/>
+      <!-- Asymmetric progressive gradient: 98% dark navy at left -> 0% opacity at right (no overlay at right) -->
+      <div class="hero-gradient-overlay absolute inset-0 pointer-events-none"></div>
     </div>
     <!-- Slide 2 -->
     <div class="hero-slide absolute inset-0 z-0 transition-opacity duration-1000 opacity-100" data-slide-index="1">
-      <img alt="Auxiliaire masculin aidant une personne âgée avec douceur - Akeva Sérénité" class="w-full h-full object-cover object-[center_35%] scale-105 transition-transform duration-[6000ms] ease-out" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBu1uzmMNyb_hlPD4e_VEtbJFKm1iSt3x8P7cAMWV02EDSWyifdpGm7_JiAx6Eldd0p_D2EwskOVCq3NZcjSC7kgg4X6459ubWzo0QWeFYfKSLnTl3AzQgecfsCAJoYJtkNnwOyKQ13FF3PTtCRjF3YuP9NIG_Gy_3DaZgWYU5TO-F4iKX5c9_K9fCzNQHNvq5mcDFoOWcHUGXTdF3sNF1y1g3EVkOwgakKCX6-w-M668qY2_qtq6Pf"/>
-      <div class="absolute inset-0 bg-gradient-to-r from-[#081729]/95 via-[#081729]/80 to-[#081729]/40 lg:via-[#081729]/75 lg:to-transparent"></div>
-      <div class="absolute inset-0 bg-gradient-to-t from-[#081729]/90 via-transparent to-black/20"></div>
+      <img alt="Auxiliaire masculin aidant une personne âgée avec douceur - Akeva Sérénité" class="w-full h-full object-cover object-[right_center] transition-transform duration-[6000ms] ease-out" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBu1uzmMNyb_hlPD4e_VEtbJFKm1iSt3x8P7cAMWV02EDSWyifdpGm7_JiAx6Eldd0p_D2EwskOVCq3NZcjSC7kgg4X6459ubWzo0QWeFYfKSLnTl3AzQgecfsCAJoYJtkNnwOyKQ13FF3PTtCRjF3YuP9NIG_Gy_3DaZgWYU5TO-F4iKX5c9_K9fCzNQHNvq5mcDFoOWcHUGXTdF3sNF1y1g3EVkOwgakKCX6-w-M668qY2_qtq6Pf"/>
+      <!-- Asymmetric progressive gradient: 98% dark navy at left -> 0% opacity at right (no overlay at right) -->
+      <div class="hero-gradient-overlay absolute inset-0 pointer-events-none"></div>
     </div>
     <!-- Slide 3 -->
     <div class="hero-slide absolute inset-0 z-0 transition-opacity duration-1000 opacity-0 pointer-events-none" data-slide-index="2">
-      <img alt="Auxiliaire attentive et bienveillante - Akeva Sérénité" class="w-full h-full object-cover object-center scale-105 transition-transform duration-[6000ms] ease-out" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvPLs8PaWXTQVEfQ7tZ8PO0UGDFWGUvngxke6p8M8-xYKckzMOx-uw-3oGnXnwpyqYx_3-RZAGEWYeb0iBWQIU30nFvI6SR1AbE-kH0Ji8uaF1_ejtssGZm6OpT0aA7NgMJyXTYaQIIXgE97VGIzP2siZyJ4JdKFFNn27n3n2SS7GnoyyzMrDRMGPJJOSPQeUm7eZo9FHU1mmmHtFyYMw55ItcelhkzoxZyJkGCrL9ylyfJkH2UP47"/>
-      <div class="absolute inset-0 bg-gradient-to-r from-[#081729]/95 via-[#081729]/80 to-[#081729]/40 lg:via-[#081729]/75 lg:to-transparent"></div>
-      <div class="absolute inset-0 bg-gradient-to-t from-[#081729]/90 via-transparent to-black/20"></div>
+      <img alt="Auxiliaire attentive et bienveillante - Akeva Sérénité" class="w-full h-full object-cover object-[right_center] transition-transform duration-[6000ms] ease-out" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvPLs8PaWXTQVEfQ7tZ8PO0UGDFWGUvngxke6p8M8-xYKckzMOx-uw-3oGnXnwpyqYx_3-RZAGEWYeb0iBWQIU30nFvI6SR1AbE-kH0Ji8uaF1_ejtssGZm6OpT0aA7NgMJyXTYaQIIXgE97VGIzP2siZyJ4JdKFFNn27n3n2SS7GnoyyzMrDRMGPJJOSPQeUm7eZo9FHU1mmmHtFyYMw55ItcelhkzoxZyJkGCrL9ylyfJkH2UP47"/>
+      <!-- Asymmetric progressive gradient: 98% dark navy at left -> 0% opacity at right (no overlay at right) -->
+      <div class="hero-gradient-overlay absolute inset-0 pointer-events-none"></div>
     </div>
 
     <!-- Navigation Arrows -->
@@ -166,13 +205,13 @@
 
     <div class="max-w-[1380px] w-full mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-        <!-- Left Content Column -->
-        <div class="lg:col-span-8 space-y-6 max-w-2xl">
+        <!-- Left Content Column: Information & Lisibilité maximale -->
+        <div class="lg:col-span-7 xl:col-span-7 space-y-6 max-w-2xl">
           <div class="inline-flex items-center space-x-2 bg-white/10 px-4 py-1.5 rounded-full border border-[#c99856]/40 shadow-sm backdrop-blur-md">
             <span class="w-2 h-2 rounded-full bg-[#c99856] animate-pulse"></span>
             <span class="text-[11px] sm:text-xs uppercase tracking-[0.22em] text-[#dfb778] font-semibold">AKEVA SÉRÉNITÉ • 24H/24 — 7J/7 • NGOUSSO, YAOUNDÉ</span>
           </div>
-          <h1 class="font-serif-title text-4xl sm:text-5xl lg:text-[52px] leading-[1.14] text-white font-bold tracking-tight">
+          <h1 class="font-serif-title text-4xl sm:text-5xl lg:text-[52px] leading-[1.14] text-white font-bold tracking-tight drop-shadow-sm">
             La présence qui rassure, <br/><span class="italic font-normal text-[#dfb778]">l'accompagnement</span> qui honore.
           </h1>
           <div class="relative min-h-[44px]">
@@ -210,30 +249,13 @@
           </div>
         </div>
 
-        <!-- Right Handwritten Badge -->
-        <div class="lg:col-span-4 hidden lg:flex justify-end items-end self-end pb-2">
-          <div class="bg-[#081729]/80 backdrop-blur-md px-6 py-5 rounded-2xl border border-white/15 shadow-2xl select-none text-right max-w-xs transform hover:scale-105 transition duration-300">
-            <div class="flex items-center justify-end space-x-1.5 text-[#dfb778] text-xs mb-2">
-              <i class="fas fa-star"></i>
-              <i class="fas fa-star"></i>
-              <i class="fas fa-star"></i>
-              <i class="fas fa-star"></i>
-              <i class="fas fa-star"></i>
-            </div>
-            <p class="font-script-hand text-white text-2xl leading-tight font-normal">
-              Plus qu'un service, <br/><span class="text-[#dfb778] font-semibold">une présence qui fait la différence ♡</span>
-            </p>
-            <div class="mt-3 pt-3 border-t border-white/10 flex items-center justify-end space-x-2 text-[11px] text-slate-300">
-              <span class="w-1.5 h-1.5 rounded-full bg-[#dfb778]"></span>
-              <span>Auxiliaires sélectionnés avec rigueur</span>
-            </div>
-          </div>
-        </div>
+        <!-- Right Side: Espace entièrement dégagé pour révéler 100% de la photographie naturelle en haute définition sans aucun overlay ni obscurcissement -->
+        <div class="lg:col-span-5 xl:col-span-5 hidden lg:block pointer-events-none"></div>
       </div>
     </div>
 
     <!-- Carousel Dots -->
-    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-2.5 bg-black/40 px-4 py-2 rounded-full backdrop-blur-md border border-white/10">
+    <div class="absolute bottom-6 left-1/2 -translate-x-1/2 lg:left-8 lg:translate-x-0 z-20 flex items-center space-x-2.5 bg-black/40 px-4 py-2 rounded-full backdrop-blur-md border border-white/10">
       <button aria-label="Slide 1" class="hero-dot h-2 rounded-full transition-all duration-300 focus:outline-none w-2.5 bg-white/40" data-slide-target="0"></button>
       <button aria-label="Slide 2" class="hero-dot h-2 rounded-full hover:bg-white/75 transition-all duration-300 focus:outline-none w-8 bg-[#c99856]" data-slide-target="1"></button>
       <button aria-label="Slide 3" class="hero-dot h-2 rounded-full hover:bg-white/75 transition-all duration-300 focus:outline-none w-2.5 bg-white/40" data-slide-target="2"></button>
@@ -593,119 +615,79 @@
 
       <div class="flex flex-col sm:flex-row items-center gap-4 text-center">
         <p class="font-serif italic text-sm text-slate-300">« Votre proche entre de bonnes mains » • Une équipe engagée pour votre tranquillité</p>
-        <a class="inline-flex items-center space-x-2.5 bg-[#c99856] hover:bg-[#dfb778] text-[#081729] font-bold px-5 py-2.5 rounded-full text-xs tracking-wide shadow transition-colors" href="https://wa.me/237697572685" rel="noopener noreferrer" target="_blank">
-          <i class="fab fa-whatsapp text-sm text-[#081729]"></i>
-          <span>WhatsApp 24/7 Direct</span>
+        <a class="inline-flex items-center space-x-2 bg-[#d4a359] hover:bg-[#c49247] text-[#081729] px-5 py-2.5 rounded-full text-xs font-bold tracking-wide transition duration-200 shadow hover:shadow-md" href="https://wa.me/237697572685" rel="noopener noreferrer" target="_blank">
+          <i class="fab fa-whatsapp text-sm"></i>
+          <span>Contacter Akeva Sérénité</span>
+          <i class="fas fa-arrow-right text-xs ml-1"></i>
         </a>
       </div>
-    </div>
 
-    <!-- Links Columns -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 py-10 border-b border-slate-800 text-xs">
-      <div class="space-y-3">
-        <h4 class="font-bold text-white uppercase tracking-wider text-[11px] text-[#c99856]">À Propos</h4>
-        <p class="text-slate-400 leading-relaxed text-[11.5px]">Akeva Sérénité propose des services d'assistance et d'accompagnement non médical aux personnes âgées et vulnérables à Yaoundé.</p>
-      </div>
-
-      <div class="space-y-3">
-        <h4 class="font-bold text-white uppercase tracking-wider text-[11px] text-[#c99856]">Navigation</h4>
-        <ul class="space-y-2 text-slate-300">
-          <li><a class="hover:text-[#c99856] transition-colors" href="index.html">Accueil</a></li>
-          <li><a class="hover:text-[#c99856] transition-colors" href="a-propos.html">À Propos</a></li>
-          <li><a class="hover:text-[#c99856] transition-colors" href="services.html">Nos Services</a></li>
-          <li><a class="hover:text-[#c99856] transition-colors" href="tarifs.html">Tarifs &amp; Formules</a></li>
-          <li><a class="hover:text-[#c99856] transition-colors" href="temoignages.html">Témoignages</a></li>
-          <li><a class="hover:text-[#c99856] transition-colors" href="faq.html">FAQ</a></li>
-          <li><a class="hover:text-[#c99856] transition-colors" href="contact.html">Contact</a></li>
-        </ul>
-      </div>
-
-      <div class="space-y-3">
-        <h4 class="font-bold text-white uppercase tracking-wider text-[11px] text-[#c99856]">Nos Services</h4>
-        <ul class="space-y-2 text-slate-300">
-          <li><a class="hover:text-[#c99856] transition-colors" href="services/personnes-agees.html">Accompagnement Personnes Âgées</a></li>
-          <li><a class="hover:text-[#c99856] transition-colors" href="services/a-domicile.html">Intervention à Domicile</a></li>
-          <li><a class="hover:text-[#c99856] transition-colors" href="services/hospitalier.html">Garde Hospitalière</a></li>
-          <li><a class="hover:text-[#c99856] transition-colors" href="services/specialise.html">Accompagnement Spécialisé</a></li>
-          <li><a class="hover:text-[#c99856] transition-colors" href="services/diaspora.html">Solutions Diaspora</a></li>
-        </ul>
-      </div>
-
-      <div class="space-y-3">
-        <h4 class="font-bold text-white uppercase tracking-wider text-[11px] text-[#c99856]">Nos Engagements</h4>
-        <ul class="space-y-2 text-slate-300">
-          <li class="flex items-center space-x-2"><i class="fas fa-check text-[10px] text-[#c99856]"></i><span>Confiance &amp; Rigueur</span></li>
-          <li class="flex items-center space-x-2"><i class="fas fa-check text-[10px] text-[#c99856]"></i><span>Humanité &amp; Écoute</span></li>
-          <li class="flex items-center space-x-2"><i class="fas fa-check text-[10px] text-[#c99856]"></i><span>Professionnalisme</span></li>
-          <li class="flex items-center space-x-2"><i class="fas fa-check text-[10px] text-[#c99856]"></i><span>Sérénité Garantie</span></li>
-        </ul>
-      </div>
-
-      <div class="space-y-3">
-        <h4 class="font-bold text-white uppercase tracking-wider text-[11px] text-[#c99856]">Contact Yaoundé</h4>
-        <div class="text-slate-300 space-y-2">
-          <p class="flex items-start space-x-2"><i class="fas fa-map-marker-alt text-[#c99856] mt-0.5"></i><span>Ngousso, Yaoundé — Cameroun</span></p>
-          <p class="flex items-center space-x-2"><i class="fas fa-phone-alt text-[#c99856]"></i><span>+237 697 57 26 85</span></p>
-          <p class="flex items-center space-x-2"><i class="fas fa-phone-alt text-[#c99856]"></i><span>+237 653 15 14 27</span></p>
-          <p class="flex items-center space-x-2"><i class="fas fa-clock text-[#c99856]"></i><span>Disponibilité 24h/24 — 7j/7</span></p>
-        </div>
+      <div class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-6 text-xs text-slate-400">
+        <div class="flex items-center space-x-1.5"><i class="fas fa-map-marker-alt text-[#c99856]"></i><span>Ngousso, Yaoundé</span></div>
+        <a class="flex items-center space-x-1.5 hover:text-white transition" href="tel:+237697572685"><i class="fas fa-phone-alt text-[#c99856]"></i><span>697 572 685 / 653 151 427</span></a>
+        <a class="flex items-center space-x-1.5 hover:text-white transition" href="mailto:akevacare7@gmail.com"><i class="far fa-envelope text-[#c99856]"></i><span>akevacare7@gmail.com</span></a>
       </div>
     </div>
 
-    <!-- Bottom Copyright -->
-    <div class="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400">
-      <p>© 2026 Akeva Sérénité. Tous droits réservés. Accompagnement &amp; Assistance Non Médicale.</p>
-      <div class="flex items-center space-x-4 mt-3 sm:mt-0">
-        <a class="hover:text-white transition-colors" href="contact.html">Contact</a>
+    <div class="pt-6 flex flex-col sm:flex-row items-center justify-between text-[11.5px] text-slate-400">
+      <p>© 2026 Akeva Sérénité. Tous droits réservés.</p>
+      <div class="flex items-center space-x-4 mt-2 sm:mt-0 text-slate-400">
+        <a class="hover:text-[#c99856] transition" href="mentions-legales.html">Mentions légales</a>
         <span>•</span>
-        <a class="hover:text-white transition-colors" href="faq.html">FAQ</a>
+        <a class="hover:text-[#c99856] transition" href="politique-confidentialite.html">Politique de confidentialité</a>
         <span>•</span>
-        <a class="hover:text-[#c99856] transition-colors" href="admin.html">Administration</a>
+        <a class="hover:text-[#c99856] transition" href="deontologie.html">Déontologie</a>
       </div>
     </div>
   </div>
 </footer>
 <!-- END: MainFooter -->
 
-<!-- Carousel Scripts -->
+<!-- Interactive Scripts -->
 <script>
-  // 1. Hero Crossfade Carousel Script
-  (function () {
-    const heroCarousel = document.getElementById('hero-carousel');
-    if (!heroCarousel) return;
+  // Mobile Menu Toggle
+  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+  const mobileMenu = document.getElementById('mobile-menu');
+  if (mobileMenuBtn && mobileMenu) {
+    mobileMenuBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+  }
 
-    const slides = heroCarousel.querySelectorAll('.hero-slide');
-    const dots = heroCarousel.querySelectorAll('.hero-dot');
+  // 1. Hero Carousel Logic
+  (function () {
+    const slides = document.querySelectorAll('.hero-slide');
+    const dots = document.querySelectorAll('.hero-dot');
     const prevBtn = document.getElementById('hero-prev');
     const nextBtn = document.getElementById('hero-next');
-    const subquoteEl = document.getElementById('hero-subquote');
-    const descEl = document.getElementById('hero-description');
+    const container = document.getElementById('hero-carousel');
+    const subquote = document.getElementById('hero-subquote');
+    const description = document.getElementById('hero-description');
 
     if (!slides.length) return;
 
+    let currentIndex = 0;
+    let autoPlayTimer = null;
+    const intervalTime = 5500;
+
     const slideContent = [
       {
-        subquote: "« Une présence continue, humaine et digne au quotidien »",
+        quote: "« Votre proche entre de bonnes mains »",
+        desc: "Partenaire de confiance pour l'accompagnement et l'assistance non médicale à domicile et en milieu hospitalier des personnes vulnérables, aînées et convalescentes. Un relais dévoué pour les familles et la diaspora."
+      },
+      {
+        quote: "« Une présence continue, humaine et digne au quotidien »",
         desc: "Garde bienveillante de jour, de nuit ou 24h/24 assurée par des auxiliaires dévoués et formés avec rigueur. Un soutien attentif respectant le rythme et les habitudes de votre proche."
       },
       {
-        subquote: "« La sécurité et la douceur d'une garde attentive à chaque instant »",
-        desc: "Une veille permanente et respectueuse, permettant aux personnes âgées ou malades de rester sereinement dans leur foyer ou à l'hôpital avec un encadrement réconfortant."
-      },
-      {
-        subquote: "« Pour la tranquillité des familles à Yaoundé et dans la Diaspora »",
-        desc: "Un lien de confiance transparent et des comptes-rendus réguliers pour rassurer chaque famille, même à distance. Le bien-être de votre être cher est notre priorité absolue."
+        quote: "« La tranquillité d'esprit pour vous et la diaspora »",
+        desc: "Même à distance ou absorbé par vos obligations, restez connecté à la santé et au bien-être de vos parents grâce à nos comptes-rendus réguliers et notre coordination 7j/7."
       }
     ];
 
-    let currentIdx = 0;
-    let autoPlayTimer = null;
-
-    function updateHeroSlide(newIdx) {
-      currentIdx = (newIdx + slides.length) % slides.length;
-
+    function updateSlide(newIndex) {
       slides.forEach((slide, idx) => {
-        if (idx === currentIdx) {
+        if (idx === newIndex) {
           slide.classList.remove('opacity-0', 'pointer-events-none');
           slide.classList.add('opacity-100');
         } else {
@@ -715,7 +697,7 @@
       });
 
       dots.forEach((dot, idx) => {
-        if (idx === currentIdx) {
+        if (idx === newIndex) {
           dot.classList.remove('w-2.5', 'bg-white/40');
           dot.classList.add('w-8', 'bg-[#c99856]');
         } else {
@@ -724,30 +706,33 @@
         }
       });
 
-      if (subquoteEl && descEl && slideContent[currentIdx]) {
-        subquoteEl.style.opacity = '0';
-        descEl.style.opacity = '0';
-
+      if (subquote && description && slideContent[newIndex]) {
+        subquote.style.opacity = '0';
+        description.style.opacity = '0';
         setTimeout(() => {
-          subquoteEl.textContent = slideContent[currentIdx].subquote;
-          descEl.textContent = slideContent[currentIdx].desc;
-          subquoteEl.style.opacity = '1';
-          descEl.style.opacity = '1';
-        }, 250);
+          subquote.textContent = slideContent[newIndex].quote;
+          description.textContent = slideContent[newIndex].desc;
+          subquote.style.opacity = '1';
+          description.style.opacity = '1';
+        }, 220);
       }
+
+      currentIndex = newIndex;
     }
 
-    function nextHeroSlide() {
-      updateHeroSlide(currentIdx + 1);
+    function nextSlide() {
+      const next = (currentIndex + 1) % slides.length;
+      updateSlide(next);
     }
 
-    function prevHeroSlide() {
-      updateHeroSlide(currentIdx - 1);
+    function prevSlide() {
+      const prev = (currentIndex - 1 + slides.length) % slides.length;
+      updateSlide(prev);
     }
 
     function startAutoPlay() {
       stopAutoPlay();
-      autoPlayTimer = setInterval(nextHeroSlide, 5000);
+      autoPlayTimer = setInterval(nextSlide, intervalTime);
     }
 
     function stopAutoPlay() {
@@ -757,48 +742,46 @@
       }
     }
 
-    if (nextBtn) nextBtn.addEventListener('click', () => { nextHeroSlide(); startAutoPlay(); });
-    if (prevBtn) prevBtn.addEventListener('click', () => { prevHeroSlide(); startAutoPlay(); });
+    if (nextBtn) nextBtn.addEventListener('click', () => { nextSlide(); startAutoPlay(); });
+    if (prevBtn) prevBtn.addEventListener('click', () => { prevSlide(); startAutoPlay(); });
 
     dots.forEach((dot) => {
       dot.addEventListener('click', (e) => {
         const targetIdx = parseInt(e.currentTarget.getAttribute('data-slide-target'), 10);
         if (!isNaN(targetIdx)) {
-          updateHeroSlide(targetIdx);
+          updateSlide(targetIdx);
           startAutoPlay();
         }
       });
     });
 
-    heroCarousel.addEventListener('mouseenter', stopAutoPlay);
-    heroCarousel.addEventListener('mouseleave', startAutoPlay);
-    heroCarousel.addEventListener('touchstart', stopAutoPlay, { passive: true });
-    heroCarousel.addEventListener('touchend', startAutoPlay, { passive: true });
+    if (container) {
+      container.addEventListener('mouseenter', stopAutoPlay);
+      container.addEventListener('mouseleave', startAutoPlay);
+      container.addEventListener('touchstart', stopAutoPlay, { passive: true });
+      container.addEventListener('touchend', startAutoPlay, { passive: true });
+    }
 
-    updateHeroSlide(1);
     startAutoPlay();
   })();
 
-  // 2. Solutions Mini-Carousel Script inside Dark Navy Card
+  // 2. Solutions Card Mini Carousel Logic
   (function () {
-    const solContainer = document.getElementById('solutions-carousel');
-    if (!solContainer) return;
-
-    const solSlides = solContainer.querySelectorAll('.solution-slide');
-    const solDots = solContainer.querySelectorAll('.sol-dot');
+    const solSlides = document.querySelectorAll('.solution-slide');
+    const solDots = document.querySelectorAll('.sol-dot');
     const solPrevBtn = document.getElementById('sol-prev');
     const solNextBtn = document.getElementById('sol-next');
+    const solContainer = document.getElementById('solutions-carousel');
 
     if (!solSlides.length) return;
 
-    let solCurrentIdx = 0;
+    let currentSolIndex = 0;
     let solAutoPlayTimer = null;
+    const solIntervalTime = 4000;
 
-    function updateSolSlide(newIdx) {
-      solCurrentIdx = (newIdx + solSlides.length) % solSlides.length;
-
+    function updateSolSlide(newIndex) {
       solSlides.forEach((slide, idx) => {
-        if (idx === solCurrentIdx) {
+        if (idx === newIndex) {
           slide.classList.remove('opacity-0', 'pointer-events-none');
           slide.classList.add('opacity-100');
         } else {
@@ -808,7 +791,7 @@
       });
 
       solDots.forEach((dot, idx) => {
-        if (idx === solCurrentIdx) {
+        if (idx === newIndex) {
           dot.classList.remove('w-1.5', 'bg-white/40');
           dot.classList.add('w-5', 'bg-[#c99856]');
         } else {
@@ -816,19 +799,23 @@
           dot.classList.add('w-1.5', 'bg-white/40');
         }
       });
+
+      currentSolIndex = newIndex;
     }
 
     function nextSolSlide() {
-      updateSolSlide(solCurrentIdx + 1);
+      const next = (currentSolIndex + 1) % solSlides.length;
+      updateSolSlide(next);
     }
 
     function prevSolSlide() {
-      updateSolSlide(solCurrentIdx - 1);
+      const prev = (currentSolIndex - 1 + solSlides.length) % solSlides.length;
+      updateSolSlide(prev);
     }
 
     function startSolAutoPlay() {
       stopSolAutoPlay();
-      solAutoPlayTimer = setInterval(nextSolSlide, 4500);
+      solAutoPlayTimer = setInterval(nextSolSlide, solIntervalTime);
     }
 
     function stopSolAutoPlay() {
