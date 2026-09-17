@@ -11,27 +11,13 @@
       <stop offset="100%" stop-color="#081729"/>
     </linearGradient>
   </defs>
-
-  <!-- Fond arrondi premium bleu nuit -->
   <rect width="128" height="128" rx="28" fill="url(#bgDark)"/>
   <rect x="2" y="2" width="124" height="124" rx="26" fill="none" stroke="url(#favGold)" stroke-width="2" opacity="0.6"/>
-
-  <!-- Cercle & Monogramme AS Doré Ultra-Net -->
   <g transform="translate(14, 14)">
-    <!-- Arc de cercle doré -->
     <path d="M 45 6 A 38 38 0 0 1 88 50 A 38 38 0 0 1 72 74" fill="none" stroke="url(#favGold)" stroke-width="2.5" stroke-linecap="round"/>
-    
-    <!-- Monogramme AS entrelacé stylisé -->
-    <!-- Branche A -->
     <path d="M 42 12 L 20 68 L 29 68 L 36 50 L 52 50 L 58 68 L 68 68 L 48 12 Z" fill="url(#favGold)"/>
-    
-    <!-- Ruban S entrelacé -->
     <path d="M 28 54 C 42 46 62 44 74 52 C 86 60 88 74 76 82 C 62 90 44 86 38 80 L 42 72 C 48 76 60 78 70 72 C 78 66 74 58 66 54 C 54 48 38 50 28 54 Z" fill="url(#favGold)"/>
-    
-    <!-- Silhouette délicate soignant -->
     <path d="M 64 24 C 62 20 68 15 74 18 C 78 22 75 28 70 29" fill="none" stroke="url(#favGold)" stroke-width="2" stroke-linecap="round"/>
-    
-    <!-- Fleur de lotus / sérénité en bas -->
     <path d="M 50 88 C 47 84 48 80 50 78 C 52 80 53 84 50 88 Z" fill="url(#favGold)"/>
     <path d="M 48 85 C 44 82 41 84 43 87 C 46 87 48 86 48 85 Z" fill="url(#favGold)"/>
     <path d="M 52 85 C 56 82 59 84 57 87 C 54 87 52 86 52 85 Z" fill="url(#favGold)"/>
