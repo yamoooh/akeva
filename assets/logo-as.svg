@@ -1,111 +1,154 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="100%" height="100%">
   <defs>
-    <!-- Dégradé Or Royal Akeva Sérénité -->
-    <linearGradient id="asGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#FFF3CD"/>
-      <stop offset="25%" stop-color="#E5BE6C"/>
-      <stop offset="55%" stop-color="#C99856"/>
-      <stop offset="85%" stop-color="#A57A22"/>
-      <stop offset="100%" stop-color="#7B530E"/>
+    <!-- Dégradés Or Métallique Premium Akeva Sérénité -->
+    <linearGradient id="goldLinear" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDF1D6"/>
+      <stop offset="20%" stop-color="#E8C37B"/>
+      <stop offset="45%" stop-color="#C99856"/>
+      <stop offset="75%" stop-color="#9E7227"/>
+      <stop offset="100%" stop-color="#6F4D10"/>
     </linearGradient>
 
-    <!-- Dégradé Or Doux pour le fond et les reflets -->
-    <linearGradient id="asGoldSoft" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#C99856"/>
-      <stop offset="50%" stop-color="#FDF3CD"/>
-      <stop offset="100%" stop-color="#B88628"/>
+    <linearGradient id="goldHighlight" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#BF8D3E"/>
+      <stop offset="35%" stop-color="#FDF3CD"/>
+      <stop offset="65%" stop-color="#E4BD6E"/>
+      <stop offset="100%" stop-color="#9A6E20"/>
     </linearGradient>
 
-    <!-- Dégradé Feuille Dorée -->
-    <linearGradient id="asLeafGrad" x1="20%" y1="0%" x2="80%" y2="100%">
-      <stop offset="0%" stop-color="#FDE8A8"/>
-      <stop offset="40%" stop-color="#D4A359"/>
-      <stop offset="80%" stop-color="#A2731C"/>
-      <stop offset="100%" stop-color="#6E4A0A"/>
+    <linearGradient id="goldText" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F6DFB3"/>
+      <stop offset="30%" stop-color="#D9A85F"/>
+      <stop offset="70%" stop-color="#B88330"/>
+      <stop offset="100%" stop-color="#805615"/>
     </linearGradient>
 
-    <!-- Ombre subtile -->
-    <filter id="asDropShadow" x="-10%" y="-10%" width="130%" height="130%">
-      <feDropShadow dx="1" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.18"/>
+    <filter id="subtleGlow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#000000" flood-opacity="0.15"/>
     </filter>
   </defs>
 
-  <g filter="url(#asDropShadow)">
-    <!-- 1. Cercle / Anneau Doré Extérieur -->
-    <circle cx="250" cy="245" r="215" fill="none" stroke="url(#asGoldGrad)" stroke-width="7.5" stroke-linecap="round"/>
+  <g filter="url(#subtleGlow)" transform="translate(0, 5)">
+    <!-- 1. CERCLE EXTÉRIEUR DU SYMBOLE -->
+    <path d="M 260 55 
+             A 140 140 0 0 1 455 240 
+             A 140 140 0 0 1 390 325" 
+          fill="none" stroke="url(#goldLinear)" stroke-width="4.5" stroke-linecap="round" opacity="0.85"/>
 
-    <!-- 2. Étoile / Croix Royale à 4 branches surmontant le S -->
-    <path d="M 285 72 
-             C 285 86 280 92 268 95 
-             C 280 98 285 104 285 118 
-             C 285 104 290 98 302 95 
-             C 290 92 285 86 285 72 Z"
-          fill="url(#asGoldGrad)"/>
+    <!-- 2. MONOGRAMME MAJESTUEUX 'AS' -->
+    <!-- Fût & Courbe du 'A' -->
+    <path d="M 248 88 
+             C 255 105 230 150 195 210 
+             C 165 260 142 295 142 295 
+             L 165 295 
+             C 185 260 215 208 245 158 
+             C 260 195 290 260 308 295 
+             L 332 295 
+             C 305 245 268 168 252 88 Z" 
+          fill="url(#goldHighlight)"/>
 
-    <!-- 3. Monogramme "AS" Interlacé Majestueux -->
-    
-    <!-- Lettre A (Serif Classique Impérial) -->
-    <g fill="url(#asGoldGrad)">
-      <!-- Fût gauche fin du A avec empattement au sol -->
-      <path d="M 226 95 L 142 360 L 120 364 L 120 376 L 180 376 L 180 364 L 158 360 L 202 225 L 255 225 L 265 255 L 210 255 L 220 225 L 226 95 Z"/>
-      
-      <!-- Fût droit plein / épais du A avec empattement au sol -->
-      <path d="M 226 95 L 248 95 L 305 355 L 325 360 L 325 376 L 262 376 L 262 364 L 284 360 L 252 255 L 215 255 L 226 95 Z"/>
+    <!-- Courbe enveloppante de la jambe gauche du 'A' -->
+    <path d="M 142 295 
+             C 175 285 220 220 260 215 
+             C 230 225 195 270 142 295 Z" 
+          fill="url(#goldLinear)"/>
 
-      <!-- Barre transversale fine du A -->
-      <path d="M 182 265 L 270 265 L 266 277 L 178 277 Z"/>
-      
-      <!-- Empattement supérieur du A (Serif sommet) -->
-      <path d="M 215 95 C 215 90 220 85 230 85 C 240 85 245 90 245 95 Z"/>
+    <!-- Ruban fluide du 'S' entrelacé -->
+    <path d="M 158 245 
+             C 200 210 270 205 320 235 
+             C 365 262 398 300 365 345 
+             C 335 385 275 375 245 350 
+             C 215 325 240 295 265 295 
+             C 285 295 298 310 290 328 
+             C 282 342 265 348 252 342 
+             C 268 355 315 358 338 330 
+             C 360 300 338 272 305 252 
+             C 260 225 195 228 158 245 Z" 
+          fill="url(#goldLinear)"/>
+
+    <!-- Boucle supérieure du 'S' -->
+    <path d="M 335 150 
+             C 305 138 285 152 285 175 
+             C 285 205 320 220 348 242 
+             C 370 225 378 190 360 162 
+             C 352 152 342 148 335 150 Z" 
+          fill="url(#goldHighlight)"/>
+
+    <!-- 3. SILHOUETTE DE BIENVEILLANCE (Mère & Enfant / Soignant & Patient) -->
+    <!-- Tête de l'accompagnant -->
+    <path d="M 345 142 
+             C 338 132 355 118 368 126 
+             C 378 134 372 150 360 152 
+             C 352 154 348 148 345 142 Z" 
+          fill="none" stroke="url(#goldLinear)" stroke-width="2.5" stroke-linecap="round"/>
+
+    <!-- Profil bienveillant penché -->
+    <path d="M 342 148 
+             C 345 162 360 178 375 185 
+             M 358 165 
+             C 368 172 382 170 395 165" 
+          fill="none" stroke="url(#goldLinear)" stroke-width="2.2" stroke-linecap="round"/>
+
+    <!-- Tête du proche accompagné -->
+    <circle cx="388" cy="192" r="14" fill="none" stroke="url(#goldLinear)" stroke-width="2.2"/>
+
+    <!-- Petite feuille dorée à droite du S -->
+    <path d="M 395 248 
+             C 415 252 435 275 430 298 
+             C 415 295 398 275 395 248 Z" 
+          fill="url(#goldLinear)"/>
+
+    <!-- 4. TEXTE PRINCIPAL 'AKEVA' (Serif Majestueux) -->
+    <g transform="translate(300, 395)" text-anchor="middle">
+      <text font-family="'Playfair Display', 'Cinzel', 'Trajan Pro', Georgia, serif" 
+            font-size="68" 
+            font-weight="700" 
+            letter-spacing="14" 
+            fill="url(#goldText)">AKEVA</text>
     </g>
 
-    <!-- Lettre S (Serif Entrelacé en Or Éclatant) -->
-    <g fill="url(#asGoldSoft)">
-      <!-- Trajectoire fluide et élégante de la lettre S -->
-      <path d="M 330 162 
-               C 322 152 308 142 288 142 
-               C 264 142 245 158 245 180 
-               C 245 204 262 218 288 232 
-               C 324 250 348 272 348 306 
-               C 348 348 312 380 265 380 
-               C 238 380 216 368 205 354 
-               L 214 340 
-               C 225 354 244 364 265 364 
-               C 298 364 326 340 326 306 
-               C 326 278 306 260 275 244 
-               C 242 226 225 206 225 180 
-               C 225 145 256 126 288 126 
-               C 310 126 328 136 340 148 Z"/>
-
-      <!-- Empattement terminal supérieur droit du S -->
-      <path d="M 326 142 L 350 148 L 340 175 L 328 155 Z"/>
-
-      <!-- Empattement terminal inférieur gauche du S -->
-      <path d="M 205 354 L 216 326 L 228 348 L 210 358 Z"/>
+    <!-- 5. TEXTE 'Sérénité' (Script Calligraphique Raffiné) -->
+    <g transform="translate(300, 460)" text-anchor="middle">
+      <text font-family="'Caveat', 'Alex Brush', 'Great Vibes', 'Brush Script MT', cursive" 
+            font-size="58" 
+            font-weight="400" 
+            font-style="italic" 
+            letter-spacing="2" 
+            fill="url(#goldHighlight)">Sérénité</text>
     </g>
 
-    <!-- 4. Feuille Botanique Dorée Délicate (Symbole de Vie et Sérénité) -->
-    <g transform="translate(0, 0)">
-      <!-- Corps de la feuille -->
-      <path d="M 52 312 
-               C 70 340 102 380 152 422 
-               C 178 444 208 456 238 450 
-               C 202 444 165 425 132 396 
-               C 92 360 68 328 52 312 Z"
-            fill="url(#asLeafGrad)"/>
-            
-      <!-- Moitié supérieure / galbée de la feuille -->
-      <path d="M 52 312 
-               C 85 320 140 342 188 388 
-               C 224 422 238 450 238 450 
-               C 215 448 185 432 152 405 
-               C 105 365 72 334 52 312 Z"
-            fill="url(#asGoldGrad)"/>
+    <!-- 6. SÉPARATEUR ORNEMENTAL (Lignes fines + Fleur de Lotus) -->
+    <g transform="translate(300, 498)">
+      <!-- Ligne gauche -->
+      <line x1="-135" y1="0" x2="-25" y2="0" stroke="url(#goldLinear)" stroke-width="1.6" stroke-linecap="round" opacity="0.75"/>
+      
+      <!-- Lotus central à 3 pétales -->
+      <!-- Pétale central -->
+      <path d="M 0 -12 C -6 -6 -5 4 0 5 C 5 4 6 -6 0 -12 Z" fill="url(#goldHighlight)"/>
+      <!-- Pétale gauche -->
+      <path d="M -2 3 C -10 -4 -16 2 -12 7 C -7 8 -3 5 -2 3 Z" fill="url(#goldLinear)"/>
+      <!-- Pétale droit -->
+      <path d="M 2 3 C 10 -4 16 2 12 7 C 7 8 3 5 2 3 Z" fill="url(#goldLinear)"/>
+      
+      <!-- Ligne droite -->
+      <line x1="25" y1="0" x2="135" y2="0" stroke="url(#goldLinear)" stroke-width="1.6" stroke-linecap="round" opacity="0.75"/>
+    </g>
 
-      <!-- Nervure centrale fine de la feuille -->
-      <path d="M 54 314 
-               C 100 350 155 395 234 448" 
-            fill="none" stroke="#6E4A0A" stroke-width="2.5" stroke-linecap="round" opacity="0.65"/>
+    <!-- 7. SLOGAN OFFICIEL 'UN ENGAGEMENT D'EXCELLENCE POUR VOTRE TRANQUILLITÉ' -->
+    <g transform="translate(300, 535)" text-anchor="middle">
+      <text font-family="'Plus Jakarta Sans', 'Montserrat', 'Helvetica Neue', sans-serif" 
+            font-size="11.5" 
+            font-weight="600" 
+            letter-spacing="3.5" 
+            fill="#B39359" 
+            opacity="0.95">UN ENGAGEMENT D'EXCELLENCE</text>
+      <text y="17" 
+            font-family="'Plus Jakarta Sans', 'Montserrat', 'Helvetica Neue', sans-serif" 
+            font-size="11.5" 
+            font-weight="600" 
+            letter-spacing="3.5" 
+            fill="#B39359" 
+            opacity="0.95">POUR VOTRE TRANQUILLITÉ</text>
     </g>
   </g>
 </svg>
