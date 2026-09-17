@@ -1,86 +1,39 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="100%" height="100%">
   <defs>
-    <!-- Dégradé Or Royal Akeva Sérénité -->
-    <linearGradient id="favGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="favGold" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#FFF3CD"/>
-      <stop offset="25%" stop-color="#E5BE6C"/>
-      <stop offset="55%" stop-color="#C99856"/>
-      <stop offset="85%" stop-color="#A57A22"/>
-      <stop offset="100%" stop-color="#7B530E"/>
+      <stop offset="30%" stop-color="#E5BE6C"/>
+      <stop offset="60%" stop-color="#C99856"/>
+      <stop offset="100%" stop-color="#805615"/>
     </linearGradient>
-
-    <!-- Dégradé Or Doux -->
-    <linearGradient id="favGoldSoft" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#C99856"/>
-      <stop offset="50%" stop-color="#FDF3CD"/>
-      <stop offset="100%" stop-color="#B88628"/>
-    </linearGradient>
-
-    <!-- Dégradé Feuille Dorée -->
-    <linearGradient id="favLeafGrad" x1="20%" y1="0%" x2="80%" y2="100%">
-      <stop offset="0%" stop-color="#FDE8A8"/>
-      <stop offset="40%" stop-color="#D4A359"/>
-      <stop offset="80%" stop-color="#A2731C"/>
-      <stop offset="100%" stop-color="#6E4A0A"/>
+    <linearGradient id="bgDark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F243E"/>
+      <stop offset="100%" stop-color="#081729"/>
     </linearGradient>
   </defs>
 
-  <!-- Fond blanc pur pour contraste maximal sur les onglets de navigateur -->
-  <circle cx="250" cy="250" r="246" fill="#FFFFFF"/>
-  <circle cx="250" cy="250" r="236" fill="none" stroke="url(#favGoldGrad)" stroke-width="12"/>
+  <!-- Fond arrondi premium bleu nuit -->
+  <rect width="128" height="128" rx="28" fill="url(#bgDark)"/>
+  <rect x="2" y="2" width="124" height="124" rx="26" fill="none" stroke="url(#favGold)" stroke-width="2" opacity="0.6"/>
 
-  <!-- Étoile 4 branches surmontant le S -->
-  <path d="M 285 75 
-           C 285 89 280 95 268 98 
-           C 280 101 285 107 285 121 
-           C 285 107 290 101 302 98 
-           C 290 95 285 89 285 75 Z"
-        fill="url(#favGoldGrad)"/>
-
-  <!-- Lettre A (Serif Classique) -->
-  <g fill="url(#favGoldGrad)">
-    <path d="M 226 95 L 142 360 L 120 364 L 120 376 L 180 376 L 180 364 L 158 360 L 202 225 L 255 225 L 265 255 L 210 255 L 220 225 L 226 95 Z"/>
-    <path d="M 226 95 L 248 95 L 305 355 L 325 360 L 325 376 L 262 376 L 262 364 L 284 360 L 252 255 L 215 255 L 226 95 Z"/>
-    <path d="M 182 265 L 270 265 L 266 277 L 178 277 Z"/>
-  </g>
-
-  <!-- Lettre S (Serif Entrelacé) -->
-  <g fill="url(#favGoldSoft)">
-    <path d="M 330 162 
-             C 322 152 308 142 288 142 
-             C 264 142 245 158 245 180 
-             C 245 204 262 218 288 232 
-             C 324 250 348 272 348 306 
-             C 348 348 312 380 265 380 
-             C 238 380 216 368 205 354 
-             L 214 340 
-             C 225 354 244 364 265 364 
-             C 298 364 326 340 326 306 
-             C 326 278 306 260 275 244 
-             C 242 226 225 206 225 180 
-             C 225 145 256 126 288 126 
-             C 310 126 328 136 340 148 Z"/>
-
-    <path d="M 326 142 L 350 148 L 340 175 L 328 155 Z"/>
-    <path d="M 205 354 L 216 326 L 228 348 L 210 358 Z"/>
-  </g>
-
-  <!-- Feuille Botanique Dorée -->
-  <g>
-    <path d="M 52 312 
-             C 70 340 102 380 152 422 
-             C 178 444 208 456 238 450 
-             C 202 444 165 425 132 396 
-             C 92 360 68 328 52 312 Z"
-          fill="url(#favLeafGrad)"/>
-    <path d="M 52 312 
-             C 85 320 140 342 188 388 
-             C 224 422 238 450 238 450 
-             C 215 448 185 432 152 405 
-             C 105 365 72 334 52 312 Z"
-          fill="url(#favGoldGrad)"/>
-    <path d="M 54 314 
-             C 100 350 155 395 234 448" 
-          fill="none" stroke="#6E4A0A" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+  <!-- Cercle & Monogramme AS Doré Ultra-Net -->
+  <g transform="translate(14, 14)">
+    <!-- Arc de cercle doré -->
+    <path d="M 45 6 A 38 38 0 0 1 88 50 A 38 38 0 0 1 72 74" fill="none" stroke="url(#favGold)" stroke-width="2.5" stroke-linecap="round"/>
+    
+    <!-- Monogramme AS entrelacé stylisé -->
+    <!-- Branche A -->
+    <path d="M 42 12 L 20 68 L 29 68 L 36 50 L 52 50 L 58 68 L 68 68 L 48 12 Z" fill="url(#favGold)"/>
+    
+    <!-- Ruban S entrelacé -->
+    <path d="M 28 54 C 42 46 62 44 74 52 C 86 60 88 74 76 82 C 62 90 44 86 38 80 L 42 72 C 48 76 60 78 70 72 C 78 66 74 58 66 54 C 54 48 38 50 28 54 Z" fill="url(#favGold)"/>
+    
+    <!-- Silhouette délicate soignant -->
+    <path d="M 64 24 C 62 20 68 15 74 18 C 78 22 75 28 70 29" fill="none" stroke="url(#favGold)" stroke-width="2" stroke-linecap="round"/>
+    
+    <!-- Fleur de lotus / sérénité en bas -->
+    <path d="M 50 88 C 47 84 48 80 50 78 C 52 80 53 84 50 88 Z" fill="url(#favGold)"/>
+    <path d="M 48 85 C 44 82 41 84 43 87 C 46 87 48 86 48 85 Z" fill="url(#favGold)"/>
+    <path d="M 52 85 C 56 82 59 84 57 87 C 54 87 52 86 52 85 Z" fill="url(#favGold)"/>
   </g>
 </svg>
