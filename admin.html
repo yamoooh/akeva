@@ -4,7 +4,8 @@
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
   <title>Akeva Sérénité — Back-Office Administration & Pilotage</title>
-  <link rel="icon" type="image/svg+xml" href="/assets/logo-as.svg"/>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg"/>
+  <link rel="alternate icon" type="image/svg+xml" href="assets/logo-as.svg"/>
   <meta name="robots" content="noindex, nofollow"/>
 
   <!-- Google Fonts & Material Symbols -->
@@ -116,7 +117,7 @@
   <div id="screen-loading" class="fixed inset-0 bg-white flex flex-col items-center justify-center z-50">
     <div class="w-16 h-16 rounded-full border-4 border-slate-200 border-t-[#c5a059] animate-spin mb-4"></div>
     <div class="flex items-center gap-3">
-      <img src="/assets/logo-as.svg" alt="Akeva Logo" class="h-8 w-auto"/>
+      <img src="assets/logo-as.svg" alt="Akeva Logo" class="h-8 w-auto"/>
       <span class="font-bold text-slate-800 text-sm">Akeva Sérénité — Initialisation sécurisée...</span>
     </div>
   </div>
@@ -128,7 +129,7 @@
     <div class="bg-white rounded-3xl p-8 max-w-lg w-full shadow-2xl border border-slate-100 my-8">
       <div class="text-center mb-6">
         <div class="inline-flex p-3 rounded-2xl bg-amber-50 mb-3 border border-amber-100">
-          <img src="/assets/logo-as.svg" alt="Akeva Logo" class="h-12 w-auto"/>
+          <img src="assets/logo-as.svg" alt="Akeva Logo" class="h-12 w-auto"/>
         </div>
         <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-[11px] font-bold uppercase tracking-wider mb-2">
           <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -193,7 +194,7 @@
     <div class="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-slate-100">
       <div class="text-center mb-6">
         <div class="inline-flex p-3 rounded-2xl bg-amber-50 mb-3 border border-amber-100">
-          <img src="/assets/logo-as.svg" alt="Akeva Logo" class="h-12 w-auto"/>
+          <img src="assets/logo-as.svg" alt="Akeva Logo" class="h-12 w-auto"/>
         </div>
         <h2 class="font-headline-lg text-2xl font-bold text-primary">Connexion Back-Office</h2>
         <p class="text-xs text-slate-500 mt-1">Plateforme de coordination médicale Akeva Sérénité</p>
@@ -264,7 +265,7 @@
         <a href="https://wa.me/237697572685?text=Bonjour%20Akeva%20S%C3%A9r%C3%A9nit%C3%A9%2C%20je%20suis%20administrateur%20et%20je%20souhaite%20r%C3%A9initialiser%20mon%20mot%20de%20passe."
            target="_blank" rel="noopener noreferrer"
            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#1EBE5D] text-white font-bold text-xs shadow-sm">
-          <img src="/assets/whatsapp.svg" class="w-4 h-4" alt="WhatsApp"/>
+          <img src="assets/whatsapp.svg" class="w-4 h-4" alt="WhatsApp"/>
           <span>Assistance WhatsApp Directe</span>
         </a>
         <button type="button" id="btn-close-forgot-modal" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 font-bold text-xs text-slate-600">
@@ -286,7 +287,7 @@
       <div class="flex flex-col flex-1 overflow-y-auto px-4 py-6 custom-scrollbar">
         <!-- Logo Brand & Title -->
         <div class="flex items-center gap-3 px-2 mb-4">
-          <img alt="Brand logo AS" class="h-9 w-auto object-contain" src="/assets/logo-as.svg"/>
+          <img alt="Brand logo AS" class="h-9 w-auto object-contain" src="assets/logo-as.svg"/>
           <div class="flex flex-col">
             <span class="font-headline-sm text-lg font-bold text-primary leading-tight">Akeva Sérénité</span>
             <span class="font-label-xs text-[11px] text-secondary font-medium">Yaoundé Soins & Convalescence</span>
@@ -706,50 +707,21 @@
               <p class="text-xs text-slate-500 mt-1">Suivi individualisé des personnes vulnérables accompagnées à domicile à Yaoundé, familles et soignants délégués.</p>
             </div>
             <div class="flex flex-wrap items-center gap-3">
-              <button id="btn-export-beneficiaires-csv" class="flex items-center gap-2 px-3.5 py-2.5 rounded-lg bg-surface-container hover:bg-surface-variant text-on-surface text-xs font-bold transition-all shadow-sm">
-                <span class="material-symbols-outlined text-base">download</span>
-                <span>Exporter CSV</span>
-              </button>
-              <button id="btn-open-add-beneficiaire" class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary-container text-on-primary hover:bg-primary text-xs font-bold shadow-md transition-all">
-                <span class="material-symbols-outlined text-base text-secondary-fixed">person_add</span>
+              <button id="btn-add-beneficiaire-modal" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary-container hover:bg-primary text-on-primary text-xs font-bold shadow-md transition-all">
+                <span class="material-symbols-outlined text-lg text-secondary-fixed">person_add</span>
                 <span>+ Nouveau Bénéficiaire</span>
               </button>
             </div>
           </div>
 
-          <div class="bg-surface-container-lowest p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="flex items-center gap-3 w-full sm:w-80">
-              <span class="material-symbols-outlined text-slate-400 text-lg">search</span>
-              <input id="search-beneficiaires" type="text" placeholder="Rechercher bénéficiaire, quartier, pathologie..."
-                class="w-full text-xs bg-transparent border-none outline-none text-primary"/>
-            </div>
-            <span class="text-xs text-slate-500 font-mono" id="label-total-beneficiaires">0 bénéficiaires enregistrés</span>
-          </div>
-
-          <div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden">
-            <div class="overflow-x-auto">
-              <table class="w-full text-left text-xs">
-                <thead class="bg-surface-container-low text-on-surface-variant text-[11px] uppercase tracking-wider font-bold">
-                  <tr>
-                    <th class="py-3.5 px-4">Bénéficiaire / Âge</th>
-                    <th class="py-3.5 px-4">Quartier (Yaoundé)</th>
-                    <th class="py-3.5 px-4">Pathologie / Besoin</th>
-                    <th class="py-3.5 px-4">Formule Attribuée</th>
-                    <th class="py-3.5 px-4">Soignant Responsable</th>
-                    <th class="py-3.5 px-4">Contact Référent</th>
-                    <th class="py-3.5 px-6 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="table-beneficiaires-body" class="divide-y divide-slate-100">
-                  <!-- Dynamique -->
-                </tbody>
-              </table>
-            </div>
+          <!-- Grille des fiches bénéficiaires -->
+          <div id="grid-beneficiaires-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Dynamique -->
           </div>
         </div>
 
         <!-- =================================================================== -->
-        <!-- VUE 4 : GESTION DES SERVICES / PRESTATIONS                          -->
+        <!-- VUE 4 : SERVICES & PRESTATIONS                                      -->
         <!-- =================================================================== -->
         <div id="view-services" class="stitch-view hidden flex flex-col w-full space-y-6 pb-12">
           <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
@@ -757,24 +729,39 @@
               <div class="flex items-center gap-2 text-xs text-slate-500 mb-1">
                 <span>Gestion Opérationnelle</span>
                 <span class="material-symbols-outlined text-xs">chevron_right</span>
-                <span class="text-primary font-bold">Formules de Garde</span>
+                <span class="text-secondary font-bold text-xs">Services & Prestations</span>
               </div>
-              <h1 class="font-headline text-2xl sm:text-3xl font-bold text-primary">Gestion des Services & Formules de Soins</h1>
-              <p class="text-xs text-slate-500 mt-1">Configurez les formules présentées sur la page publique (`services.html`) et leurs descriptifs.</p>
+              <h1 class="font-headline text-2xl sm:text-3xl font-bold text-primary">Catalogue des Services Réels du Site</h1>
+              <p class="text-xs text-slate-500 mt-1">Éditez les 5 formules authentiques d'Akeva Sérénité : points clés, horaires, descriptions et tarifs synchronisés en direct avec le portail public.</p>
             </div>
-            <button id="btn-new-service-modal" class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary-container text-on-primary hover:bg-primary text-xs font-bold shadow-md">
-              <span class="material-symbols-outlined text-lg text-secondary-fixed">add_circle</span>
-              <span>+ Créer une Formule de Soin</span>
-            </button>
+            <div class="flex items-center gap-3">
+              <button id="btn-add-service" class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary-container text-on-primary hover:bg-primary text-xs font-bold shadow-md transition-all">
+                <span class="material-symbols-outlined text-lg text-secondary-fixed">add_circle</span>
+                <span>+ Configurer une prestation</span>
+              </button>
+            </div>
           </div>
 
+          <div class="p-5 rounded-2xl bg-surface-container-low shadow-sm flex items-center gap-4 relative overflow-hidden border border-slate-100">
+            <div class="w-1.5 h-full absolute left-0 top-0 bg-secondary"></div>
+            <div class="w-10 h-10 rounded-xl bg-primary-container/10 flex items-center justify-center text-primary-container shrink-0">
+              <span class="material-symbols-outlined text-2xl">sync_saved_locally</span>
+            </div>
+            <div>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 mr-2">SYNCHRONISATION LIVE ACTIVE</span>
+              <span class="text-xs font-bold text-primary">Données Directement Liées au Site Vitrine</span>
+              <p class="text-xs text-slate-600 mt-0.5">Toute modification enregistrée ici met à jour immédiatement les fiches des services sur le portail public.</p>
+            </div>
+          </div>
+
+          <!-- Grille des cartes de services -->
           <div id="grid-services-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <!-- Dynamique -->
           </div>
         </div>
 
         <!-- =================================================================== -->
-        <!-- VUE 5 : GESTION DES TÉMOIGNAGES (MODÉRATION & AJOUT)                -->
+        <!-- VUE 5 : MODÉRATION DES TÉMOIGNAGES                                  -->
         <!-- =================================================================== -->
         <div id="view-temoignages" class="stitch-view hidden flex flex-col w-full space-y-6 pb-12">
           <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
@@ -782,33 +769,36 @@
               <div class="flex items-center gap-2 text-xs text-slate-500 mb-1">
                 <span>Contenus & Médias</span>
                 <span class="material-symbols-outlined text-xs">chevron_right</span>
-                <span class="text-primary font-bold">Témoignages & Avis</span>
+                <span class="text-primary font-bold">Avis & Retours d'Expérience</span>
               </div>
-              <h1 class="font-headline text-2xl sm:text-3xl font-bold text-primary">Modération & Gestion des Avis Familles</h1>
-              <p class="text-xs text-slate-500 mt-1">Validez les avis soumis par les familles ou ajoutez de nouveaux retours d'expérience.</p>
+              <h1 class="font-headline text-2xl sm:text-3xl font-bold text-primary">Témoignages & Modération des Avis</h1>
+              <p class="text-xs text-slate-500 mt-1">Validez ou modérez les témoignages soumis par les utilisateurs avant publication sur le site public.</p>
             </div>
-            <button id="btn-open-add-temoignage" class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary-container text-on-primary hover:bg-primary text-xs font-bold shadow-md">
-              <span class="material-symbols-outlined text-lg text-secondary-fixed">add_comment</span>
-              <span>+ Ajouter un Témoignage</span>
+            <button id="btn-add-temoignage" class="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary-container text-on-primary hover:bg-primary text-xs font-bold shadow-md">
+              <span class="material-symbols-outlined text-lg text-secondary-fixed">rate_review</span>
+              <span>+ Ajouter Manuellement</span>
             </button>
           </div>
 
-          <!-- Section En Attente de Validation -->
-          <div id="section-pending-temoignages" class="hidden bg-amber-50/80 border border-amber-200/80 p-6 rounded-3xl space-y-4">
-            <div class="flex items-center gap-2 text-amber-900 font-bold text-sm">
-              <span class="material-symbols-outlined text-amber-700">pending_actions</span>
-              <span>Avis Déposés en Ligne — En Attente de Validation</span>
+          <!-- SECTION : EN ATTENTE DE MODÉRATION -->
+          <div id="section-pending-temoignages" class="space-y-3 p-6 rounded-3xl bg-amber-50/60 border border-amber-200/80">
+            <div class="flex items-center justify-between">
+              <h3 class="font-bold text-sm text-amber-900 flex items-center gap-2">
+                <span class="w-3 h-3 rounded-full bg-amber-500 animate-pulse"></span>
+                <span>Témoignages en attente de modération (<span id="count-pending-temoignages">0</span>)</span>
+              </h3>
+              <span class="text-[11px] text-amber-700 font-semibold italic">Nécessite la validation d'un administrateur</span>
             </div>
-            <div id="grid-pending-temoignages" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div id="grid-pending-temoignages-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <!-- Dynamique (En attente) -->
             </div>
           </div>
 
-          <!-- Section Témoignages Publiés -->
-          <div class="space-y-4">
-            <h3 class="font-headline text-base font-bold text-primary flex items-center gap-2">
-              <span class="material-symbols-outlined text-secondary text-lg">verified</span>
-              <span>Témoignages Officiellement Publiés sur le Site</span>
+          <!-- SECTION : TÉMOIGNAGES PUBLIÉS -->
+          <div class="space-y-3 pt-2">
+            <h3 class="font-bold text-sm text-primary flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+              <span>Témoignages publiés en ligne sur le site public</span>
             </h3>
             <div id="grid-temoignages-cards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <!-- Dynamique (Publiés) -->
@@ -1074,7 +1064,7 @@
                     <label class="block font-bold text-slate-700 mb-1">Nouveau Mot de Passe (min. 6 caractères)</label>
                     <div class="relative flex items-center">
                       <input type="password" id="profile-new-pwd" required minlength="6" placeholder="Nouveau mot de passe"
-                        class="w-full px-4 py-2.5 pr-10 rounded-xl bg-surface-container-low border border-slate-200 outline-none focus:bg-white focus:ring-2 focus:ring-[#0d2040]"/>
+                        class="w-full px-4 py-2.5 pr-10 rounded-xl border border-slate-200 outline-none focus:bg-white focus:ring-2 focus:ring-[#0d2040]"/>
                       <button type="button" class="btn-toggle-password absolute right-3 text-slate-400" data-target="profile-new-pwd">
                         <span class="material-symbols-outlined text-lg">visibility</span>
                       </button>
@@ -1084,7 +1074,7 @@
                     <label class="block font-bold text-slate-700 mb-1">Confirmer le Nouveau Mot de Passe</label>
                     <div class="relative flex items-center">
                       <input type="password" id="profile-confirm-pwd" required minlength="6" placeholder="Répétez le nouveau mot de passe"
-                        class="w-full px-4 py-2.5 pr-10 rounded-xl bg-surface-container-low border border-slate-200 outline-none focus:bg-white focus:ring-2 focus:ring-[#0d2040]"/>
+                        class="w-full px-4 py-2.5 pr-10 rounded-xl border border-slate-200 outline-none focus:bg-white focus:ring-2 focus:ring-[#0d2040]"/>
                       <button type="button" class="btn-toggle-password absolute right-3 text-slate-400" data-target="profile-confirm-pwd">
                         <span class="material-symbols-outlined text-lg">visibility</span>
                       </button>
@@ -1710,7 +1700,7 @@
               <span>Appeler</span>
             </a>
             <a id="req-modal-btn-wa" href="#" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#25D366] hover:bg-[#1ebd59] text-white font-bold text-xs shadow-sm transition-transform hover:scale-105">
-              <img src="/assets/whatsapp.svg" alt="WhatsApp" class="w-4 h-4 object-contain" />
+              <img src="assets/whatsapp.svg" alt="WhatsApp" class="w-4 h-4 object-contain" />
               <span>Répondre sur WhatsApp</span>
             </a>
           </div>
