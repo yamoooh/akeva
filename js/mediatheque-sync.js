@@ -48,11 +48,11 @@
     container.innerHTML = list.map(item => `
       <article class="bg-surface-container-lowest rounded-3xl shadow-sm border border-slate-100 overflow-hidden flex flex-col justify-between hover:shadow-xl transition-all duration-300 group">
         <div class="relative h-60 w-full overflow-hidden bg-slate-900">
-          <img src="${item.image_url || 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=2560&q=90'}" 
+          <img src="${item.image_url || 'https://lh3.googleusercontent.com/aida-public/AB6AXuB-hAzaGz5mAVs-qz4RcdF5LqXDcLMiXFKtbBaG2F7X-4BzVDVaVpAkZ7BXoiMuH-9lsBND4BIopCsyj9rk74wq6jggMB_VnXGA_liCVQYyLAW66xD4geO4zqqo30pMBQhF8pcwynKPPaBuOmBK8lLVh_6nivMJFh7YZH11cLrEbfSNqFtnsWICyFhObqFJ77EIb-cL_S-H7tVKaszwt81dOHEY3CH8_DmHsEXvgbFNHeITtg1GF4RD=s0'}" 
                alt="${escapeHtml(item.title)}" 
                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer btn-open-lightbox"
                data-type="image"
-               data-src="${item.image_url || 'https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=3840&q=95'}"
+               data-src="${item.image_url || 'https://lh3.googleusercontent.com/aida-public/AB6AXuB-hAzaGz5mAVs-qz4RcdF5LqXDcLMiXFKtbBaG2F7X-4BzVDVaVpAkZ7BXoiMuH-9lsBND4BIopCsyj9rk74wq6jggMB_VnXGA_liCVQYyLAW66xD4geO4zqqo30pMBQhF8pcwynKPPaBuOmBK8lLVh_6nivMJFh7YZH11cLrEbfSNqFtnsWICyFhObqFJ77EIb-cL_S-H7tVKaszwt81dOHEY3CH8_DmHsEXvgbFNHeITtg1GF4RD=s0'}"
                data-title="${escapeHtml(item.title)}"/>
           <div class="absolute top-4 left-4">
             <span class="px-3 py-1 rounded-full bg-primary/80 backdrop-blur-md text-secondary-fixed text-[11px] font-bold tracking-wider uppercase shadow-sm">
