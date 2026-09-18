@@ -66,9 +66,7 @@
         <!-- Modal Header -->
         <div class="bg-[#0d2040] text-white p-5 flex items-center justify-between relative">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-white p-0.5 border border-[#ffdea5] flex items-center justify-center shadow-sm overflow-hidden shrink-0">
-              <img src="${rootPath}assets/logo-as.svg" alt="Akeva Sérénité" class="w-full h-full object-contain"/>
-            </div>
+            <img src="${rootPath}assets/logo-as.svg" alt="Akeva Sérénité" class="w-10 h-10 object-contain drop-shadow shrink-0"/>
             <div>
               <h3 class="font-bold text-[16px] leading-tight text-white">Conseiller Akeva Sérénité</h3>
               <p class="text-[12px] text-[#ffdea5] flex items-center gap-1">
