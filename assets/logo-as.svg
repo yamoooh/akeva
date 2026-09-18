@@ -1,154 +1,181 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="100%" height="100%">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 450" width="100%" height="100%">
   <defs>
-    <!-- Dégradés Or Métallique Premium Akeva Sérénité -->
-    <linearGradient id="goldLinear" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#FDF1D6"/>
-      <stop offset="20%" stop-color="#E8C37B"/>
-      <stop offset="45%" stop-color="#C99856"/>
-      <stop offset="75%" stop-color="#9E7227"/>
-      <stop offset="100%" stop-color="#6F4D10"/>
+    <!-- Dégradés Or 3D Métallique Réaliste & Poli -->
+    <linearGradient id="goldStem" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFDF5"/>
+      <stop offset="15%" stop-color="#FCE5A2"/>
+      <stop offset="35%" stop-color="#E5BA64"/>
+      <stop offset="65%" stop-color="#C58D33"/>
+      <stop offset="85%" stop-color="#915F13"/>
+      <stop offset="100%" stop-color="#5E3B06"/>
     </linearGradient>
 
-    <linearGradient id="goldHighlight" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#BF8D3E"/>
-      <stop offset="35%" stop-color="#FDF3CD"/>
-      <stop offset="65%" stop-color="#E4BD6E"/>
-      <stop offset="100%" stop-color="#9A6E20"/>
+    <linearGradient id="goldSwoosh" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#805210"/>
+      <stop offset="25%" stop-color="#DDA94B"/>
+      <stop offset="50%" stop-color="#FFF4CE"/>
+      <stop offset="75%" stop-color="#E2B45A"/>
+      <stop offset="100%" stop-color="#9C6B1B"/>
     </linearGradient>
 
-    <linearGradient id="goldText" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#F6DFB3"/>
-      <stop offset="30%" stop-color="#D9A85F"/>
-      <stop offset="70%" stop-color="#B88330"/>
-      <stop offset="100%" stop-color="#805615"/>
+    <linearGradient id="goldShine" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.85"/>
+      <stop offset="40%" stop-color="#FFEAA8" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#D09838" stop-opacity="0"/>
     </linearGradient>
 
-    <filter id="subtleGlow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#000000" flood-opacity="0.15"/>
+    <radialGradient id="goldHaloGlow" cx="62%" cy="20%" r="50%">
+      <stop offset="0%" stop-color="#FFFBEB" stop-opacity="0.9"/>
+      <stop offset="40%" stop-color="#F2C868" stop-opacity="0.6"/>
+      <stop offset="80%" stop-color="#C68E2D" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#8E5E14" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="goldOutline" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF2C6"/>
+      <stop offset="50%" stop-color="#DCA446"/>
+      <stop offset="100%" stop-color="#8C5C12"/>
+    </linearGradient>
+
+    <!-- Ombre portée douce & relief 4K -->
+    <filter id="luxuryDropShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000000" flood-opacity="0.18"/>
     </filter>
   </defs>
 
-  <g filter="url(#subtleGlow)" transform="translate(0, 5)">
-    <!-- 1. CERCLE EXTÉRIEUR DU SYMBOLE -->
-    <path d="M 260 55 
-             A 140 140 0 0 1 455 240 
-             A 140 140 0 0 1 390 325" 
-          fill="none" stroke="url(#goldLinear)" stroke-width="4.5" stroke-linecap="round" opacity="0.85"/>
+  <g filter="url(#luxuryDropShadow)" transform="translate(10, 5)">
+    <!-- 1. CERCLE / HALO EXTÉRIEUR ÉLÉGANT -->
+    <path d="M 285 75 
+             C 380 40 480 80 505 180 
+             C 525 255 490 335 440 375" 
+          fill="none" 
+          stroke="url(#goldSwoosh)" 
+          stroke-width="5" 
+          stroke-linecap="round"/>
 
-    <!-- 2. MONOGRAMME MAJESTUEUX 'AS' -->
-    <!-- Fût & Courbe du 'A' -->
-    <path d="M 248 88 
-             C 255 105 230 150 195 210 
-             C 165 260 142 295 142 295 
-             L 165 295 
-             C 185 260 215 208 245 158 
-             C 260 195 290 260 308 295 
-             L 332 295 
-             C 305 245 268 168 252 88 Z" 
-          fill="url(#goldHighlight)"/>
+    <!-- 2. JAMBE GAUCHE ET SOMMET DU 'A' MAJESTUEUX -->
+    <!-- Empattement inférieur gauche du A -->
+    <path d="M 180 370 
+             C 192 370 205 365 212 350 
+             L 282 120 
+             C 285 110 292 105 300 105 
+             C 308 105 315 110 318 120 
+             L 345 210 
+             C 335 215 320 230 310 245 
+             L 298 165 
+             L 235 348 
+             C 240 365 252 370 268 370 
+             L 180 370 Z" 
+          fill="url(#goldStem)"/>
 
-    <!-- Courbe enveloppante de la jambe gauche du 'A' -->
-    <path d="M 142 295 
-             C 175 285 220 220 260 215 
-             C 230 225 195 270 142 295 Z" 
-          fill="url(#goldLinear)"/>
+    <!-- Biseau lumineux jambe gauche du A -->
+    <path d="M 282 120 
+             L 235 348 
+             C 230 330 245 280 265 220 
+             L 290 140 Z" 
+          fill="url(#goldShine)"/>
 
-    <!-- Ruban fluide du 'S' entrelacé -->
-    <path d="M 158 245 
-             C 200 210 270 205 320 235 
-             C 365 262 398 300 365 345 
-             C 335 385 275 375 245 350 
-             C 215 325 240 295 265 295 
-             C 285 295 298 310 290 328 
-             C 282 342 265 348 252 342 
-             C 268 355 315 358 338 330 
-             C 360 300 338 272 305 252 
-             C 260 225 195 228 158 245 Z" 
-          fill="url(#goldLinear)"/>
+    <!-- 3. RUBAN VOLUPTUEUX EN BOUCLE DU 'A' VERS LE 'S' -->
+    <path d="M 200 305 
+             C 225 255 285 240 335 280 
+             C 390 325 435 385 380 375 
+             C 330 365 280 305 245 285 
+             C 220 272 208 288 200 305 Z" 
+          fill="url(#goldSwoosh)"/>
 
-    <!-- Boucle supérieure du 'S' -->
-    <path d="M 335 150 
-             C 305 138 285 152 285 175 
-             C 285 205 320 220 348 242 
-             C 370 225 378 190 360 162 
-             C 352 152 342 148 335 150 Z" 
-          fill="url(#goldHighlight)"/>
+    <!-- Ligne de reflet sur le ruban -->
+    <path d="M 215 295 
+             C 245 260 300 255 345 290 
+             C 380 320 415 365 375 365 
+             C 340 360 295 315 260 295 Z" 
+          fill="url(#goldShine)" opacity="0.6"/>
 
-    <!-- 3. SILHOUETTE DE BIENVEILLANCE (Mère & Enfant / Soignant & Patient) -->
-    <!-- Tête de l'accompagnant -->
-    <path d="M 345 142 
-             C 338 132 355 118 368 126 
-             C 378 134 372 150 360 152 
-             C 352 154 348 148 345 142 Z" 
-          fill="none" stroke="url(#goldLinear)" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- 4. GRAND 'S' EMBLÉMATIQUE AVEC VOLUTES POLIES -->
+    <!-- Sommet et empattement du S -->
+    <path d="M 435 125 
+             L 485 125 
+             L 485 180 
+             C 475 160 460 145 440 140 
+             C 400 130 360 160 350 200 
+             C 340 245 375 285 415 315 
+             C 460 350 475 390 440 420 
+             C 405 450 330 440 300 395 
+             L 315 375 
+             C 340 415 395 425 425 400 
+             C 450 380 435 350 395 320 
+             C 350 285 320 245 330 190 
+             C 342 135 390 115 435 125 Z" 
+          fill="url(#goldStem)"/>
 
-    <!-- Profil bienveillant penché -->
-    <path d="M 342 148 
-             C 345 162 360 178 375 185 
-             M 358 165 
-             C 368 172 382 170 395 165" 
-          fill="none" stroke="url(#goldLinear)" stroke-width="2.2" stroke-linecap="round"/>
+    <!-- Éclat de lumière sur le corps du S -->
+    <path d="M 435 125 
+             C 400 130 360 160 350 200 
+             C 345 220 350 245 365 270 
+             C 355 240 355 205 370 175 
+             C 390 145 420 135 440 140 Z" 
+          fill="url(#goldShine)" opacity="0.75"/>
 
-    <!-- Tête du proche accompagné -->
-    <circle cx="388" cy="192" r="14" fill="none" stroke="url(#goldLinear)" stroke-width="2.2"/>
+    <!-- 5. SILHOUETTE BIENVEILLANTE AU CŒUR DU 'S' -->
+    <!-- Profil soignant / mère bienveillante -->
+    <!-- Chevelure et contour tête -->
+    <path d="M 412 150 
+             C 430 145 455 155 465 175 
+             C 460 178 445 170 425 172 
+             C 410 174 400 185 395 198" 
+          fill="none" 
+          stroke="url(#goldOutline)" 
+          stroke-width="3" 
+          stroke-linecap="round"/>
 
-    <!-- Petite feuille dorée à droite du S -->
-    <path d="M 395 248 
-             C 415 252 435 275 430 298 
-             C 415 295 398 275 395 248 Z" 
-          fill="url(#goldLinear)"/>
+    <!-- Profil du visage incliné avec douceur -->
+    <path d="M 425 172 
+             C 435 180 445 192 445 205 
+             C 440 215 432 220 422 225 
+             C 415 228 410 235 412 245" 
+          fill="none" 
+          stroke="url(#goldOutline)" 
+          stroke-width="2.5" 
+          stroke-linecap="round"/>
 
-    <!-- 4. TEXTE PRINCIPAL 'AKEVA' (Serif Majestueux) -->
-    <g transform="translate(300, 395)" text-anchor="middle">
-      <text font-family="'Playfair Display', 'Cinzel', 'Trajan Pro', Georgia, serif" 
-            font-size="68" 
-            font-weight="700" 
-            letter-spacing="14" 
-            fill="url(#goldText)">AKEVA</text>
-    </g>
+    <!-- Yeux sereins baissés / sourcil -->
+    <path d="M 430 188 
+             C 434 192 438 193 442 190" 
+          fill="none" 
+          stroke="url(#goldOutline)" 
+          stroke-width="2" 
+          stroke-linecap="round"/>
 
-    <!-- 5. TEXTE 'Sérénité' (Script Calligraphique Raffiné) -->
-    <g transform="translate(300, 460)" text-anchor="middle">
-      <text font-family="'Caveat', 'Alex Brush', 'Great Vibes', 'Brush Script MT', cursive" 
-            font-size="58" 
-            font-weight="400" 
-            font-style="italic" 
-            letter-spacing="2" 
-            fill="url(#goldHighlight)">Sérénité</text>
-    </g>
+    <!-- Tête et buste du proche / patient / enfant chéri -->
+    <path d="M 445 240 
+             C 455 235 470 240 475 255 
+             C 478 268 470 280 455 285 
+             C 445 288 440 298 442 310" 
+          fill="none" 
+          stroke="url(#goldOutline)" 
+          stroke-width="2.6" 
+          stroke-linecap="round"/>
 
-    <!-- 6. SÉPARATEUR ORNEMENTAL (Lignes fines + Fleur de Lotus) -->
-    <g transform="translate(300, 498)">
-      <!-- Ligne gauche -->
-      <line x1="-135" y1="0" x2="-25" y2="0" stroke="url(#goldLinear)" stroke-width="1.6" stroke-linecap="round" opacity="0.75"/>
-      
-      <!-- Lotus central à 3 pétales -->
-      <!-- Pétale central -->
-      <path d="M 0 -12 C -6 -6 -5 4 0 5 C 5 4 6 -6 0 -12 Z" fill="url(#goldHighlight)"/>
-      <!-- Pétale gauche -->
-      <path d="M -2 3 C -10 -4 -16 2 -12 7 C -7 8 -3 5 -2 3 Z" fill="url(#goldLinear)"/>
-      <!-- Pétale droit -->
-      <path d="M 2 3 C 10 -4 16 2 12 7 C 7 8 3 5 2 3 Z" fill="url(#goldLinear)"/>
-      
-      <!-- Ligne droite -->
-      <line x1="25" y1="0" x2="135" y2="0" stroke="url(#goldLinear)" stroke-width="1.6" stroke-linecap="round" opacity="0.75"/>
-    </g>
+    <!-- Main / bras enveloppant de réconfort -->
+    <path d="M 422 250 
+             C 438 255 455 265 465 280 
+             C 475 295 480 315 475 335" 
+          fill="none" 
+          stroke="url(#goldOutline)" 
+          stroke-width="2.8" 
+          stroke-linecap="round"/>
 
-    <!-- 7. SLOGAN OFFICIEL 'UN ENGAGEMENT D'EXCELLENCE POUR VOTRE TRANQUILLITÉ' -->
-    <g transform="translate(300, 532)" text-anchor="middle">
-      <text font-family="'Plus Jakarta Sans', 'Montserrat', 'Helvetica Neue', sans-serif" 
-            font-size="12" 
-            font-weight="600" 
-            letter-spacing="3.8" 
-            fill="url(#goldHighlight)" 
-            opacity="0.95">UN ENGAGEMENT D'EXCELLENCE</text>
-      <text y="18" 
-            font-family="'Plus Jakarta Sans', 'Montserrat', 'Helvetica Neue', sans-serif" 
-            font-size="12" 
-            font-weight="600" 
-            letter-spacing="3.8" 
-            fill="url(#goldHighlight)" 
-            opacity="0.95">POUR VOTRE TRANQUILLITÉ</text>
-    </g>
+    <!-- 6. FEUILLE / PÉTALE D'OR EN BAS À DROITE -->
+    <path d="M 470 340 
+             C 490 345 515 375 500 405 
+             C 480 395 465 370 470 340 Z" 
+          fill="url(#goldSwoosh)"/>
+    <path d="M 470 340 
+             C 485 360 492 385 498 400" 
+          fill="none" 
+          stroke="url(#goldStem)" 
+          stroke-width="1.8"/>
+
+    <!-- 7. HALO LUMINEUX POINT CHAUD AU SOMMET -->
+    <circle cx="435" cy="85" r="30" fill="url(#goldHaloGlow)"/>
   </g>
 </svg>
