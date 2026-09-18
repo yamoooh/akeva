@@ -172,7 +172,7 @@
           rgba(8, 23, 41, 0.92) 38%,
           rgba(8, 23, 41, 0.65) 62%,
           rgba(8, 23, 41, 0.15) 78%,
-          rgba(8, 23, 41, 0) 88%,
+          rgba(8, 23, 41, 0.08) 88%,
           rgba(8, 23, 41, 0) 100%
         );
       }
@@ -202,10 +202,8 @@
 <header class="bg-[#081729] text-white sticky top-0 z-50 shadow-md border-b border-[#14263e]">
   <div class="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
     <!-- Brand Logo -->
-    <a class="flex items-center space-x-3.5 group" href="index.html">
-      <div class="w-12 h-12 rounded-xl bg-white p-1 flex items-center justify-center relative flex-shrink-0 shadow-md border border-white/20">
-        <img src="assets/logo-as.svg" alt="Akeva Sérénité Logo" class="w-full h-full object-contain group-hover:scale-105 transition-transform"/>
-      </div>
+    <a class="flex items-center space-x-3 group py-1" href="index.html">
+      <img src="assets/logo-as.svg" alt="Akeva Sérénité Logo" class="h-12 w-auto object-contain group-hover:scale-105 transition-transform drop-shadow"/>
       <div class="flex flex-col">
         <span class="font-sans tracking-[0.14em] text-[17px] font-bold text-white leading-none">AKEVA <span class="text-[#c99856] font-medium tracking-[0.16em]">SÉRÉNITÉ</span></span>
         <span class="text-[8px] uppercase tracking-[0.2em] text-[#dfb778] font-medium mt-1.5 leading-none opacity-90">Accompagnement &amp; Assistance Non Médicale</span>
@@ -238,12 +236,12 @@
   <!-- Mobile Navigation Dropdown -->
   <div id="mobile-menu" class="hidden xl:hidden bg-[#081729] border-t border-[#14263e] px-4 pt-3 pb-5 space-y-3">
     <a class="block text-white font-semibold py-1" href="index.html">Accueil</a>
-    <a class="block text-slate-300 hover:text-[#c99856] py-1" href="a-propos.html">À Propos</a>
-    <a class="block text-slate-300 hover:text-[#c99856] py-1" href="services.html">Nos Services</a>
-    <a class="block text-slate-300 hover:text-[#c99856] py-1" href="tarifs.html">Tarifs &amp; Formules</a>
-    <a class="block text-slate-300 hover:text-[#c99856] py-1" href="temoignages.html">Témoignages</a>
-    <a class="block text-slate-300 hover:text-[#c99856] py-1" href="faq.html">FAQ</a>
-    <a class="block text-slate-300 hover:text-[#c99856] py-1" href="contact.html">Contact</a>
+    <a class="block text-slate-300 hover:text-[#c99856] py-1 font-medium" href="a-propos.html">À Propos</a>
+    <a class="block text-slate-300 hover:text-[#c99856] py-1 font-medium" href="services.html">Nos Services</a>
+    <a class="block text-slate-300 hover:text-[#c99856] py-1 font-medium" href="tarifs.html">Tarifs &amp; Formules</a>
+    <a class="block text-slate-300 hover:text-[#c99856] py-1 font-medium" href="temoignages.html">Témoignages</a>
+    <a class="block text-slate-300 hover:text-[#c99856] py-1 font-medium" href="faq.html">FAQ</a>
+    <a class="block text-slate-300 hover:text-[#c99856] py-1 font-medium" href="contact.html">Contact</a>
   </div>
 </header>
 <!-- END: MainHeader -->
@@ -325,6 +323,7 @@
     </div>
   </section>
   <!-- END: HeroSection -->
+
   <!-- BEGIN: TrustFeaturesSection -->
   <section class="py-12 bg-white border-y border-[#eee6dc]">
     <div class="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -928,10 +927,8 @@
 <footer class="bg-[#081729] text-white pt-12 pb-8 border-t border-[#16273d] relative" id="contact">
   <div class="max-w-[1380px] mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex flex-col lg:flex-row items-center justify-between gap-8 pb-10 border-b border-slate-800">
-      <div class="flex items-center space-x-3.5">
-        <div class="w-12 h-12 rounded-xl bg-white p-1 flex items-center justify-center relative flex-shrink-0 shadow-md border border-white/20">
-          <img src="assets/logo-as.svg" alt="Akeva Sérénité Logo" class="w-full h-full object-contain"/>
-        </div>
+      <div class="flex items-center space-x-3">
+        <img src="assets/logo-as.svg" alt="Akeva Sérénité Logo" class="h-12 w-auto object-contain drop-shadow"/>
         <div>
           <div class="font-sans tracking-[0.14em] text-lg font-bold text-white leading-none">AKEVA <span class="text-[#c99856] font-medium tracking-[0.16em]">SÉRÉNITÉ</span></div>
           <div class="text-[8.5px] uppercase tracking-[0.2em] text-[#dfb778] mt-1.5 font-medium leading-none opacity-90">Accompagnement &amp; Assistance Non Médicale</div>
@@ -979,7 +976,8 @@
     });
   }
 
-  // Solutions Card Mini Carousel Logic
+
+  // 2. Solutions Card Mini Carousel Logic
   (function () {
     const solSlides = document.querySelectorAll('.solution-slide');
     const solDots = document.querySelectorAll('.sol-dot');
