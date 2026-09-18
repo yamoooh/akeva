@@ -135,19 +135,19 @@
     </g>
 
     <!-- 7. SLOGAN OFFICIEL 'UN ENGAGEMENT D'EXCELLENCE POUR VOTRE TRANQUILLITÉ' -->
-    <g transform="translate(300, 535)" text-anchor="middle">
+    <g transform="translate(300, 532)" text-anchor="middle">
       <text font-family="'Plus Jakarta Sans', 'Montserrat', 'Helvetica Neue', sans-serif" 
-            font-size="11.5" 
+            font-size="12" 
             font-weight="600" 
-            letter-spacing="3.5" 
-            fill="#B39359" 
+            letter-spacing="3.8" 
+            fill="url(#goldHighlight)" 
             opacity="0.95">UN ENGAGEMENT D'EXCELLENCE</text>
-      <text y="17" 
+      <text y="18" 
             font-family="'Plus Jakarta Sans', 'Montserrat', 'Helvetica Neue', sans-serif" 
-            font-size="11.5" 
+            font-size="12" 
             font-weight="600" 
-            letter-spacing="3.5" 
-            fill="#B39359" 
+            letter-spacing="3.8" 
+            fill="url(#goldHighlight)" 
             opacity="0.95">POUR VOTRE TRANQUILLITÉ</text>
     </g>
   </g>
